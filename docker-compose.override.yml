@@ -1,0 +1,64 @@
+# ─────────────────────────────────────────────────────────────────
+#  Development overrides — applied automatically by docker compose
+# ─────────────────────────────────────────────────────────────────
+version: "3.9"
+
+services:
+  backend:
+    build:
+      args:
+        REQUIREMENTS_FILE: development.txt
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app           # live code reload
+      - media_files:/app/media
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development
+      DJANGO_DEBUG: "True"
+    ports:
+      - "8000:8000"
+
+  celery_worker:
+    build:
+      args:
+        REQUIREMENTS_FILE: development.txt
+    command: celery -A config.celery_app worker --loglevel=debug --concurrency=1 -Q default,payments,notifications
+    volumes:
+      - ./backend:/app
+
+  celery_beat:
+    build:
+      args:
+        REQUIREMENTS_FILE: development.txt
+    volumes:
+      - ./backend:/app
+
+  # Expose DB port for local DB tools (DBeaver, TablePlus, etc.)
+  db:
+    ports:
+      - "5432:5432"
+
+  # Expose Redis port for local inspection
+  redis:
+    ports:
+      - "6379:6379"
+
+  # Angular dev server — hot reload on port 4200, proxies /api and /ws to backend
+  frontend:
+    image: node:22-slim
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: sh -c "npm install && npx ng serve --host 0.0.0.0 --port 4200 --proxy-config proxy.conf.json --disable-host-check"
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: development
+
+  # Disable nginx in dev — access Django directly on :8000, Angular on :4200
+  nginx:
+    profiles:
+      - prod

@@ -1,0 +1,52 @@
+# ── Ignore everything not needed for the Docker build ─────────────
+# This keeps the build context small even though we use . (project root)
+
+# Frontend (built separately)
+frontend/
+frontend/node_modules/
+frontend/dist/
+
+# Docs
+docs/
+
+# Git
+.git/
+.gitignore
+
+# Python caches
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.pytest_cache/
+**/.tox/
+**/*.egg-info/
+
+# Django local files
+backend/db.sqlite3
+backend/media/
+backend/staticfiles/
+backend/.coverage
+backend/htmlcov/
+backend/celerybeat-schedule
+backend/celerybeat.pid
+
+# Environment files (never bake into image)
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+**/*.swp
+**/*.swo
+
+# Logs
+logs/
+*.log
+dump.rdb
+
+# Backups
+backups/
