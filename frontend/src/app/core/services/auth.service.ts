@@ -49,12 +49,21 @@ export class AuthService {
 
   register(data: {
     phone_number: string;
-    full_name: string;
+    first_name: string;
+    last_name: string;
     password: string;
+    password_confirm: string;
     role: UserRole;
-  }): Observable<{ message: string; user_id: string }> {
-    return this.http.post<{ message: string; user_id: string }>(
+  }): Observable<{ message: string; user: User; access: string; refresh: string }> {
+    return this.http.post<{ message: string; user: User; access: string; refresh: string }>(
       `${this.apiUrl}/auth/register/`, data
+    ).pipe(
+      tap((res) => {
+        // Backend issues tokens immediately on registration.
+        // Store them so the subsequent OTP verify step (IsAuthenticated) works.
+        this.storeTokens(res.access, res.refresh);
+        this._user.set(res.user);
+      })
     );
   }
 

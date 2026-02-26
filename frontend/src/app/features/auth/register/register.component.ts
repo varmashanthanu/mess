@@ -1,10 +1,16 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserRole } from '../../../core/models/user.model';
+
+function passwordsMatch(group: AbstractControl): ValidationErrors | null {
+  const pw  = group.get('password')?.value;
+  const cpw = group.get('password_confirm')?.value;
+  return pw && cpw && pw !== cpw ? { mismatch: true } : null;
+}
 
 @Component({
   selector: 'app-register',
@@ -66,6 +72,19 @@ import { UserRole } from '../../../core/models/user.model';
             <span class="field-error" *ngIf="submitted && f['password'].errors?.['minlength']">{{ 'AUTH.REGISTER.PASSWORD_MIN' | translate }}</span>
           </div>
 
+          <div class="form-group">
+            <label>{{ 'AUTH.REGISTER.PASSWORD_CONFIRM' | translate }}</label>
+            <div class="password-wrap">
+              <input [type]="showPwdConfirm ? 'text' : 'password'" formControlName="password_confirm"
+                [placeholder]="'AUTH.REGISTER.PASSWORD_CONFIRM_PLACEHOLDER' | translate"
+                [class.invalid]="submitted && (f['password_confirm'].errors || form.errors?.['mismatch'])" />
+              <button type="button" class="pwd-toggle" (click)="showPwdConfirm = !showPwdConfirm">
+                {{ showPwdConfirm ? '🙈' : '👁️' }}
+              </button>
+            </div>
+            <span class="field-error" *ngIf="submitted && form.errors?.['mismatch']">{{ 'AUTH.REGISTER.PASSWORD_MISMATCH' | translate }}</span>
+          </div>
+
           <button type="submit" class="btn-primary w-full" [disabled]="loading">
             {{ (loading ? 'AUTH.REGISTER.SUBMITTING' : 'AUTH.REGISTER.SUBMIT') | translate }}
           </button>
@@ -117,14 +136,16 @@ export class RegisterComponent {
   error = '';
   success = '';
   showPwd = false;
+  showPwdConfirm = false;
 
   constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
     this.form = this.fb.group({
-      full_name: ['', Validators.required],
-      phone_number: ['', Validators.required],
-      role: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(8)]],
-    });
+      full_name:        ['', Validators.required],
+      phone_number:     ['', Validators.required],
+      role:             ['', Validators.required],
+      password:         ['', [Validators.required, Validators.minLength(8)]],
+      password_confirm: ['', Validators.required],
+    }, { validators: passwordsMatch });
   }
 
   get f() { return this.form.controls; }
@@ -134,14 +155,37 @@ export class RegisterComponent {
     this.error = '';
     if (this.form.invalid) return;
     this.loading = true;
-    this.auth.register(this.form.value).subscribe({
+
+    // Split "First Last" → first_name + last_name (backend uses separate fields)
+    const fullName: string = this.f['full_name'].value.trim();
+    const spaceIdx = fullName.indexOf(' ');
+    const first_name = spaceIdx > -1 ? fullName.slice(0, spaceIdx) : fullName;
+    const last_name  = spaceIdx > -1 ? fullName.slice(spaceIdx + 1).trim() : '';
+
+    this.auth.register({
+      phone_number:     this.f['phone_number'].value,
+      first_name,
+      last_name,
+      role:             this.f['role'].value as UserRole,
+      password:         this.f['password'].value,
+      password_confirm: this.f['password_confirm'].value,
+    }).subscribe({
       next: () => {
         this.success = 'AUTH.REGISTER.SUCCESS';
         sessionStorage.setItem('pending_phone', this.f['phone_number'].value);
         this.loading = false;
       },
       error: (err: any) => {
-        this.error = err?.error?.error?.message || JSON.stringify(err?.error) || 'AUTH.REGISTER.ERROR_GENERIC';
+        const detail = err?.error;
+        // DRF returns field errors as { field: ["msg"] } — flatten to a readable string
+        if (detail && typeof detail === 'object' && !detail.message) {
+          const messages = Object.entries(detail)
+            .map(([field, msgs]) => `${field}: ${(msgs as string[]).join(', ')}`)
+            .join(' | ');
+          this.error = messages;
+        } else {
+          this.error = detail?.message || detail?.detail || 'AUTH.REGISTER.ERROR_GENERIC';
+        }
         this.loading = false;
       },
     });
