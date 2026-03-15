@@ -72,9 +72,10 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.get_full_name()} ({self.phone_number})"
+        return f"{self.full_name} ({self.phone_number})"
 
-    def get_full_name(self):
+    @property
+    def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
 
     @property
@@ -134,7 +135,7 @@ class ShipperProfile(BaseModel):
     total_orders = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return f"Shipper: {self.user.get_full_name()}"
+        return f"Shipper: {self.user.full_name}"
 
 
 class DriverProfile(BaseModel):
@@ -162,7 +163,7 @@ class DriverProfile(BaseModel):
         verbose_name = "Driver Profile"
 
     def __str__(self):
-        return f"Driver: {self.user.get_full_name()}"
+        return f"Driver: {self.user.full_name}"
 
     def update_rating(self, new_score: int):
         """Recalculate running average rating."""
@@ -185,4 +186,4 @@ class BrokerProfile(BaseModel):
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
 
     def __str__(self):
-        return f"Broker: {self.user.get_full_name()}"
+        return f"Broker: {self.user.full_name}"

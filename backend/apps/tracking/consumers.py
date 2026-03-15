@@ -70,7 +70,7 @@ class DriverLocationConsumer(AsyncWebsocketConsumer):
                 {
                     "type": "location_update",
                     "driver_id": str(self.driver.id),
-                    "driver_name": self.driver.get_full_name(),
+                    "driver_name": self.driver.full_name,
                     "lat": lat,
                     "lng": lng,
                     "speed": speed,

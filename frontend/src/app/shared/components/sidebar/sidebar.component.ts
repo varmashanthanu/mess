@@ -19,8 +19,7 @@ interface NavItem {
   template: `
     <aside class="sidebar" [class.collapsed]="collapsed()">
       <div class="sidebar-brand">
-        <span class="brand-icon">🚛</span>
-        <span class="brand-name" *ngIf="!collapsed()">Mess</span>
+        <img src="logo.svg" class="brand-logo" [class.brand-logo--collapsed]="collapsed()" alt="Mess" />
       </div>
 
       <nav class="sidebar-nav">
@@ -58,9 +57,9 @@ interface NavItem {
   styles: [`
     .sidebar { width: var(--sidebar-width); height: 100vh; background: #1A1A2E; display: flex; flex-direction: column; position: fixed; left: 0; top: 0; z-index: 100; transition: width .25s ease; overflow: hidden; }
     .sidebar.collapsed { width: 64px; }
-    .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); min-height: 64px; }
-    .brand-icon { font-size: 24px; }
-    .brand-name { font-size: 20px; font-weight: 800; color: #FF6B35; letter-spacing: -0.5px; white-space: nowrap; }
+    .sidebar-brand { display: flex; align-items: center; justify-content: center; padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); min-height: 64px; }
+    .brand-logo { height: 32px; width: auto; max-width: 120px; object-fit: contain; filter: brightness(0) invert(1); transition: all .25s ease; }
+    .brand-logo--collapsed { height: 28px; max-width: 32px; object-fit: cover; object-position: left; }
     .sidebar-nav { flex: 1; padding: 12px 8px; overflow-y: auto; overflow-x: hidden; }
     .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; color: rgba(255,255,255,0.65); text-decoration: none; font-size: 14px; font-weight: 500; margin-bottom: 2px; transition: all .15s; white-space: nowrap; position: relative; }
     .nav-item:hover { background: rgba(255,255,255,0.08); color: white; text-decoration: none; }

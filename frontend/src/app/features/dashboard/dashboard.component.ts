@@ -54,7 +54,7 @@ interface StatCard { label: string; value: string | number; icon: string; color:
               <span>🏁 {{ o.delivery_city }}</span>
             </div>
             <div class="order-meta text-muted text-sm">
-              {{ o.weight_kg }} kg · {{ formatDate(o.pickup_date) }}
+              {{ o.weight_kg }} kg · {{ formatDate(o.pickup_scheduled_at) }}
             </div>
           </div>
         </div>

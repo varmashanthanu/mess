@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { PaginatedResponse, FreightOrder, OrderBid, CreateOrderPayload, OrderAssignment } from '../models/order.model';
+import { PaginatedResponse, FreightOrder, OrderBid, CreateOrderPayload, OrderAssignment, SuggestedPrice } from '../models/order.model';
 import { Vehicle, VehicleType } from '../models/fleet.model';
 import { Conversation, Message } from '../models/messaging.model';
 import { Notification } from '../models/notification.model';
@@ -34,18 +34,26 @@ export class ApiService {
     return this.http.patch<FreightOrder>(`${this.base}/orders/${id}/`, payload);
   }
 
-  postOrder(id: string): Observable<FreightOrder> {
-    return this.http.post<FreightOrder>(`${this.base}/orders/${id}/post/`, {});
+  postOrder(id: string): Observable<{ message: string; status: string }> {
+    return this.http.post<{ message: string; status: string }>(`${this.base}/orders/${id}/post/`, {});
   }
 
-  transitionOrder(id: string, transition: string, data?: Record<string, unknown>): Observable<FreightOrder> {
-    return this.http.post<FreightOrder>(`${this.base}/orders/${id}/transition/`, { transition, ...data });
+  transitionOrder(id: string, status: string, reason?: string): Observable<FreightOrder> {
+    return this.http.post<FreightOrder>(`${this.base}/orders/${id}/transition/`, { status, reason });
   }
 
   cancelOrder(id: string, reason?: string): Observable<FreightOrder> {
     return this.http.post<FreightOrder>(`${this.base}/orders/${id}/transition/`, {
-      transition: 'cancel', reason
+      status: 'CANCELLED', reason
     });
+  }
+
+  estimatePrice(payload: {
+    cargo_type: string; weight_kg: number;
+    pickup_lat: number; pickup_lng: number;
+    delivery_lat: number; delivery_lng: number;
+  }): Observable<SuggestedPrice & { currency: string }> {
+    return this.http.post<SuggestedPrice & { currency: string }>(`${this.base}/orders/estimate-price/`, payload);
   }
 
   // ── Bids ──────────────────────────────────────────────────────
@@ -53,12 +61,12 @@ export class ApiService {
     return this.http.get<PaginatedResponse<OrderBid>>(`${this.base}/orders/${orderId}/bids/`);
   }
 
-  submitBid(orderId: string, payload: { amount_xof: number; message?: string; estimated_pickup?: string }): Observable<OrderBid> {
+  submitBid(orderId: string, payload: { price: number; message?: string; estimated_pickup_time?: string }): Observable<OrderBid> {
     return this.http.post<OrderBid>(`${this.base}/orders/${orderId}/bids/`, payload);
   }
 
-  acceptBid(orderId: string, bidId: string): Observable<OrderAssignment> {
-    return this.http.post<OrderAssignment>(`${this.base}/orders/${orderId}/bids/${bidId}/accept/`, {});
+  acceptBid(orderId: string, bidId: string): Observable<FreightOrder> {
+    return this.http.post<FreightOrder>(`${this.base}/orders/${orderId}/accept-bid/`, { bid_id: bidId });
   }
 
   confirmDelivery(orderId: string): Observable<FreightOrder> {
@@ -138,7 +146,7 @@ export class ApiService {
   }
 
   updateDriverAvailability(available: boolean): Observable<{ is_available: boolean }> {
-    return this.http.post<{ is_available: boolean }>(`${this.base}/accounts/driver/availability/`, {
+    return this.http.post<{ is_available: boolean }>(`${this.base}/accounts/me/availability/`, {
       is_available: available
     });
   }

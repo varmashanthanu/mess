@@ -167,6 +167,8 @@
       "CARGO_WEIGHT": "Poids",
       "CARGO_VOLUME": "Volume",
       "CARGO_BUDGET": "Budget",
+      "FINAL_PRICE": "Prix final",
+      "SUGGESTED_PRICE": "Fourchette estimée",
       "CARGO_NOTES": "Notes",
       "BIDS_TITLE": "Offres",
       "BID_FORM_TITLE": "Soumettre une offre",
@@ -220,11 +222,11 @@
       "CARGO_TYPES": {
         "GENERAL": "Général",
         "REFRIGERATED": "Réfrigéré",
-        "HAZMAT": "Matières dangereuses",
+        "HAZARDOUS": "Matières dangereuses",
         "LIVESTOCK": "Bétail",
         "BULK": "Vrac",
-        "CONTAINER": "Conteneur",
-        "OVERSIZE": "Hors-gabarit"
+        "CONSTRUCTION": "Matériaux de construction",
+        "ELECTRONICS": "Électronique"
       }
     }
   },

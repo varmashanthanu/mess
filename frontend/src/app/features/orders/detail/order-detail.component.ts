@@ -57,7 +57,7 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
                 <div>
                   <div class="route-city">{{ order()!.pickup_city }}</div>
                   <div class="route-address">{{ order()!.pickup_address }}</div>
-                  <div class="route-date">{{ order()!.pickup_date | date:'dd/MM/yyyy' }}</div>
+                  <div class="route-date">{{ order()!.pickup_scheduled_at | date:'dd/MM/yyyy HH:mm' }}</div>
                 </div>
               </div>
               <div class="route-line"></div>
@@ -91,13 +91,21 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
                 <span class="info-key">{{ 'ORDERS.DETAIL.CARGO_VOLUME' | translate }}</span>
                 <span>{{ order()!.volume_m3 }} m³</span>
               </div>
-              <div class="info-item" *ngIf="order()!.budget_xof">
+              <div class="info-item" *ngIf="order()!.proposed_price">
                 <span class="info-key">{{ 'ORDERS.DETAIL.CARGO_BUDGET' | translate }}</span>
-                <span>{{ order()!.budget_xof | number }} XOF</span>
+                <span>{{ order()!.proposed_price | number }} XOF</span>
               </div>
-              <div class="info-item" *ngIf="order()!.notes">
+              <div class="info-item" *ngIf="order()!.final_price">
+                <span class="info-key">{{ 'ORDERS.DETAIL.FINAL_PRICE' | translate }}</span>
+                <span><strong>{{ order()!.final_price | number }} XOF</strong></span>
+              </div>
+              <div class="info-item" *ngIf="order()!.suggested_price">
+                <span class="info-key">{{ 'ORDERS.DETAIL.SUGGESTED_PRICE' | translate }}</span>
+                <span>{{ order()!.suggested_price!.min_price_xof | number }} – {{ order()!.suggested_price!.max_price_xof | number }} XOF</span>
+              </div>
+              <div class="info-item" *ngIf="order()!.special_instructions">
                 <span class="info-key">{{ 'ORDERS.DETAIL.CARGO_NOTES' | translate }}</span>
-                <span>{{ order()!.notes }}</span>
+                <span>{{ order()!.special_instructions }}</span>
               </div>
             </div>
           </div>
@@ -113,11 +121,11 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
                 <div class="form-row">
                   <div class="form-group">
                     <label>{{ 'ORDERS.DETAIL.BID_AMOUNT' | translate }}</label>
-                    <input type="number" formControlName="amount_xof" placeholder="150000" />
+                    <input type="number" formControlName="price" placeholder="150000" />
                   </div>
                   <div class="form-group">
                     <label>{{ 'ORDERS.DETAIL.BID_DATE' | translate }}</label>
-                    <input type="datetime-local" formControlName="estimated_pickup" />
+                    <input type="datetime-local" formControlName="estimated_pickup_time" />
                   </div>
                 </div>
                 <div class="form-group">
@@ -136,10 +144,10 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
               <div class="bid-item" *ngFor="let bid of bids()">
                 <div class="bid-main">
                   <div>
-                    <strong>{{ bid.driver_name }}</strong>
-                    <span class="text-muted text-sm"> · {{ bid.driver_phone }}</span>
+                    <strong>{{ bid.carrier_detail.full_name }}</strong>
+                    <span class="text-muted text-sm"> · {{ bid.carrier_detail.phone_number }}</span>
                   </div>
-                  <div class="bid-amount">{{ bid.amount_xof | number }} XOF</div>
+                  <div class="bid-amount">{{ bid.price | number }} XOF</div>
                 </div>
                 <div class="bid-message text-muted text-sm" *ngIf="bid.message">{{ bid.message }}</div>
                 <div class="bid-actions"
@@ -166,11 +174,11 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
             <div class="driver-card">
               <div class="driver-avatar">🧑‍✈️</div>
               <div>
-                <div class="font-bold">{{ order()!.assignment!.driver_name }}</div>
-                <div class="text-muted text-sm">{{ order()!.assignment!.driver_phone }}</div>
-                <div class="text-sm mt-1">
+                <div class="font-bold">{{ order()!.assignment!.driver_detail.full_name }}</div>
+                <div class="text-muted text-sm">{{ order()!.assignment!.driver_detail.phone_number }}</div>
+                <div class="text-sm mt-1" *ngIf="order()!.final_price">
                   {{ 'ORDERS.DETAIL.DRIVER_PRICE' | translate }}:
-                  <strong>{{ order()!.assignment!.agreed_price_xof | number }} XOF</strong>
+                  <strong>{{ order()!.final_price | number }} XOF</strong>
                 </div>
               </div>
             </div>
@@ -277,9 +285,9 @@ export class OrderDetailComponent implements OnInit {
   bidSubmitting = signal(false);
 
   bidForm = this.fb.group({
-    amount_xof:       [null as number | null, Validators.required],
-    estimated_pickup: [''],
-    message:          [''],
+    price:                [null as number | null, Validators.required],
+    estimated_pickup_time: [''],
+    message:              [''],
   });
 
   ngOnInit(): void {
@@ -305,7 +313,10 @@ export class OrderDetailComponent implements OnInit {
   }
 
   postOrder(): void {
-    this.api.postOrder(this.order()!.id).subscribe({ next: (o) => this.order.set(o) });
+    const id = this.order()!.id;
+    this.api.postOrder(id).subscribe({
+      next: () => this.api.getOrder(id).subscribe(o => this.order.set(o)),
+    });
   }
 
   cancelOrder(): void {
@@ -322,9 +333,9 @@ export class OrderDetailComponent implements OnInit {
     this.bidSubmitting.set(true);
     const v = this.bidForm.value;
     this.api.submitBid(this.order()!.id, {
-      amount_xof:       v.amount_xof!,
-      message:          v.message ?? '',
-      estimated_pickup: v.estimated_pickup ?? undefined,
+      price:                 v.price!,
+      message:               v.message ?? '',
+      estimated_pickup_time: v.estimated_pickup_time ?? undefined,
     }).subscribe({
       next: (bid) => {
         this.bids.update(bs => [bid, ...bs]);
@@ -337,9 +348,9 @@ export class OrderDetailComponent implements OnInit {
 
   acceptBid(bidId: string): void {
     this.api.acceptBid(this.order()!.id, bidId).subscribe({
-      next: () => {
-        this.api.getOrder(this.order()!.id).subscribe(o => this.order.set(o));
-        this.loadBids(this.order()!.id);
+      next: (o) => {
+        this.order.set(o);
+        this.loadBids(o.id);
       },
     });
   }

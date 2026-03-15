@@ -8,11 +8,13 @@ from .views import (
     FreightOrderListCreateView,
     OrderTransitionView,
     PostOrderView,
+    PriceEstimateView,
     ProofOfDeliveryView,
     RateDeliveryView,
 )
 
 urlpatterns = [
+    path("estimate-price/", PriceEstimateView.as_view(), name="orders-estimate-price"),
     path("", FreightOrderListCreateView.as_view(), name="orders-list"),
     path("<uuid:pk>/", FreightOrderDetailView.as_view(), name="orders-detail"),
     path("<uuid:pk>/post/", PostOrderView.as_view(), name="orders-post"),

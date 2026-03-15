@@ -26,6 +26,7 @@ from .serializers import (
     FreightOrderListSerializer,
     OrderBidSerializer,
     OrderStatusTransitionSerializer,
+    PriceEstimateRequestSerializer,
     ProofOfDeliverySerializer,
     RateDeliverySerializer,
 )
@@ -275,7 +276,6 @@ class RateDeliveryView(APIView):
             assignment.shipper_rating = rating
             assignment.shipper_review = review
             assignment.save(update_fields=["shipper_rating", "shipper_review"])
-            # Update driver's rating
             assignment.driver.driver_profile.update_rating(rating)
         elif request.user == assignment.driver:
             assignment.driver_rating = rating
@@ -285,3 +285,35 @@ class RateDeliveryView(APIView):
             raise BusinessLogicError("You are not a party to this order.")
 
         return Response({"message": "Rating submitted. Thank you!"})
+
+
+class PriceEstimateView(APIView):
+    """
+    POST /orders/estimate-price/
+    Stateless offline price estimate — no order required.
+    Returns straight-line distance, road-adjusted distance, and XOF price range.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = PriceEstimateRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        d = serializer.validated_data
+
+        from core.pricing import estimate_freight_price
+        est = estimate_freight_price(
+            cargo_type=d["cargo_type"],
+            weight_kg=d["weight_kg"],
+            pickup_lat=d["pickup_lat"],
+            pickup_lng=d["pickup_lng"],
+            delivery_lat=d["delivery_lat"],
+            delivery_lng=d["delivery_lng"],
+        )
+        return Response({
+            "straight_distance_km": float(est.straight_distance_km),
+            "road_distance_km": float(est.road_distance_km),
+            "base_price_xof": int(est.base_price_xof),
+            "min_price_xof": int(est.min_price_xof),
+            "max_price_xof": int(est.max_price_xof),
+            "currency": "XOF",
+        })

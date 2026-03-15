@@ -20,7 +20,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
     <div class="auth-page">
       <div class="auth-card">
         <div class="auth-logo">
-          <span class="logo-text">Mess</span>
+          <img src="logo.svg" class="logo-img" alt="Mess" />
           <span class="logo-sub">{{ 'AUTH.BRAND_SUB' | translate }}</span>
         </div>
 
@@ -107,8 +107,8 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
     .auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%); padding: 24px; }
     .auth-card { background: white; border-radius: 16px; padding: 40px; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
     .auth-logo { display: flex; flex-direction: column; align-items: center; margin-bottom: 28px; }
-    .logo-text { font-size: 36px; font-weight: 800; color: #FF6B35; letter-spacing: -1px; }
-    .logo-sub { font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 2px; margin-top: -4px; }
+    .logo-img { height: 52px; width: auto; object-fit: contain; }
+    .logo-sub { font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 2px; margin-top: 6px; }
     h2 { font-size: 22px; font-weight: 700; color: #212121; margin-bottom: 6px; }
     .auth-subtitle { color: #757575; margin-bottom: 24px; font-size: 14px; }
     .form-group { margin-bottom: 16px; }

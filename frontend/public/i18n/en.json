@@ -167,6 +167,8 @@
       "CARGO_WEIGHT": "Weight",
       "CARGO_VOLUME": "Volume",
       "CARGO_BUDGET": "Budget",
+      "FINAL_PRICE": "Final price",
+      "SUGGESTED_PRICE": "Estimate range",
       "CARGO_NOTES": "Notes",
       "BIDS_TITLE": "Bids",
       "BID_FORM_TITLE": "Submit a bid",
@@ -220,11 +222,11 @@
       "CARGO_TYPES": {
         "GENERAL": "General",
         "REFRIGERATED": "Refrigerated",
-        "HAZMAT": "Hazardous materials",
+        "HAZARDOUS": "Hazardous materials",
         "LIVESTOCK": "Livestock",
         "BULK": "Bulk",
-        "CONTAINER": "Container",
-        "OVERSIZE": "Oversize"
+        "CONSTRUCTION": "Construction materials",
+        "ELECTRONICS": "Electronics"
       }
     }
   },
