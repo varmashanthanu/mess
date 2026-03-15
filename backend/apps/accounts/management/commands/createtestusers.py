@@ -18,7 +18,7 @@ TEST_USERS = [
     {
         "first_name": "Mess",
         "last_name": "Driver",
-        "phone_number": "+221771234567",
+        "phone_number": "+221771234570",
         "password": "Driver123#",
         "role": UserRole.DRIVER,
     },
