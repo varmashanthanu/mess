@@ -60,7 +60,7 @@ class ConversationConsumer(AsyncWebsocketConsumer):
                 "type": "chat_message",
                 "message_id": str(message.id),
                 "sender_id": str(self.user.id),
-                "sender_name": self.user.get_full_name(),
+                "sender_name": self.user.full_name,
                 "message_type": msg_type,
                 "content": content,
                 "timestamp": message.created_at.isoformat(),
@@ -99,7 +99,7 @@ class ConversationConsumer(AsyncWebsocketConsumer):
         for participant in other_participants:
             send_notification_task.delay(
                 user_id=str(participant.id),
-                title=f"Message from {self.user.get_full_name()}",
+                title=f"Message from {self.user.full_name}",
                 body=message.content[:100] if message.message_type == "TEXT" else "📎 Media message",
                 data={
                     "type": "NEW_MESSAGE",

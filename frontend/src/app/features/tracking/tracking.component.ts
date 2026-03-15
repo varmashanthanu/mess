@@ -51,7 +51,7 @@ L.Marker.prototype.options.icon = L.icon({
                 <strong>{{ d.driver_name }}</strong>
               </div>
               <div class="driver-item-meta text-sm text-muted">
-                <span *ngIf="d.speed_kmh != null">{{ d.speed_kmh | number:'1.0-0' }} km/h</span>
+                <span *ngIf="d.speed != null">{{ d.speed | number:'1.0-0' }} km/h</span>
                 <span>{{ d.timestamp | date:'HH:mm' }}</span>
               </div>
             </div>
@@ -155,10 +155,10 @@ export class TrackingComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (this.markers.has(d.driver_id)) {
       const m = this.markers.get(d.driver_id)!;
-      m.setLatLng([d.latitude, d.longitude]);
+      m.setLatLng([d.lat, d.lng]);
       m.setIcon(icon);
     } else {
-      const m = L.marker([d.latitude, d.longitude], { icon })
+      const m = L.marker([d.lat, d.lng], { icon })
         .bindPopup(`<b>${d.driver_name}</b><br>${d.is_available
           ? '🟢 ' + this.translate.instant('TOPBAR.AVAILABLE')
           : '⚫ ' + this.translate.instant('TOPBAR.UNAVAILABLE')
@@ -170,7 +170,7 @@ export class TrackingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   centerOnDriver(d: DriverLocation): void {
     this.selectedDriver.set(d);
-    this.map?.setView([d.latitude, d.longitude], 14);
+    this.map?.setView([d.lat, d.lng], 14);
     this.markers.get(d.driver_id)?.openPopup();
   }
 
@@ -199,10 +199,10 @@ export class TrackingComponent implements OnInit, AfterViewInit, OnDestroy {
       (pos) => {
         this.ws.send('tracking', orderId, {
           type: 'location_update',
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          speed_kmh: pos.coords.speed != null ? pos.coords.speed * 3.6 : null,
-          accuracy_m: pos.coords.accuracy,
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          speed: pos.coords.speed != null ? pos.coords.speed * 3.6 : null,
+          accuracy: pos.coords.accuracy,
         });
       },
       (err) => console.error('GPS error:', err),

@@ -19,7 +19,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
         token["role"] = user.role
-        token["name"] = user.get_full_name()
+        token["name"] = user.full_name
         token["phone"] = str(user.phone_number)
         return token
 
@@ -101,7 +101,7 @@ class VerifyOTPSerializer(serializers.Serializer):
 
 class UserBasicSerializer(serializers.ModelSerializer):
     """Compact user representation for nested serializers."""
-    full_name = serializers.CharField(source="get_full_name", read_only=True)
+    full_name = serializers.CharField(read_only=True)
 
     class Meta:
         model = User
@@ -109,7 +109,7 @@ class UserBasicSerializer(serializers.ModelSerializer):
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(source="get_full_name", read_only=True)
+    full_name = serializers.CharField(read_only=True)
     shipper_profile = serializers.SerializerMethodField()
     driver_profile = serializers.SerializerMethodField()
     broker_profile = serializers.SerializerMethodField()

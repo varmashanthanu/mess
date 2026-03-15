@@ -6,7 +6,7 @@ from .models import BrokerProfile, DriverProfile, PhoneVerification, ShipperProf
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ["phone_number", "get_full_name", "role", "is_verified", "is_active", "created_at"]
+    list_display = ["phone_number", "full_name", "role", "is_verified", "is_active", "created_at"]
     list_filter = ["role", "is_verified", "is_active", "is_identity_verified"]
     search_fields = ["phone_number", "first_name", "last_name", "email"]
     ordering = ["-created_at"]

@@ -44,13 +44,12 @@ class OrderRouteView(generics.RetrieveAPIView):
 class AvailableDriversView(APIView):
     """
     GET /tracking/available-drivers/?lat=14.7&lng=-17.4&radius_km=50
-    Returns list of available drivers within a radius.
+    Returns available drivers in DriverLocation format (same as WS broadcast).
     """
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         from apps.accounts.models import DriverProfile
-        from apps.accounts.serializers import DriverProfileSerializer
         from core.utils import haversine_distance
 
         lat = request.query_params.get("lat")
@@ -63,19 +62,29 @@ class AvailableDriversView(APIView):
             current_lng__isnull=False,
         ).select_related("user")
 
+        def _serialize(profile, distance_km=None):
+            entry = {
+                "driver_id": str(profile.user.id),
+                "driver_name": profile.user.full_name,
+                "lat": float(profile.current_lat),
+                "lng": float(profile.current_lng),
+                "speed": None,
+                "bearing": None,
+                "timestamp": profile.last_location_update.isoformat() if profile.last_location_update else None,
+                "is_available": True,
+            }
+            if distance_km is not None:
+                entry["distance_km"] = distance_km
+            return entry
+
         if lat and lng:
-            # Filter by distance in Python (no PostGIS for now)
-            lat, lng = float(lat), float(lng)
+            lat_f, lng_f = float(lat), float(lng)
             nearby = []
             for d in drivers:
-                dist = haversine_distance(lat, lng, float(d.current_lat), float(d.current_lng))
+                dist = haversine_distance(lat_f, lng_f, float(d.current_lat), float(d.current_lng))
                 if dist <= radius_km:
-                    nearby.append({"profile": d, "distance_km": round(dist, 2)})
-            nearby.sort(key=lambda x: x["distance_km"])
-            return Response([
-                {**DriverProfileSerializer(item["profile"]).data, "distance_km": item["distance_km"]}
-                for item in nearby
-            ])
+                    nearby.append((d, round(dist, 2)))
+            nearby.sort(key=lambda x: x[1])
+            return Response([_serialize(d, dist) for d, dist in nearby])
 
-        serializer = DriverProfileSerializer(drivers, many=True)
-        return Response(serializer.data)
+        return Response([_serialize(d) for d in drivers])

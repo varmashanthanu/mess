@@ -4,46 +4,66 @@ export type OrderStatus =
   | 'DELIVERED' | 'COMPLETED' | 'CANCELLED' | 'DISPUTED';
 
 export type CargoType =
-  | 'GENERAL' | 'REFRIGERATED' | 'HAZMAT' | 'LIVESTOCK'
-  | 'BULK' | 'CONTAINER' | 'OVERSIZE';
+  | 'GENERAL' | 'REFRIGERATED' | 'HAZARDOUS' | 'LIVESTOCK'
+  | 'BULK' | 'CONSTRUCTION' | 'ELECTRONICS';
+
+export interface UserBasic {
+  id: string;
+  full_name: string;
+  phone_number: string;
+  role: string;
+  is_verified: boolean;
+}
+
+export interface SuggestedPrice {
+  straight_distance_km: number;
+  road_distance_km: number;
+  base_price_xof: number;
+  min_price_xof: number;
+  max_price_xof: number;
+}
 
 export interface FreightOrder {
   id: string;
   reference: string;
   status: OrderStatus;
   shipper: string;
-  shipper_name: string;
+  shipper_detail?: UserBasic;
   cargo_type: CargoType;
   cargo_description: string;
   weight_kg: number;
   volume_m3: number | null;
   pickup_address: string;
   pickup_city: string;
-  pickup_latitude: number;
-  pickup_longitude: number;
+  pickup_lat: number;
+  pickup_lng: number;
   delivery_address: string;
   delivery_city: string;
-  delivery_latitude: number;
-  delivery_longitude: number;
-  pickup_date: string;
+  delivery_lat: number;
+  delivery_lng: number;
+  pickup_scheduled_at: string;
   delivery_deadline: string | null;
-  budget_xof: number | null;
-  final_price_xof: number | null;
-  notes: string;
+  proposed_price: number | null;
+  final_price: number | null;
+  currency: string;
+  special_instructions: string;
+  estimated_distance_km: number | null;
+  suggested_price: SuggestedPrice | null;
   created_at: string;
   updated_at: string;
   assignment?: OrderAssignment;
-  active_bid_count?: number;
+  bid_count?: number;
+  can_bid?: boolean;
 }
 
 export interface OrderBid {
   id: string;
   order: string;
-  driver: string;
-  driver_name: string;
-  driver_phone: string;
-  amount_xof: number;
-  estimated_pickup: string | null;
+  carrier: string;
+  carrier_detail: UserBasic;
+  vehicle: string | null;
+  price: number;
+  estimated_pickup_time: string | null;
   message: string;
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   created_at: string;
@@ -51,16 +71,13 @@ export interface OrderBid {
 
 export interface OrderAssignment {
   id: string;
-  order: string;
   driver: string;
-  driver_name: string;
-  driver_phone: string;
+  driver_detail: UserBasic;
   vehicle: string | null;
-  bid: string | null;
-  agreed_price_xof: number;
   assigned_at: string;
   proof_photo: string | null;
   proof_signature: string | null;
+  delivery_confirmed_by_shipper: boolean;
   shipper_rating: number | null;
   driver_rating: number | null;
 }
@@ -72,16 +89,16 @@ export interface CreateOrderPayload {
   volume_m3?: number;
   pickup_address: string;
   pickup_city: string;
-  pickup_latitude: number;
-  pickup_longitude: number;
+  pickup_lat: number;
+  pickup_lng: number;
   delivery_address: string;
   delivery_city: string;
-  delivery_latitude: number;
-  delivery_longitude: number;
-  pickup_date: string;
+  delivery_lat: number;
+  delivery_lng: number;
+  pickup_scheduled_at: string;
   delivery_deadline?: string;
-  budget_xof?: number;
-  notes?: string;
+  proposed_price?: number;
+  special_instructions?: string;
 }
 
 export interface PaginatedResponse<T> {

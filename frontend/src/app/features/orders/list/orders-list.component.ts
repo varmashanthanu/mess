@@ -56,8 +56,8 @@ import { FreightOrder } from '../../../core/models/order.model';
               </td>
               <td><span class="badge badge--{{ o.status.toLowerCase() }}">{{ 'ORDERS.STATUS.' + o.status | translate }}</span></td>
               <td>{{ o.weight_kg }} kg</td>
-              <td>{{ o.pickup_date | date:'dd/MM/yy' }}</td>
-              <td>{{ o.budget_xof ? (o.budget_xof | number) + ' XOF' : '—' }}</td>
+              <td>{{ o.pickup_scheduled_at | date:'dd/MM/yy' }}</td>
+              <td>{{ o.proposed_price ? (o.proposed_price | number) + ' XOF' : '—' }}</td>
               <td><a [routerLink]="['/orders', o.id]" class="btn-sm">{{ 'COMMON.VIEW' | translate }}</a></td>
             </tr>
           </tbody>

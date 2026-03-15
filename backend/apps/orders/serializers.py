@@ -23,7 +23,6 @@ class OrderBidSerializer(serializers.ModelSerializer):
         order = attrs.get("order") or (self.instance.order if self.instance else None)
         if order and order.status not in [OrderStatus.POSTED, OrderStatus.BIDDING]:
             raise serializers.ValidationError("This order is no longer accepting bids.")
-        # Ensure vehicle belongs to carrier
         vehicle = attrs.get("vehicle")
         if vehicle and vehicle.owner != request.user:
             raise serializers.ValidationError({"vehicle": "This vehicle does not belong to you."})
@@ -52,7 +51,7 @@ class OrderAssignmentSerializer(serializers.ModelSerializer):
 
 class FreightOrderListSerializer(serializers.ModelSerializer):
     """Compact representation for list views."""
-    shipper_name = serializers.CharField(source="shipper.get_full_name", read_only=True)
+    shipper_name = serializers.CharField(source="shipper.full_name", read_only=True)
     required_vehicle_type_name = serializers.CharField(
         source="required_vehicle_type.name", read_only=True
     )
@@ -68,13 +67,14 @@ class FreightOrderListSerializer(serializers.ModelSerializer):
 
 
 class FreightOrderDetailSerializer(serializers.ModelSerializer):
-    """Full order detail with nested relations."""
+    """Full order detail with nested relations and an offline price suggestion."""
     shipper_detail = UserBasicSerializer(source="shipper", read_only=True)
     required_vehicle_type_detail = VehicleTypeSerializer(source="required_vehicle_type", read_only=True)
     bids = OrderBidSerializer(many=True, read_only=True)
     assignment = OrderAssignmentSerializer(read_only=True)
     bid_count = serializers.SerializerMethodField()
     can_bid = serializers.SerializerMethodField()
+    suggested_price = serializers.SerializerMethodField()
 
     class Meta:
         model = FreightOrder
@@ -89,14 +89,42 @@ class FreightOrderDetailSerializer(serializers.ModelSerializer):
             "required_vehicle_type", "required_vehicle_type_detail",
             "proposed_price", "final_price", "currency",
             "status", "status_changed_at", "cancellation_reason",
-            "estimated_distance_km",
+            "estimated_distance_km", "suggested_price",
             "bids", "assignment", "bid_count", "can_bid",
             "created_at", "updated_at",
         ]
         read_only_fields = [
             "id", "reference", "shipper", "status", "status_changed_at",
-            "final_price", "estimated_distance_km", "created_at", "updated_at",
+            "final_price", "estimated_distance_km", "suggested_price",
+            "created_at", "updated_at",
         ]
+
+    def get_suggested_price(self, obj):
+        """
+        Return a price estimate dict when all four coordinates are present.
+        Returns None for orders without coordinates.
+        """
+        if not all([obj.pickup_lat, obj.pickup_lng, obj.delivery_lat, obj.delivery_lng]):
+            return None
+        try:
+            from core.pricing import estimate_freight_price
+            est = estimate_freight_price(
+                cargo_type=obj.cargo_type,
+                weight_kg=float(obj.weight_kg),
+                pickup_lat=float(obj.pickup_lat),
+                pickup_lng=float(obj.pickup_lng),
+                delivery_lat=float(obj.delivery_lat),
+                delivery_lng=float(obj.delivery_lng),
+            )
+            return {
+                "straight_distance_km": float(est.straight_distance_km),
+                "road_distance_km": float(est.road_distance_km),
+                "base_price_xof": int(est.base_price_xof),
+                "min_price_xof": int(est.min_price_xof),
+                "max_price_xof": int(est.max_price_xof),
+            }
+        except Exception:
+            return None
 
     def get_bid_count(self, obj):
         return obj.bids.filter(status=OrderBid.BidStatus.PENDING).count()
@@ -113,7 +141,6 @@ class FreightOrderDetailSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data["shipper"] = self.context["request"].user
-        # Estimate distance if coordinates provided
         self._estimate_distance(validated_data)
         return super().create(validated_data)
 
@@ -147,3 +174,13 @@ class ProofOfDeliverySerializer(serializers.Serializer):
 class RateDeliverySerializer(serializers.Serializer):
     rating = serializers.IntegerField(min_value=1, max_value=5)
     review = serializers.CharField(required=False, allow_blank=True)
+
+
+class PriceEstimateRequestSerializer(serializers.Serializer):
+    """Input for the standalone price-estimate endpoint."""
+    cargo_type = serializers.CharField()
+    weight_kg = serializers.FloatField(min_value=0.1)
+    pickup_lat = serializers.FloatField()
+    pickup_lng = serializers.FloatField()
+    delivery_lat = serializers.FloatField()
+    delivery_lng = serializers.FloatField()

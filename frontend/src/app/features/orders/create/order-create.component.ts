@@ -45,7 +45,7 @@ import { ApiService } from '../../../core/services/api.service';
             </div>
             <div class="form-group">
               <label>{{ 'ORDERS.CREATE.CARGO_BUDGET' | translate }}</label>
-              <input type="number" formControlName="budget_xof"
+              <input type="number" formControlName="proposed_price"
                 [placeholder]="'COMMON.OPTIONAL' | translate" min="0" />
             </div>
           </div>
@@ -62,7 +62,7 @@ import { ApiService } from '../../../core/services/api.service';
             </div>
             <div class="form-group">
               <label>{{ 'ORDERS.CREATE.PICKUP_DATE' | translate }}</label>
-              <input type="date" formControlName="pickup_date" />
+              <input type="datetime-local" formControlName="pickup_scheduled_at" />
             </div>
             <div class="form-group full-width">
               <label>{{ 'ORDERS.CREATE.PICKUP_ADDRESS' | translate }}</label>
@@ -71,11 +71,11 @@ import { ApiService } from '../../../core/services/api.service';
             </div>
             <div class="form-group">
               <label>{{ 'ORDERS.CREATE.PICKUP_LAT' | translate }}</label>
-              <input type="number" formControlName="pickup_latitude" placeholder="14.6928" step="any" />
+              <input type="number" formControlName="pickup_lat" placeholder="14.6928" step="any" />
             </div>
             <div class="form-group">
               <label>{{ 'ORDERS.CREATE.PICKUP_LNG' | translate }}</label>
-              <input type="number" formControlName="pickup_longitude" placeholder="-17.4467" step="any" />
+              <input type="number" formControlName="pickup_lng" placeholder="-17.4467" step="any" />
             </div>
           </div>
         </div>
@@ -100,11 +100,11 @@ import { ApiService } from '../../../core/services/api.service';
             </div>
             <div class="form-group">
               <label>{{ 'ORDERS.CREATE.DELIVERY_LAT' | translate }}</label>
-              <input type="number" formControlName="delivery_latitude" placeholder="14.7833" step="any" />
+              <input type="number" formControlName="delivery_lat" placeholder="14.7833" step="any" />
             </div>
             <div class="form-group">
               <label>{{ 'ORDERS.CREATE.DELIVERY_LNG' | translate }}</label>
-              <input type="number" formControlName="delivery_longitude" placeholder="-16.9167" step="any" />
+              <input type="number" formControlName="delivery_lng" placeholder="-16.9167" step="any" />
             </div>
           </div>
         </div>
@@ -112,7 +112,7 @@ import { ApiService } from '../../../core/services/api.service';
         <!-- Notes -->
         <div class="card">
           <h3>{{ 'ORDERS.CREATE.NOTES_SECTION' | translate }}</h3>
-          <textarea formControlName="notes" rows="3"
+          <textarea formControlName="special_instructions" rows="3"
             [placeholder]="'ORDERS.CREATE.NOTES_PLACEHOLDER' | translate"></textarea>
         </div>
 
@@ -164,30 +164,30 @@ export class OrderCreateComponent {
   cargoTypes = [
     { value: 'GENERAL',      labelKey: 'ORDERS.CREATE.CARGO_TYPES.GENERAL' },
     { value: 'REFRIGERATED', labelKey: 'ORDERS.CREATE.CARGO_TYPES.REFRIGERATED' },
-    { value: 'HAZMAT',       labelKey: 'ORDERS.CREATE.CARGO_TYPES.HAZMAT' },
+    { value: 'HAZARDOUS',    labelKey: 'ORDERS.CREATE.CARGO_TYPES.HAZARDOUS' },
     { value: 'LIVESTOCK',    labelKey: 'ORDERS.CREATE.CARGO_TYPES.LIVESTOCK' },
     { value: 'BULK',         labelKey: 'ORDERS.CREATE.CARGO_TYPES.BULK' },
-    { value: 'CONTAINER',    labelKey: 'ORDERS.CREATE.CARGO_TYPES.CONTAINER' },
-    { value: 'OVERSIZE',     labelKey: 'ORDERS.CREATE.CARGO_TYPES.OVERSIZE' },
+    { value: 'CONSTRUCTION', labelKey: 'ORDERS.CREATE.CARGO_TYPES.CONSTRUCTION' },
+    { value: 'ELECTRONICS',  labelKey: 'ORDERS.CREATE.CARGO_TYPES.ELECTRONICS' },
   ];
 
   form = this.fb.group({
-    cargo_type:          ['GENERAL', Validators.required],
-    cargo_description:   ['', Validators.required],
-    weight_kg:           [null as number | null, [Validators.required, Validators.min(1)]],
-    volume_m3:           [null as number | null],
-    pickup_address:      ['', Validators.required],
-    pickup_city:         ['', Validators.required],
-    pickup_latitude:     [14.6928, Validators.required],
-    pickup_longitude:    [-17.4467, Validators.required],
-    pickup_date:         ['', Validators.required],
-    delivery_address:    ['', Validators.required],
-    delivery_city:       ['', Validators.required],
-    delivery_latitude:   [null as number | null, Validators.required],
-    delivery_longitude:  [null as number | null, Validators.required],
-    delivery_deadline:   [''],
-    budget_xof:          [null as number | null],
-    notes:               [''],
+    cargo_type:           ['GENERAL', Validators.required],
+    cargo_description:    ['', Validators.required],
+    weight_kg:            [null as number | null, [Validators.required, Validators.min(1)]],
+    volume_m3:            [null as number | null],
+    pickup_address:       ['', Validators.required],
+    pickup_city:          ['', Validators.required],
+    pickup_lat:           [14.6928, Validators.required],
+    pickup_lng:           [-17.4467, Validators.required],
+    pickup_scheduled_at:  ['', Validators.required],
+    delivery_address:     ['', Validators.required],
+    delivery_city:        ['', Validators.required],
+    delivery_lat:         [null as number | null, Validators.required],
+    delivery_lng:         [null as number | null, Validators.required],
+    delivery_deadline:    [''],
+    proposed_price:       [null as number | null],
+    special_instructions: [''],
   });
 
   submit(andPost = true): void {
@@ -196,7 +196,7 @@ export class OrderCreateComponent {
     this.error.set('');
     const v = this.form.value as any;
     this.api.createOrder(v).subscribe({
-      next: (order) => {
+      next: (order: any) => {
         if (andPost) {
           this.api.postOrder(order.id).subscribe({
             next: () => this.router.navigate(['/orders', order.id]),
