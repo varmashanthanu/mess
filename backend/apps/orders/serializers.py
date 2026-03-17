@@ -16,7 +16,7 @@ class OrderBidSerializer(serializers.ModelSerializer):
             "id", "order", "carrier", "carrier_detail", "vehicle", "vehicle_detail",
             "price", "message", "estimated_pickup_time", "status", "created_at",
         ]
-        read_only_fields = ["id", "status", "created_at", "carrier"]
+        read_only_fields = ["id", "order", "status", "created_at", "carrier"]
 
     def validate(self, attrs):
         request = self.context["request"]

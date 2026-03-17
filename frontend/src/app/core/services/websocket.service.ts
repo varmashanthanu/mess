@@ -5,7 +5,7 @@ import { catchError, switchAll, tap, retryWhen, delay, takeUntil } from 'rxjs/op
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 
-export type WsChannelType = 'tracking' | 'order' | 'chat';
+export type WsChannelType = 'tracking' | 'order' | 'chat' | 'notifications';
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketService implements OnDestroy {
@@ -60,10 +60,11 @@ export class WebSocketService implements OnDestroy {
     const base = environment.wsUrl;
     const tokenParam = token ? `?token=${token}` : '';
     switch (channel) {
-      case 'tracking': return `${base}/tracking/order/${id}/${tokenParam}`;
-      case 'order':    return `${base}/orders/${id}/${tokenParam}`;
-      case 'chat':     return `${base}/chat/${id}/${tokenParam}`;
-      default:         return `${base}/${id}/${tokenParam}`;
+      case 'tracking':       return `${base}/tracking/order/${id}/${tokenParam}`;
+      case 'order':          return `${base}/orders/${id}/${tokenParam}`;
+      case 'chat':           return `${base}/chat/${id}/${tokenParam}`;
+      case 'notifications':  return `${base}/notifications/${tokenParam}`;
+      default:               return `${base}/${id}/${tokenParam}`;
     }
   }
 

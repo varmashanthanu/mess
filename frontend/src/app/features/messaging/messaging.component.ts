@@ -70,7 +70,7 @@ import { Conversation, Message, WsMessage } from '../../core/models/messaging.mo
 
             <div class="chat-input">
               <input type="text" [(ngModel)]="newMessage"
-                [placeholder]="'MESSAGING.INPUT_PLACEHOLDER' | translate"
+                [placeholder]="'MESSAGING.SEND_PLACEHOLDER' | translate"
                 (keydown.enter)="sendMessage()" />
               <button class="send-btn" (click)="sendMessage()" [disabled]="!newMessage.trim()">
                 ➤
@@ -80,7 +80,7 @@ import { Conversation, Message, WsMessage } from '../../core/models/messaging.mo
           <ng-template #noConv>
             <div class="no-conv-placeholder">
               <div style="font-size:48px;margin-bottom:12px;">💬</div>
-              <p>{{ 'MESSAGING.SELECT_CONVERSATION' | translate }}</p>
+              <p>{{ 'MESSAGING.SELECT_PROMPT' | translate }}</p>
             </div>
           </ng-template>
         </div>

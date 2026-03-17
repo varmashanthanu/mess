@@ -88,8 +88,8 @@ class FreightOrder(BaseModel):
     # Pickup
     pickup_address = models.TextField()
     pickup_city = models.CharField(max_length=100, default="Dakar")
-    pickup_lat = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    pickup_lng = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    pickup_lat = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+    pickup_lng = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
     pickup_contact_name = models.CharField(max_length=100, blank=True)
     pickup_contact_phone = models.CharField(max_length=20, blank=True)
     pickup_scheduled_at = models.DateTimeField(null=True, blank=True)
@@ -97,8 +97,8 @@ class FreightOrder(BaseModel):
     # Delivery
     delivery_address = models.TextField()
     delivery_city = models.CharField(max_length=100)
-    delivery_lat = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    delivery_lng = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    delivery_lat = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+    delivery_lng = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
     delivery_contact_name = models.CharField(max_length=100, blank=True)
     delivery_contact_phone = models.CharField(max_length=20, blank=True)
     delivery_deadline = models.DateTimeField(null=True, blank=True)
@@ -191,7 +191,7 @@ class OrderAssignment(BaseModel):
     driver = models.ForeignKey(
         "accounts.User", on_delete=models.PROTECT, related_name="assignments_as_driver"
     )
-    vehicle = models.ForeignKey("fleet.Vehicle", on_delete=models.PROTECT)
+    vehicle = models.ForeignKey("fleet.Vehicle", on_delete=models.PROTECT, null=True, blank=True)
     accepted_bid = models.OneToOneField(
         OrderBid, on_delete=models.SET_NULL, null=True, blank=True
     )

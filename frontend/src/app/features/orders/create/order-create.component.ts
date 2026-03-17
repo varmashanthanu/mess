@@ -1,14 +1,15 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
+import { AddressSearchComponent, LocationResult } from '../../../shared/components/address-search/address-search.component';
 
 @Component({
   selector: 'app-order-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, AddressSearchComponent],
   template: `
     <div class="create-page">
       <a routerLink="/orders" class="back-link">{{ 'ORDERS.CREATE.BACK' | translate }}</a>
@@ -31,7 +32,8 @@ import { ApiService } from '../../../core/services/api.service';
             </div>
             <div class="form-group">
               <label>{{ 'ORDERS.CREATE.CARGO_WEIGHT' | translate }}</label>
-              <input type="number" formControlName="weight_kg" placeholder="1500" min="1" />
+              <input type="number" formControlName="weight_kg" placeholder="1500" min="1" [class.invalid]="isInvalid('weight_kg')" />
+              <span class="field-error" *ngIf="isInvalid('weight_kg')">{{ 'COMMON.REQUIRED' | translate }}</span>
             </div>
             <div class="form-group">
               <label>{{ 'ORDERS.CREATE.CARGO_VOLUME' | translate }}</label>
@@ -41,7 +43,9 @@ import { ApiService } from '../../../core/services/api.service';
             <div class="form-group full-width">
               <label>{{ 'ORDERS.CREATE.CARGO_DESC' | translate }}</label>
               <textarea formControlName="cargo_description" rows="2"
-                [placeholder]="'ORDERS.CREATE.CARGO_DESC_PLACEHOLDER' | translate"></textarea>
+                [placeholder]="'ORDERS.CREATE.CARGO_DESC_PLACEHOLDER' | translate"
+                [class.invalid]="isInvalid('cargo_description')"></textarea>
+              <span class="field-error" *ngIf="isInvalid('cargo_description')">{{ 'COMMON.REQUIRED' | translate }}</span>
             </div>
             <div class="form-group">
               <label>{{ 'ORDERS.CREATE.CARGO_BUDGET' | translate }}</label>
@@ -55,27 +59,26 @@ import { ApiService } from '../../../core/services/api.service';
         <div class="card">
           <h3>{{ 'ORDERS.CREATE.PICKUP_SECTION' | translate }}</h3>
           <div class="form-grid">
+            <div class="form-group full-width">
+              <label>{{ 'ORDERS.CREATE.PICKUP_ADDRESS' | translate }}</label>
+              <app-address-search
+                [placeholder]="'ORDERS.CREATE.PICKUP_ADDRESS_PLACEHOLDER' | translate"
+                (locationSelected)="onPickupSelected($event)" />
+              <span class="field-error" *ngIf="isInvalid('pickup_address')">{{ 'COMMON.REQUIRED' | translate }}</span>
+            </div>
             <div class="form-group">
               <label>{{ 'ORDERS.CREATE.PICKUP_CITY' | translate }}</label>
               <input type="text" formControlName="pickup_city"
-                [placeholder]="'ORDERS.CREATE.PICKUP_CITY_PLACEHOLDER' | translate" />
+                [placeholder]="'ORDERS.CREATE.PICKUP_CITY_PLACEHOLDER' | translate"
+                [class.invalid]="isInvalid('pickup_city')" />
+              <span class="field-error" *ngIf="isInvalid('pickup_city')">{{ 'COMMON.REQUIRED' | translate }}</span>
             </div>
             <div class="form-group">
               <label>{{ 'ORDERS.CREATE.PICKUP_DATE' | translate }}</label>
-              <input type="datetime-local" formControlName="pickup_scheduled_at" />
-            </div>
-            <div class="form-group full-width">
-              <label>{{ 'ORDERS.CREATE.PICKUP_ADDRESS' | translate }}</label>
-              <input type="text" formControlName="pickup_address"
-                [placeholder]="'ORDERS.CREATE.PICKUP_ADDRESS_PLACEHOLDER' | translate" />
-            </div>
-            <div class="form-group">
-              <label>{{ 'ORDERS.CREATE.PICKUP_LAT' | translate }}</label>
-              <input type="number" formControlName="pickup_lat" placeholder="14.6928" step="any" />
-            </div>
-            <div class="form-group">
-              <label>{{ 'ORDERS.CREATE.PICKUP_LNG' | translate }}</label>
-              <input type="number" formControlName="pickup_lng" placeholder="-17.4467" step="any" />
+              <input type="datetime-local" formControlName="pickup_scheduled_at"
+                [min]="minPickupDate"
+                [class.invalid]="isInvalid('pickup_scheduled_at')" />
+              <span class="field-error" *ngIf="isInvalid('pickup_scheduled_at')">{{ 'COMMON.REQUIRED' | translate }}</span>
             </div>
           </div>
         </div>
@@ -84,27 +87,23 @@ import { ApiService } from '../../../core/services/api.service';
         <div class="card">
           <h3>{{ 'ORDERS.CREATE.DELIVERY_SECTION' | translate }}</h3>
           <div class="form-grid">
+            <div class="form-group full-width">
+              <label>{{ 'ORDERS.CREATE.DELIVERY_ADDRESS' | translate }}</label>
+              <app-address-search
+                [placeholder]="'ORDERS.CREATE.DELIVERY_ADDRESS_PLACEHOLDER' | translate"
+                (locationSelected)="onDeliverySelected($event)" />
+              <span class="field-error" *ngIf="isInvalid('delivery_address')">{{ 'COMMON.REQUIRED' | translate }}</span>
+            </div>
             <div class="form-group">
               <label>{{ 'ORDERS.CREATE.DELIVERY_CITY' | translate }}</label>
               <input type="text" formControlName="delivery_city"
-                [placeholder]="'ORDERS.CREATE.DELIVERY_CITY_PLACEHOLDER' | translate" />
+                [placeholder]="'ORDERS.CREATE.DELIVERY_CITY_PLACEHOLDER' | translate"
+                [class.invalid]="isInvalid('delivery_city')" />
+              <span class="field-error" *ngIf="isInvalid('delivery_city')">{{ 'COMMON.REQUIRED' | translate }}</span>
             </div>
             <div class="form-group">
               <label>{{ 'ORDERS.CREATE.DELIVERY_DEADLINE' | translate }}</label>
-              <input type="date" formControlName="delivery_deadline" />
-            </div>
-            <div class="form-group full-width">
-              <label>{{ 'ORDERS.CREATE.DELIVERY_ADDRESS' | translate }}</label>
-              <input type="text" formControlName="delivery_address"
-                [placeholder]="'ORDERS.CREATE.DELIVERY_ADDRESS_PLACEHOLDER' | translate" />
-            </div>
-            <div class="form-group">
-              <label>{{ 'ORDERS.CREATE.DELIVERY_LAT' | translate }}</label>
-              <input type="number" formControlName="delivery_lat" placeholder="14.7833" step="any" />
-            </div>
-            <div class="form-group">
-              <label>{{ 'ORDERS.CREATE.DELIVERY_LNG' | translate }}</label>
-              <input type="number" formControlName="delivery_lng" placeholder="-16.9167" step="any" />
+              <input type="date" formControlName="delivery_deadline" [min]="minDeliveryDate()" />
             </div>
           </div>
         </div>
@@ -136,23 +135,26 @@ import { ApiService } from '../../../core/services/api.service';
     .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px; }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .full-width { grid-column: 1 / -1; }
-    .form-group { }
+    .form-group { position: relative; }
     label { display: block; font-size: 13px; font-weight: 600; color: #424242; margin-bottom: 6px; }
     input, select, textarea {
       width: 100%; padding: 10px 12px; border: 1.5px solid #E0E0E0;
-      border-radius: 8px; font-size: 14px; outline: none; font-family: inherit;
+      border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; box-sizing: border-box;
     }
     input:focus, select:focus, textarea:focus { border-color: #FF6B35; }
+    input.invalid, textarea.invalid { border-color: #F44336; }
     textarea { resize: vertical; }
+    .field-error { display: block; color: #F44336; font-size: 11px; margin-top: 4px; }
     .form-actions { display: flex; gap: 12px; justify-content: flex-end; padding-top: 8px; }
     .btn-primary { padding: 11px 24px; background: #FF6B35; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
     .btn-primary:hover:not(:disabled) { background: #e55a24; }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-secondary { padding: 11px 24px; background: #F5F5F5; color: #424242; border: 1px solid #E0E0E0; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; }
     .alert-error { background: #FFEBEE; color: #C62828; padding: 14px; margin-bottom: 16px; }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: 1; } }
   `]
 })
-export class OrderCreateComponent {
+export class OrderCreateComponent implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
@@ -160,6 +162,9 @@ export class OrderCreateComponent {
 
   loading = signal(false);
   error = signal('');
+
+  /** Today in YYYY-MM-DDTHH:mm for datetime-local min */
+  minPickupDate = new Date().toISOString().slice(0, 16);
 
   cargoTypes = [
     { value: 'GENERAL',      labelKey: 'ORDERS.CREATE.CARGO_TYPES.GENERAL' },
@@ -178,8 +183,8 @@ export class OrderCreateComponent {
     volume_m3:            [null as number | null],
     pickup_address:       ['', Validators.required],
     pickup_city:          ['', Validators.required],
-    pickup_lat:           [14.6928, Validators.required],
-    pickup_lng:           [-17.4467, Validators.required],
+    pickup_lat:           [null as number | null, Validators.required],
+    pickup_lng:           [null as number | null, Validators.required],
     pickup_scheduled_at:  ['', Validators.required],
     delivery_address:     ['', Validators.required],
     delivery_city:        ['', Validators.required],
@@ -190,11 +195,62 @@ export class OrderCreateComponent {
     special_instructions: [''],
   });
 
+  ngOnInit(): void {}
+
+  isInvalid(field: string): boolean {
+    const ctrl = this.form.get(field);
+    return !!(ctrl && ctrl.invalid && ctrl.touched);
+  }
+
+  /** Min date for delivery deadline: pickup date if set, else today */
+  minDeliveryDate(): string {
+    const pickup = this.form.get('pickup_scheduled_at')?.value;
+    if (pickup) return pickup.slice(0, 10);
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  onPickupSelected(loc: LocationResult): void {
+    this.form.patchValue({
+      pickup_address: loc.address,
+      pickup_city: loc.city,
+      pickup_lat: loc.lat,
+      pickup_lng: loc.lng,
+    });
+    this.form.get('pickup_address')?.markAsTouched();
+    this.form.get('pickup_city')?.markAsTouched();
+  }
+
+  onDeliverySelected(loc: LocationResult): void {
+    this.form.patchValue({
+      delivery_address: loc.address,
+      delivery_city: loc.city,
+      delivery_lat: loc.lat,
+      delivery_lng: loc.lng,
+    });
+    this.form.get('delivery_address')?.markAsTouched();
+    this.form.get('delivery_city')?.markAsTouched();
+  }
+
   submit(andPost = true): void {
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    this.form.markAllAsTouched();
+    if (this.form.invalid) {
+      this.error.set(this.translate.instant('ORDERS.CREATE.ERROR_GENERIC'));
+      setTimeout(() => this.error.set(''), 4000);
+      return;
+    }
     this.loading.set(true);
     this.error.set('');
-    const v = this.form.value as any;
+    const v = { ...this.form.value } as any;
+    // datetime-local sends "YYYY-MM-DDTHH:mm" (no seconds) — DRF requires seconds
+    if (v.pickup_scheduled_at && v.pickup_scheduled_at.length === 16) {
+      v.pickup_scheduled_at = v.pickup_scheduled_at + ':00';
+    }
+    // date input sends "YYYY-MM-DD" — backend field is DateTimeField
+    if (v.delivery_deadline && v.delivery_deadline.length === 10) {
+      v.delivery_deadline = v.delivery_deadline + 'T00:00:00';
+    } else if (!v.delivery_deadline) {
+      v.delivery_deadline = null;
+    }
     this.api.createOrder(v).subscribe({
       next: (order: any) => {
         if (andPost) {
