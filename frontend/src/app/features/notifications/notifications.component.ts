@@ -1,5 +1,6 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { NotificationService } from '../../core/services/notification.service';
 import { Notification } from '../../core/models/notification.model';
@@ -8,6 +9,7 @@ import { Notification } from '../../core/models/notification.model';
   selector: 'app-notifications',
   standalone: true,
   imports: [CommonModule, TranslateModule],
+  // RouterLink not needed — navigation done imperatively via Router
   template: `
     <div class="notif-page">
       <div class="page-header">
@@ -21,7 +23,9 @@ import { Notification } from '../../core/models/notification.model';
         <div class="notif-list" *ngIf="svc.notifications().length; else empty">
           <div class="notif-item"
             *ngFor="let n of svc.notifications()"
-            [class.unread]="!n.is_read">
+            [class.unread]="!n.is_read"
+            [class.clickable]="isNavigable(n.notification_type)"
+            (click)="navigate(n)">
             <div class="notif-icon">{{ getIcon(n.notification_type) }}</div>
             <div class="notif-body">
               <div class="notif-title">{{ n.title }}</div>
@@ -51,6 +55,8 @@ import { Notification } from '../../core/models/notification.model';
     .notif-item { display: flex; gap: 14px; padding: 16px 20px; border-bottom: 1px solid #F5F5F5; align-items: flex-start; position: relative; }
     .notif-item:last-child { border-bottom: none; }
     .notif-item.unread { background: #FFF9F7; }
+    .notif-item.clickable { cursor: pointer; }
+    .notif-item.clickable:hover { background: #FFF3F0; }
     .notif-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
     .notif-body { flex: 1; }
     .notif-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
@@ -63,10 +69,32 @@ import { Notification } from '../../core/models/notification.model';
     h3 { font-size: 16px; font-weight: 600; }
   `]
 })
-export class NotificationsComponent implements OnInit {
+export class NotificationsComponent {
   svc = inject(NotificationService);
+  private router = inject(Router);
 
-  ngOnInit(): void { this.svc.load(); }
+  navigate(n: Notification): void {
+    if (!this.isNavigable(n.notification_type)) return;
+    const orderId = n.data['order_id'] as string | undefined;
+    // Mark read on server first; navigate only after server confirms so
+    // any subsequent load() call sees the correct read state.
+    this.svc.markOneRead(n.id).subscribe({
+      next: () => this.doNavigate(n, orderId),
+      error: () => this.doNavigate(n, orderId), // navigate regardless
+    });
+  }
+
+  private doNavigate(n: Notification, orderId: string | undefined): void {
+    if (n.notification_type === 'NEW_MESSAGE') {
+      this.router.navigate(['/messaging']);
+    } else if (orderId) {
+      this.router.navigate(['/orders', orderId]);
+    }
+  }
+
+  isNavigable(type: string): boolean {
+    return type !== 'SYSTEM';
+  }
 
   getIcon(type: string): string {
     const icons: Record<string, string> = {

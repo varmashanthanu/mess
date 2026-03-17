@@ -152,7 +152,11 @@
       "DELIVERED": "Delivered",
       "COMPLETED": "Completed",
       "CANCELLED": "Cancelled",
-      "DISPUTED": "Disputed"
+      "DISPUTED": "Disputed",
+      "PENDING": "Pending",
+      "ACCEPTED": "Accepted",
+      "REJECTED": "Rejected",
+      "WITHDRAWN": "Withdrawn"
     },
     "DETAIL": {
       "BACK": "← Back to orders",
@@ -265,6 +269,8 @@
 
   "MESSAGING": {
     "TITLE": "Messages",
+    "ORDER": "Order",
+    "MESSAGES": "messages",
     "SEARCH_PLACEHOLDER": "Search...",
     "MESSAGES_COUNT": "{{count}} messages",
     "SEND_PLACEHOLDER": "Write a message...",

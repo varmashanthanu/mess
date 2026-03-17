@@ -15,10 +15,11 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
 django_asgi_app = get_asgi_application()
 
 from apps.messaging.routing import websocket_urlpatterns as messaging_ws  # noqa
+from apps.notifications.routing import websocket_urlpatterns as notifications_ws  # noqa
 from apps.tracking.routing import websocket_urlpatterns as tracking_ws  # noqa
 from core.middleware import JWTAuthMiddleware  # noqa
 
-websocket_urlpatterns = tracking_ws + messaging_ws
+websocket_urlpatterns = tracking_ws + messaging_ws + notifications_ws
 
 application = ProtocolTypeRouter(
     {

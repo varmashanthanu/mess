@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { User } from '../../core/models/user.model';
@@ -21,7 +21,7 @@ import { User } from '../../core/models/user.model';
             <div class="avatar">{{ initials() }}</div>
             <div>
               <h2>{{ auth.user()?.full_name }}</h2>
-              <div class="role-badge">{{ roleLabel(auth.user()?.role) }}</div>
+              <div class="role-badge">{{ roleKey() | translate }}</div>
               <div class="phone text-muted text-sm">{{ auth.user()?.phone_number }}</div>
             </div>
           </div>
@@ -42,15 +42,15 @@ import { User } from '../../core/models/user.model';
           </div>
 
           <div class="verify-status" [class.verified]="auth.user()?.is_verified">
-            {{ auth.user()?.is_verified ? 'PROFILE.VERIFIED' : 'PROFILE.NOT_VERIFIED' | translate }}
+            {{ (auth.user()?.is_verified ? 'PROFILE.VERIFIED' : 'PROFILE.NOT_VERIFIED') | translate }}
           </div>
         </div>
 
         <!-- Edit form -->
         <div class="card">
-          <h3>{{ 'PROFILE.EDIT_INFO' | translate }}</h3>
+          <h3>{{ 'PROFILE.EDIT_TITLE' | translate }}</h3>
 
-          <div class="alert-success" *ngIf="saved()">{{ 'PROFILE.SAVED_SUCCESS' | translate }}</div>
+          <div class="alert-success" *ngIf="saved()">{{ 'PROFILE.SAVED' | translate }}</div>
           <div class="alert-error" *ngIf="error()">{{ error() }}</div>
 
           <form [formGroup]="form" (ngSubmit)="save()">
@@ -84,7 +84,7 @@ import { User } from '../../core/models/user.model';
             </ng-container>
 
             <button type="submit" class="btn-primary" [disabled]="saving()">
-              {{ saving() ? 'PROFILE.SAVING' : 'PROFILE.SAVE' | translate }}
+              {{ (saving() ? 'PROFILE.SAVING' : 'PROFILE.SAVE') | translate }}
             </button>
           </form>
         </div>
@@ -124,6 +124,7 @@ export class ProfileComponent implements OnInit {
   auth = inject(AuthService);
   private api = inject(ApiService);
   private fb = inject(FormBuilder);
+  private translate = inject(TranslateService);
 
   saving = signal(false);
   saved = signal(false);
@@ -149,12 +150,15 @@ export class ProfileComponent implements OnInit {
     return (this.auth.user()?.full_name ?? '').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   }
 
-  roleLabel(r?: string): string {
-    const map: Record<string, string> = {
-      SHIPPER: 'PROFILE.ROLE_SHIPPER', DRIVER: 'PROFILE.ROLE_DRIVER', BROKER: 'PROFILE.ROLE_BROKER',
-      FLEET_MANAGER: 'PROFILE.ROLE_FLEET_MANAGER', ADMIN: 'PROFILE.ROLE_ADMIN',
+  roleKey(): string {
+    const roleMap: Record<string, string> = {
+      SHIPPER: 'PROFILE.ROLES.SHIPPER',
+      DRIVER: 'PROFILE.ROLES.DRIVER',
+      BROKER: 'PROFILE.ROLES.BROKER',
+      FLEET_MANAGER: 'PROFILE.ROLES.FLEET_MANAGER',
+      ADMIN: 'PROFILE.ROLES.ADMIN',
     };
-    return r ? (map[r] ?? r) : '';
+    return roleMap[this.auth.user()?.role ?? ''] ?? '';
   }
 
   save(): void {
@@ -164,7 +168,7 @@ export class ProfileComponent implements OnInit {
     this.error.set('');
     this.api.updateMe(this.form.value as any).subscribe({
       next: (u) => { this.auth.updateProfile(u); this.saved.set(true); this.saving.set(false); },
-      error: (err) => { this.error.set(err?.error?.error?.message || 'PROFILE.ERROR_UPDATE'); this.saving.set(false); },
+      error: (err) => { this.error.set(err?.error?.error?.message || this.translate.instant('PROFILE.ERROR_GENERIC')); this.saving.set(false); },
     });
   }
 }

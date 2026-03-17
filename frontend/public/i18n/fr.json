@@ -152,7 +152,11 @@
       "DELIVERED": "Livré",
       "COMPLETED": "Terminé",
       "CANCELLED": "Annulé",
-      "DISPUTED": "Litige"
+      "DISPUTED": "Litige",
+      "PENDING": "En attente",
+      "ACCEPTED": "Accepté",
+      "REJECTED": "Refusé",
+      "WITHDRAWN": "Retiré"
     },
     "DETAIL": {
       "BACK": "← Retour aux commandes",
@@ -265,6 +269,8 @@
 
   "MESSAGING": {
     "TITLE": "Messages",
+    "ORDER": "Commande",
+    "MESSAGES": "messages",
     "SEARCH_PLACEHOLDER": "Rechercher...",
     "MESSAGES_COUNT": "{{count}} messages",
     "SEND_PLACEHOLDER": "Écrire un message...",

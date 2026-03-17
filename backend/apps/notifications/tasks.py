@@ -86,13 +86,34 @@ def send_notification_task(user_id: str, title: str, body: str, data: dict = Non
 
     # Create in-app notification
     notification_type = (data or {}).get("type", "SYSTEM")
-    Notification.objects.create(
+    notification = Notification.objects.create(
         user=user,
         notification_type=notification_type,
         title=title,
         body=body,
         data=data or {},
     )
+
+    # Push to user's live WebSocket connection (if connected)
+    try:
+        from asgiref.sync import async_to_sync
+        from channels.layers import get_channel_layer
+        channel_layer = get_channel_layer()
+        if channel_layer:
+            async_to_sync(channel_layer.group_send)(
+                f"notifications_{user_id}",
+                {
+                    "type": "notification.message",
+                    "id": str(notification.id),
+                    "notification_type": notification.notification_type,
+                    "title": notification.title,
+                    "body": notification.body,
+                    "data": notification.data,
+                    "created_at": notification.created_at.isoformat(),
+                },
+            )
+    except Exception as e:
+        logger.warning(f"WS push for notification failed (non-fatal): {e}")
 
     # Check preferences
     try:

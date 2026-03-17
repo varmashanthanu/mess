@@ -130,6 +130,10 @@ export class ApiService {
     return this.http.post<void>(`${this.base}/notifications/mark-all-read/`, {});
   }
 
+  markNotificationRead(id: string): Observable<void> {
+    return this.http.patch<void>(`${this.base}/notifications/${id}/read/`, {});
+  }
+
   // ── Accounts ──────────────────────────────────────────────────
   getMe(): Observable<User> {
     return this.http.get<User>(`${this.base}/accounts/me/`);
@@ -145,8 +149,8 @@ export class ApiService {
     return this.http.get<PaginatedResponse<User>>(`${this.base}/accounts/users/`, { params: p });
   }
 
-  updateDriverAvailability(available: boolean): Observable<{ is_available: boolean }> {
-    return this.http.post<{ is_available: boolean }>(`${this.base}/accounts/me/availability/`, {
+  updateDriverAvailability(available: boolean): Observable<any> {
+    return this.http.patch<any>(`${this.base}/accounts/me/availability/`, {
       is_available: available
     });
   }

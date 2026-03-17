@@ -1,4 +1,4 @@
-import { Component, inject, output } from '@angular/core';
+import { Component, inject, output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -50,19 +50,13 @@ import { ApiService } from '../../../core/services/api.service';
           </div>
         </div>
 
-        <!-- Notifications -->
+        <!-- Notifications bell only -->
         <a class="notif-btn" routerLink="/notifications">
           <span>🔔</span>
           <span class="notif-badge" *ngIf="notifSvc.unreadCount() > 0">
             {{ notifSvc.unreadCount() > 9 ? '9+' : notifSvc.unreadCount() }}
           </span>
         </a>
-
-        <!-- User chip -->
-        <div class="user-chip">
-          <span class="user-chip-avatar">{{ initials }}</span>
-          <span class="user-chip-name">{{ (auth.user()?.full_name || '').split(' ')[0] }}</span>
-        </div>
 
       </div>
     </header>
@@ -100,12 +94,9 @@ import { ApiService } from '../../../core/services/api.service';
     .notif-btn { position: relative; text-decoration: none; font-size: 20px; padding: 8px; border-radius: 8px; display: flex; align-items: center; }
     .notif-btn:hover { background: #F5F5F5; }
     .notif-badge { position: absolute; top: 2px; right: 2px; background: #F44336; color: white; font-size: 9px; font-weight: 700; padding: 1px 4px; border-radius: 10px; min-width: 16px; text-align: center; }
-    .user-chip { display: flex; align-items: center; gap: 8px; }
-    .user-chip-avatar { width: 34px; height: 34px; border-radius: 50%; background: #FF6B35; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
-    .user-chip-name { font-size: 14px; font-weight: 600; color: #212121; }
   `]
 })
-export class TopbarComponent {
+export class TopbarComponent implements OnInit {
   toggleSidebar = output<void>();
   auth = inject(AuthService);
   notifSvc = inject(NotificationService);
@@ -115,9 +106,8 @@ export class TopbarComponent {
   isAvailable = false;
   langOpen = false;
 
-  get initials(): string {
-    return (this.auth.user()?.full_name ?? '')
-      .split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+  ngOnInit(): void {
+    this.isAvailable = this.auth.user()?.driver_profile?.is_available ?? false;
   }
 
   selectLang(code: string): void {
@@ -126,8 +116,16 @@ export class TopbarComponent {
   }
 
   toggleAvailability(): void {
-    this.api.updateDriverAvailability(!this.isAvailable).subscribe({
-      next: (res) => (this.isAvailable = res.is_available),
+    const next = !this.isAvailable;
+    this.api.updateDriverAvailability(next).subscribe({
+      next: (driverProfile) => {
+        this.isAvailable = driverProfile.is_available;
+        // Keep the auth user signal in sync so ngOnInit reads correctly on re-mount
+        const u = this.auth.user();
+        if (u && u.driver_profile) {
+          this.auth.updateProfile({ ...u, driver_profile: { ...u.driver_profile, is_available: driverProfile.is_available } });
+        }
+      },
     });
   }
 }
