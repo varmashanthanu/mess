@@ -35,17 +35,35 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
                   (click)="postOrder()">
                   {{ 'ORDERS.DETAIL.PUBLISH' | translate }}
                 </button>
-                <!-- Driver: confirm pickup -->
+                <!-- Driver: confirm pickup (first time) -->
                 <button class="btn-action btn-orange"
                   *ngIf="order()!.status === 'ASSIGNED' && isAssignedDriver()"
                   (click)="showPickupForm.set(!showPickupForm())">
                   📦 {{ 'ORDERS.DETAIL.CONFIRM_PICKUP' | translate }}
                 </button>
-                <!-- Driver: confirm delivery -->
+                <!-- Driver: re-upload pickup proof (already in transit) -->
+                <button class="btn-action btn-orange"
+                  *ngIf="order()!.status === 'IN_TRANSIT' && isAssignedDriver()"
+                  (click)="showPickupForm.set(!showPickupForm())">
+                  📷 {{ 'ORDERS.DETAIL.REUPLOAD_PICKUP' | translate }}
+                </button>
+                <!-- Driver: revert to assigned (pickup was submitted by mistake) -->
+                <button class="btn-action btn-ghost"
+                  *ngIf="order()!.status === 'IN_TRANSIT' && isAssignedDriver()"
+                  (click)="revertPickup()">
+                  ↩ {{ 'ORDERS.DETAIL.REVERT_TO_ASSIGNED' | translate }}
+                </button>
+                <!-- Driver: submit delivery proof (first time) -->
                 <button class="btn-action btn-green"
                   *ngIf="order()!.status === 'IN_TRANSIT' && isAssignedDriver()"
                   (click)="showDeliveryForm.set(!showDeliveryForm())">
                   🏁 {{ 'ORDERS.DETAIL.SUBMIT_DELIVERY_PROOF' | translate }}
+                </button>
+                <!-- Driver: re-upload delivery proof (delivered but shipper hasn't confirmed) -->
+                <button class="btn-action btn-green"
+                  *ngIf="order()!.status === 'DELIVERED' && isAssignedDriver() && !order()!.assignment?.delivery_confirmed_by_shipper"
+                  (click)="showDeliveryForm.set(!showDeliveryForm())">
+                  📷 {{ 'ORDERS.DETAIL.REUPLOAD_DELIVERY' | translate }}
                 </button>
                 <!-- Shipper: confirm delivery -->
                 <button class="btn-action btn-green"
@@ -65,9 +83,9 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
           <!-- Action error -->
           <div class="alert-error" *ngIf="actionError()">{{ actionError() }}</div>
 
-          <!-- Pickup proof form (driver, ASSIGNED) -->
+          <!-- Pickup proof form (driver, ASSIGNED = first upload / IN_TRANSIT = re-upload) -->
           <div class="card proof-card" *ngIf="showPickupForm()">
-            <h3>📦 {{ 'ORDERS.DETAIL.PICKUP_PROOF_TITLE' | translate }}</h3>
+            <h3>📦 {{ (order()!.status === 'IN_TRANSIT' ? 'ORDERS.DETAIL.REUPLOAD_PICKUP_TITLE' : 'ORDERS.DETAIL.PICKUP_PROOF_TITLE') | translate }}</h3>
             <p class="proof-hint">{{ 'ORDERS.DETAIL.PICKUP_PROOF_HINT' | translate }}</p>
             <div class="form-group">
               <label>{{ 'ORDERS.DETAIL.PROOF_PHOTO' | translate }}</label>
@@ -85,15 +103,15 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
             </div>
             <div class="proof-actions">
               <button class="btn-action btn-orange" (click)="submitPickupProof()" [disabled]="pickupSubmitting()">
-                {{ (pickupSubmitting() ? 'COMMON.SUBMITTING' : 'ORDERS.DETAIL.SUBMIT_PICKUP') | translate }}
+                {{ (pickupSubmitting() ? 'COMMON.SUBMITTING' : (order()!.status === 'IN_TRANSIT' ? 'ORDERS.DETAIL.UPDATE_PICKUP' : 'ORDERS.DETAIL.SUBMIT_PICKUP')) | translate }}
               </button>
               <button class="btn-action btn-ghost" (click)="showPickupForm.set(false)">{{ 'COMMON.CANCEL' | translate }}</button>
             </div>
           </div>
 
-          <!-- Delivery proof form (driver, IN_TRANSIT) -->
+          <!-- Delivery proof form (driver, IN_TRANSIT = first upload / DELIVERED = re-upload) -->
           <div class="card proof-card" *ngIf="showDeliveryForm()">
-            <h3>🏁 {{ 'ORDERS.DETAIL.DELIVERY_PROOF_TITLE' | translate }}</h3>
+            <h3>🏁 {{ (order()!.status === 'DELIVERED' ? 'ORDERS.DETAIL.REUPLOAD_DELIVERY_TITLE' : 'ORDERS.DETAIL.DELIVERY_PROOF_TITLE') | translate }}</h3>
             <p class="proof-hint">{{ 'ORDERS.DETAIL.DELIVERY_PROOF_HINT' | translate }}</p>
             <div class="form-group">
               <label>{{ 'ORDERS.DETAIL.PROOF_PHOTO' | translate }}</label>
@@ -111,7 +129,7 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
             </div>
             <div class="proof-actions">
               <button class="btn-action btn-green" (click)="submitDeliveryProof()" [disabled]="deliverySubmitting()">
-                {{ (deliverySubmitting() ? 'COMMON.SUBMITTING' : 'ORDERS.DETAIL.SUBMIT_DELIVERY') | translate }}
+                {{ (deliverySubmitting() ? 'COMMON.SUBMITTING' : (order()!.status === 'DELIVERED' ? 'ORDERS.DETAIL.UPDATE_DELIVERY' : 'ORDERS.DETAIL.SUBMIT_DELIVERY')) | translate }}
               </button>
               <button class="btn-action btn-ghost" (click)="showDeliveryForm.set(false)">{{ 'COMMON.CANCEL' | translate }}</button>
             </div>
@@ -262,18 +280,16 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
             <h3>{{ 'ORDERS.DETAIL.PROOF_PHOTOS_TITLE' | translate }}</h3>
             <div *ngIf="order()!.assignment?.pickup_proof_photo">
               <div class="proof-label">📦 {{ 'ORDERS.DETAIL.PICKUP_PROOF_LABEL' | translate }}</div>
-              <a [href]="order()!.assignment!.pickup_proof_photo" target="_blank">
-                <img [src]="order()!.assignment!.pickup_proof_photo" class="proof-img" alt="Pickup proof" />
-              </a>
+              <img [src]="order()!.assignment!.pickup_proof_photo" class="proof-img" alt="Pickup proof"
+                   (click)="lightboxUrl.set(order()!.assignment!.pickup_proof_photo)" />
               <div class="text-muted text-sm" *ngIf="order()!.assignment!.pickup_proof_note">
                 {{ order()!.assignment!.pickup_proof_note }}
               </div>
             </div>
             <div *ngIf="order()!.assignment?.proof_photo" class="mt-2">
               <div class="proof-label">🏁 {{ 'ORDERS.DETAIL.DELIVERY_PROOF_LABEL' | translate }}</div>
-              <a [href]="order()!.assignment!.proof_photo" target="_blank">
-                <img [src]="order()!.assignment!.proof_photo" class="proof-img" alt="Delivery proof" />
-              </a>
+              <img [src]="order()!.assignment!.proof_photo" class="proof-img" alt="Delivery proof"
+                   (click)="lightboxUrl.set(order()!.assignment!.proof_photo)" />
               <div class="text-muted text-sm" *ngIf="order()!.assignment!.proof_note">
                 {{ order()!.assignment!.proof_note }}
               </div>
@@ -300,6 +316,14 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
     <ng-template #loadingTpl>
       <div class="loading-overlay">⏳ {{ 'COMMON.LOADING' | translate }}</div>
     </ng-template>
+
+    <!-- Lightbox modal -->
+    <div class="lightbox-overlay" *ngIf="lightboxUrl()" (click)="lightboxUrl.set(null)">
+      <div class="lightbox-content" (click)="$event.stopPropagation()">
+        <button class="lightbox-close" (click)="lightboxUrl.set(null)">✕</button>
+        <img [src]="lightboxUrl()!" class="lightbox-img" alt="Proof photo" />
+      </div>
+    </div>
   `,
   styles: [`
     .detail-page { max-width: 1100px; }
@@ -371,6 +395,10 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
     .btn-ghost { background: transparent; color: #757575; border: 1.5px solid #E0E0E0; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
     .proof-img { width: 100%; border-radius: 8px; margin: 8px 0; cursor: pointer; }
     .proof-label { font-size: 12px; font-weight: 700; color: #757575; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .lightbox-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.78); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .lightbox-content { position: relative; max-width: 90vw; max-height: 90vh; }
+    .lightbox-close { position: absolute; top: -40px; right: 0; background: none; border: none; color: white; font-size: 26px; cursor: pointer; line-height: 1; padding: 4px 8px; }
+    .lightbox-img { max-width: 90vw; max-height: 85vh; border-radius: 8px; object-fit: contain; display: block; }
     @media (max-width: 768px) { .detail-layout { grid-template-columns: 1fr; } }
   `]
 })
@@ -385,6 +413,7 @@ export class OrderDetailComponent implements OnInit {
   order = signal<FreightOrder | null>(null);
   bids = signal<OrderBid[]>([]);
   bidSubmitting = signal(false);
+  lightboxUrl = signal<string | null>(null);
 
   // Pickup proof state
   showPickupForm = signal(false);
@@ -452,6 +481,15 @@ export class OrderDetailComponent implements OnInit {
   confirmDelivery(): void {
     this.api.confirmDelivery(this.order()!.id).subscribe({
       next: () => this.api.getOrder(this.order()!.id).subscribe(o => this.order.set(o)),
+    });
+  }
+
+  revertPickup(): void {
+    if (!confirm(this.translate.instant('ORDERS.DETAIL.REVERT_TO_ASSIGNED_CONFIRM'))) return;
+    this.actionError.set('');
+    this.api.revertPickup(this.order()!.id).subscribe({
+      next: () => this.api.getOrder(this.order()!.id).subscribe(o => this.order.set(o)),
+      error: (err) => this.actionError.set(err?.error?.error?.message ?? 'Failed to revert pickup.'),
     });
   }
 

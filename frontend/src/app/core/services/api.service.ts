@@ -55,6 +55,10 @@ export class ApiService {
     return this.http.post<{ message: string }>(`${this.base}/orders/${orderId}/pickup-proof/`, fd);
   }
 
+  revertPickup(orderId: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.base}/orders/${orderId}/revert-pickup/`, {});
+  }
+
   submitDeliveryProof(orderId: string, photo: File | null, note: string): Observable<{ message: string }> {
     const fd = new FormData();
     if (photo) fd.append('proof_photo', photo);
