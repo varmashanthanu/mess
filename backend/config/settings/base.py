@@ -37,6 +37,8 @@ THIRD_PARTY_APPS = [
     "django_celery_beat",
     "django_celery_results",
     "phonenumber_field",
+    "cloudinary",
+    "cloudinary_storage",
 ]
 
 LOCAL_APPS = [
@@ -215,6 +217,21 @@ LANGUAGES = [
 ]
 
 LOCALE_PATHS = [BASE_DIR / "locale"]
+
+# ── Cloudinary (media storage) ────────────────────────────────────
+CLOUDINARY_CLOUD_NAME = config("CLOUDINARY_CLOUD_NAME", default="")
+CLOUDINARY_API_KEY = config("CLOUDINARY_API_KEY", default="")
+CLOUDINARY_API_SECRET = config("CLOUDINARY_API_SECRET", default="")
+
+if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
+    import cloudinary
+    cloudinary.config(
+        cloud_name=CLOUDINARY_CLOUD_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_API_SECRET,
+        secure=True,
+    )
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 # ── Static & Media ───────────────────────────────────────────────
 STATIC_URL = "/static/"

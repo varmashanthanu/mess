@@ -54,9 +54,19 @@ import { User } from '../../core/models/user.model';
           <div class="alert-error" *ngIf="error()">{{ error() }}</div>
 
           <form [formGroup]="form" (ngSubmit)="save()">
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ 'PROFILE.FIRST_NAME' | translate }}</label>
+                <input type="text" formControlName="first_name" />
+              </div>
+              <div class="form-group">
+                <label>{{ 'PROFILE.LAST_NAME' | translate }}</label>
+                <input type="text" formControlName="last_name" />
+              </div>
+            </div>
             <div class="form-group">
-              <label>{{ 'PROFILE.FULL_NAME' | translate }}</label>
-              <input type="text" formControlName="full_name" />
+              <label>{{ 'PROFILE.EMAIL' | translate }}</label>
+              <input type="email" formControlName="email" />
             </div>
 
             <!-- Driver-specific -->
@@ -64,10 +74,6 @@ import { User } from '../../core/models/user.model';
               <div class="form-group">
                 <label>{{ 'PROFILE.LICENSE_NUMBER' | translate }}</label>
                 <input type="text" formControlName="license_number" />
-              </div>
-              <div class="form-group">
-                <label>{{ 'PROFILE.LICENSE_CLASS' | translate }}</label>
-                <input type="text" formControlName="license_class" />
               </div>
             </ng-container>
 
@@ -79,7 +85,7 @@ import { User } from '../../core/models/user.model';
               </div>
               <div class="form-group">
                 <label>{{ 'PROFILE.BUSINESS_ADDRESS' | translate }}</label>
-                <input type="text" formControlName="business_address" />
+                <input type="text" formControlName="address" />
               </div>
             </ng-container>
 
@@ -108,6 +114,7 @@ import { User } from '../../core/models/user.model';
     .stat-key { font-size: 11px; color: #757575; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
     .verify-status { margin-top: 16px; font-size: 13px; font-weight: 600; color: #F44336; }
     .verify-status.verified { color: #00C896; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .form-group { margin-bottom: 16px; }
     label { display: block; font-size: 13px; font-weight: 600; color: #424242; margin-bottom: 6px; }
     input { width: 100%; padding: 10px 12px; border: 1.5px solid #E0E0E0; border-radius: 8px; font-size: 14px; outline: none; }
@@ -131,18 +138,25 @@ export class ProfileComponent implements OnInit {
   error = signal('');
 
   form = this.fb.group({
-    full_name: ['', Validators.required],
-    driver_profile: this.fb.group({ license_number: [''], license_class: [''] }),
-    shipper_profile: this.fb.group({ company_name: [''], business_address: [''] }),
+    first_name: ['', Validators.required],
+    last_name:  ['', Validators.required],
+    email:      [''],
+    driver_profile:  this.fb.group({ license_number: [''] }),
+    shipper_profile: this.fb.group({ company_name: [''], address: [''] }),
   });
 
   ngOnInit(): void {
     const u = this.auth.user();
     if (!u) return;
+    const [first, ...rest] = (u.full_name ?? '').split(' ');
     this.form.patchValue({
-      full_name: u.full_name,
-      driver_profile: u.driver_profile as any ?? {},
-      shipper_profile: u.shipper_profile as any ?? {},
+      first_name: first ?? '',
+      last_name:  rest.join(' '),
+      driver_profile:  { license_number: (u.driver_profile as any)?.license_number ?? '' },
+      shipper_profile: {
+        company_name: (u.shipper_profile as any)?.company_name ?? '',
+        address:      (u.shipper_profile as any)?.address ?? '',
+      },
     });
   }
 

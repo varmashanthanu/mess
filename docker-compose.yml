@@ -30,6 +30,9 @@ x-backend-env: &backend-env
   MAPBOX_TOKEN: ${MAPBOX_TOKEN:-}
   FCM_SERVER_KEY: ${FCM_SERVER_KEY:-}
   CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:4200}
+  CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+  CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+  CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
 
 services:
   # ── PostgreSQL ───────────────────────────────────────────────

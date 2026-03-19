@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -10,7 +11,7 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, RouterLink, ReactiveFormsModule, TranslateModule],
   template: `
     <div class="detail-page" *ngIf="order(); else loadingTpl">
       <!-- Back -->
@@ -34,10 +35,23 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
                   (click)="postOrder()">
                   {{ 'ORDERS.DETAIL.PUBLISH' | translate }}
                 </button>
+                <!-- Driver: confirm pickup -->
+                <button class="btn-action btn-orange"
+                  *ngIf="order()!.status === 'ASSIGNED' && isAssignedDriver()"
+                  (click)="showPickupForm.set(!showPickupForm())">
+                  📦 {{ 'ORDERS.DETAIL.CONFIRM_PICKUP' | translate }}
+                </button>
+                <!-- Driver: confirm delivery -->
+                <button class="btn-action btn-green"
+                  *ngIf="order()!.status === 'IN_TRANSIT' && isAssignedDriver()"
+                  (click)="showDeliveryForm.set(!showDeliveryForm())">
+                  🏁 {{ 'ORDERS.DETAIL.SUBMIT_DELIVERY_PROOF' | translate }}
+                </button>
+                <!-- Shipper: confirm delivery -->
                 <button class="btn-action btn-green"
                   *ngIf="order()!.status === 'DELIVERED' && auth.hasRole('SHIPPER')"
                   (click)="confirmDelivery()">
-                  {{ 'ORDERS.DETAIL.CONFIRM_DELIVERY' | translate }}
+                  ✅ {{ 'ORDERS.DETAIL.CONFIRM_DELIVERY' | translate }}
                 </button>
                 <button class="btn-action btn-red"
                   *ngIf="canCancel()"
@@ -45,6 +59,61 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
                   {{ 'ORDERS.DETAIL.CANCEL_ORDER' | translate }}
                 </button>
               </div>
+            </div>
+          </div>
+
+          <!-- Action error -->
+          <div class="alert-error" *ngIf="actionError()">{{ actionError() }}</div>
+
+          <!-- Pickup proof form (driver, ASSIGNED) -->
+          <div class="card proof-card" *ngIf="showPickupForm()">
+            <h3>📦 {{ 'ORDERS.DETAIL.PICKUP_PROOF_TITLE' | translate }}</h3>
+            <p class="proof-hint">{{ 'ORDERS.DETAIL.PICKUP_PROOF_HINT' | translate }}</p>
+            <div class="form-group">
+              <label>{{ 'ORDERS.DETAIL.PROOF_PHOTO' | translate }}</label>
+              <div class="file-input-row">
+                <label class="file-btn">
+                  📷 {{ 'ORDERS.DETAIL.CHOOSE_PHOTO' | translate }}
+                  <input type="file" accept="image/*" (change)="onPickupPhotoChange($event)" hidden />
+                </label>
+                <span class="file-name text-muted text-sm">{{ pickupPhotoName() || ('ORDERS.DETAIL.NO_FILE' | translate) }}</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>{{ 'ORDERS.DETAIL.PROOF_NOTE' | translate }}</label>
+              <textarea rows="2" [(ngModel)]="pickupNote" [placeholder]="'ORDERS.DETAIL.PROOF_NOTE_PLACEHOLDER' | translate"></textarea>
+            </div>
+            <div class="proof-actions">
+              <button class="btn-action btn-orange" (click)="submitPickupProof()" [disabled]="pickupSubmitting()">
+                {{ (pickupSubmitting() ? 'COMMON.SUBMITTING' : 'ORDERS.DETAIL.SUBMIT_PICKUP') | translate }}
+              </button>
+              <button class="btn-action btn-ghost" (click)="showPickupForm.set(false)">{{ 'COMMON.CANCEL' | translate }}</button>
+            </div>
+          </div>
+
+          <!-- Delivery proof form (driver, IN_TRANSIT) -->
+          <div class="card proof-card" *ngIf="showDeliveryForm()">
+            <h3>🏁 {{ 'ORDERS.DETAIL.DELIVERY_PROOF_TITLE' | translate }}</h3>
+            <p class="proof-hint">{{ 'ORDERS.DETAIL.DELIVERY_PROOF_HINT' | translate }}</p>
+            <div class="form-group">
+              <label>{{ 'ORDERS.DETAIL.PROOF_PHOTO' | translate }}</label>
+              <div class="file-input-row">
+                <label class="file-btn">
+                  📷 {{ 'ORDERS.DETAIL.CHOOSE_PHOTO' | translate }}
+                  <input type="file" accept="image/*" (change)="onDeliveryPhotoChange($event)" hidden />
+                </label>
+                <span class="file-name text-muted text-sm">{{ deliveryPhotoName() || ('ORDERS.DETAIL.NO_FILE' | translate) }}</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>{{ 'ORDERS.DETAIL.PROOF_NOTE' | translate }}</label>
+              <textarea rows="2" [(ngModel)]="deliveryNote" [placeholder]="'ORDERS.DETAIL.PROOF_NOTE_PLACEHOLDER' | translate"></textarea>
+            </div>
+            <div class="proof-actions">
+              <button class="btn-action btn-green" (click)="submitDeliveryProof()" [disabled]="deliverySubmitting()">
+                {{ (deliverySubmitting() ? 'COMMON.SUBMITTING' : 'ORDERS.DETAIL.SUBMIT_DELIVERY') | translate }}
+              </button>
+              <button class="btn-action btn-ghost" (click)="showDeliveryForm.set(false)">{{ 'COMMON.CANCEL' | translate }}</button>
             </div>
           </div>
 
@@ -188,6 +257,29 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
             </a>
           </div>
 
+          <!-- Proof photos (visible to both parties once submitted) -->
+          <div class="card" *ngIf="order()!.assignment?.pickup_proof_photo || order()!.assignment?.proof_photo">
+            <h3>{{ 'ORDERS.DETAIL.PROOF_PHOTOS_TITLE' | translate }}</h3>
+            <div *ngIf="order()!.assignment?.pickup_proof_photo">
+              <div class="proof-label">📦 {{ 'ORDERS.DETAIL.PICKUP_PROOF_LABEL' | translate }}</div>
+              <a [href]="order()!.assignment!.pickup_proof_photo" target="_blank">
+                <img [src]="order()!.assignment!.pickup_proof_photo" class="proof-img" alt="Pickup proof" />
+              </a>
+              <div class="text-muted text-sm" *ngIf="order()!.assignment!.pickup_proof_note">
+                {{ order()!.assignment!.pickup_proof_note }}
+              </div>
+            </div>
+            <div *ngIf="order()!.assignment?.proof_photo" class="mt-2">
+              <div class="proof-label">🏁 {{ 'ORDERS.DETAIL.DELIVERY_PROOF_LABEL' | translate }}</div>
+              <a [href]="order()!.assignment!.proof_photo" target="_blank">
+                <img [src]="order()!.assignment!.proof_photo" class="proof-img" alt="Delivery proof" />
+              </a>
+              <div class="text-muted text-sm" *ngIf="order()!.assignment!.proof_note">
+                {{ order()!.assignment!.proof_note }}
+              </div>
+            </div>
+          </div>
+
           <div class="card">
             <h3>{{ 'ORDERS.DETAIL.INFO_TITLE' | translate }}</h3>
             <div class="info-list">
@@ -269,6 +361,16 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
     .font-bold { font-weight: 600; } .text-muted { color: #757575; } .text-sm { font-size: 12px; }
     .empty-state { text-align: center; padding: 20px; color: #757575; }
     .loading-overlay { text-align: center; padding: 48px; color: #757575; font-size: 16px; }
+    .alert-error { background: #FFEBEE; color: #C62828; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; }
+    .proof-card { border: 2px dashed #FF6B35; }
+    .proof-hint { font-size: 13px; color: #757575; margin-bottom: 16px; }
+    .file-input-row { display: flex; align-items: center; gap: 12px; }
+    .file-btn { display: inline-block; padding: 8px 14px; background: #FFF3E0; color: #E65100; border: 1.5px solid #FF6B35; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .file-name { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .proof-actions { display: flex; gap: 8px; margin-top: 4px; }
+    .btn-ghost { background: transparent; color: #757575; border: 1.5px solid #E0E0E0; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .proof-img { width: 100%; border-radius: 8px; margin: 8px 0; cursor: pointer; }
+    .proof-label { font-size: 12px; font-weight: 700; color: #757575; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
     @media (max-width: 768px) { .detail-layout { grid-template-columns: 1fr; } }
   `]
 })
@@ -283,6 +385,22 @@ export class OrderDetailComponent implements OnInit {
   order = signal<FreightOrder | null>(null);
   bids = signal<OrderBid[]>([]);
   bidSubmitting = signal(false);
+
+  // Pickup proof state
+  showPickupForm = signal(false);
+  pickupNote = '';
+  pickupPhoto: File | null = null;
+  pickupPhotoName = signal('');
+  pickupSubmitting = signal(false);
+
+  // Delivery proof state
+  showDeliveryForm = signal(false);
+  deliveryNote = '';
+  deliveryPhoto: File | null = null;
+  deliveryPhotoName = signal('');
+  deliverySubmitting = signal(false);
+
+  actionError = signal('');
 
   bidForm = this.fb.group({
     price:                [null as number | null, Validators.required],
@@ -312,6 +430,13 @@ export class OrderDetailComponent implements OnInit {
       this.auth.hasRole('SHIPPER', 'BROKER', 'ADMIN');
   }
 
+  isAssignedDriver(): boolean {
+    const o = this.order();
+    if (!o?.assignment) return false;
+    const me = this.auth.user();
+    return o.assignment.driver === me?.id;
+  }
+
   postOrder(): void {
     const id = this.order()!.id;
     this.api.postOrder(id).subscribe({
@@ -325,7 +450,59 @@ export class OrderDetailComponent implements OnInit {
   }
 
   confirmDelivery(): void {
-    this.api.confirmDelivery(this.order()!.id).subscribe({ next: (o) => this.order.set(o) });
+    this.api.confirmDelivery(this.order()!.id).subscribe({
+      next: () => this.api.getOrder(this.order()!.id).subscribe(o => this.order.set(o)),
+    });
+  }
+
+  onPickupPhotoChange(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    this.pickupPhoto = file;
+    this.pickupPhotoName.set(file?.name ?? '');
+  }
+
+  submitPickupProof(): void {
+    this.pickupSubmitting.set(true);
+    this.actionError.set('');
+    this.api.submitPickupProof(this.order()!.id, this.pickupPhoto, this.pickupNote).subscribe({
+      next: () => {
+        this.pickupSubmitting.set(false);
+        this.showPickupForm.set(false);
+        this.pickupPhoto = null;
+        this.pickupPhotoName.set('');
+        this.pickupNote = '';
+        this.api.getOrder(this.order()!.id).subscribe(o => this.order.set(o));
+      },
+      error: (err) => {
+        this.actionError.set(err?.error?.error?.message ?? 'Failed to submit pickup proof.');
+        this.pickupSubmitting.set(false);
+      },
+    });
+  }
+
+  onDeliveryPhotoChange(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    this.deliveryPhoto = file;
+    this.deliveryPhotoName.set(file?.name ?? '');
+  }
+
+  submitDeliveryProof(): void {
+    this.deliverySubmitting.set(true);
+    this.actionError.set('');
+    this.api.submitDeliveryProof(this.order()!.id, this.deliveryPhoto, this.deliveryNote).subscribe({
+      next: () => {
+        this.deliverySubmitting.set(false);
+        this.showDeliveryForm.set(false);
+        this.deliveryPhoto = null;
+        this.deliveryPhotoName.set('');
+        this.deliveryNote = '';
+        this.api.getOrder(this.order()!.id).subscribe(o => this.order.set(o));
+      },
+      error: (err) => {
+        this.actionError.set(err?.error?.error?.message ?? 'Failed to submit delivery proof.');
+        this.deliverySubmitting.set(false);
+      },
+    });
   }
 
   submitBid(): void {
@@ -348,10 +525,10 @@ export class OrderDetailComponent implements OnInit {
 
   acceptBid(bidId: string): void {
     this.api.acceptBid(this.order()!.id, bidId).subscribe({
-      next: (o) => {
+      next: () => this.api.getOrder(this.order()!.id).subscribe(o => {
         this.order.set(o);
         this.loadBids(o.id);
-      },
+      }),
     });
   }
 

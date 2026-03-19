@@ -26,6 +26,7 @@ from .serializers import (
     FreightOrderListSerializer,
     OrderBidSerializer,
     OrderStatusTransitionSerializer,
+    PickupProofSerializer,
     PriceEstimateRequestSerializer,
     ProofOfDeliverySerializer,
     RateDeliverySerializer,
@@ -209,6 +210,39 @@ class AcceptBidView(APIView):
         return Response({"message": "Bid accepted. Driver assigned.", "status": order.status})
 
 
+class PickupProofView(APIView):
+    """
+    POST /orders/<id>/pickup-proof/
+    Driver submits pickup document photo → status transitions to IN_TRANSIT.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        order = FreightOrder.objects.get(pk=pk)
+        if not hasattr(order, "assignment") or order.assignment.driver != request.user:
+            raise BusinessLogicError("Only the assigned driver can submit pickup proof.")
+        if order.status != OrderStatus.ASSIGNED:
+            raise BusinessLogicError("Order must be in ASSIGNED status to submit pickup proof.")
+
+        serializer = PickupProofSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        assignment = order.assignment
+        if serializer.validated_data.get("pickup_proof_photo"):
+            assignment.pickup_proof_photo = serializer.validated_data["pickup_proof_photo"]
+        assignment.pickup_proof_note = serializer.validated_data.get("pickup_proof_note", "")
+        assignment.picked_up_at = timezone.now()
+        assignment.in_transit_at = timezone.now()
+        assignment.save(update_fields=["pickup_proof_photo", "pickup_proof_note", "picked_up_at", "in_transit_at"])
+
+        order.transition_to(OrderStatus.IN_TRANSIT)
+
+        from apps.notifications.tasks import notify_order_status_change
+        notify_order_status_change.delay(str(order.id), OrderStatus.IN_TRANSIT)
+
+        return Response({"message": "Pickup confirmed. Order is now In Transit."})
+
+
 class ProofOfDeliveryView(APIView):
     """
     POST /orders/<id>/proof-of-delivery/
@@ -220,6 +254,8 @@ class ProofOfDeliveryView(APIView):
         order = FreightOrder.objects.get(pk=pk)
         if not hasattr(order, "assignment") or order.assignment.driver != request.user:
             raise BusinessLogicError("Only the assigned driver can submit proof of delivery.")
+        if order.status != OrderStatus.IN_TRANSIT:
+            raise BusinessLogicError("Order must be In Transit to submit proof of delivery.")
 
         serializer = ProofOfDeliverySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -230,10 +266,14 @@ class ProofOfDeliveryView(APIView):
         assignment.proof_note = serializer.validated_data.get("proof_note", "")
         assignment.proof_signature = serializer.validated_data.get("proof_signature", "")
         assignment.delivered_at = timezone.now()
-        assignment.save()
+        assignment.save(update_fields=["proof_photo", "proof_note", "proof_signature", "delivered_at"])
 
         order.transition_to(OrderStatus.DELIVERED)
-        return Response({"message": "Proof of delivery submitted."})
+
+        from apps.notifications.tasks import notify_order_status_change
+        notify_order_status_change.delay(str(order.id), OrderStatus.DELIVERED)
+
+        return Response({"message": "Proof of delivery submitted. Awaiting shipper confirmation."})
 
 
 class ConfirmDeliveryView(APIView):

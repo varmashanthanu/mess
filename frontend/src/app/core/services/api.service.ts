@@ -39,13 +39,27 @@ export class ApiService {
   }
 
   transitionOrder(id: string, status: string, reason?: string): Observable<FreightOrder> {
-    return this.http.post<FreightOrder>(`${this.base}/orders/${id}/transition/`, { status, reason });
+    return this.http.patch<FreightOrder>(`${this.base}/orders/${id}/transition/`, { status, reason });
   }
 
   cancelOrder(id: string, reason?: string): Observable<FreightOrder> {
-    return this.http.post<FreightOrder>(`${this.base}/orders/${id}/transition/`, {
+    return this.http.patch<FreightOrder>(`${this.base}/orders/${id}/transition/`, {
       status: 'CANCELLED', reason
     });
+  }
+
+  submitPickupProof(orderId: string, photo: File | null, note: string): Observable<{ message: string }> {
+    const fd = new FormData();
+    if (photo) fd.append('pickup_proof_photo', photo);
+    fd.append('pickup_proof_note', note);
+    return this.http.post<{ message: string }>(`${this.base}/orders/${orderId}/pickup-proof/`, fd);
+  }
+
+  submitDeliveryProof(orderId: string, photo: File | null, note: string): Observable<{ message: string }> {
+    const fd = new FormData();
+    if (photo) fd.append('proof_photo', photo);
+    fd.append('proof_note', note);
+    return this.http.post<{ message: string }>(`${this.base}/orders/${orderId}/proof-of-delivery/`, fd);
   }
 
   estimatePrice(payload: {
