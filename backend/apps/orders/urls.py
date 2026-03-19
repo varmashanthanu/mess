@@ -7,10 +7,12 @@ from .views import (
     FreightOrderDetailView,
     FreightOrderListCreateView,
     OrderTransitionView,
+    PickupProofView,
     PostOrderView,
     PriceEstimateView,
     ProofOfDeliveryView,
     RateDeliveryView,
+    RevertPickupView,
 )
 
 urlpatterns = [
@@ -21,6 +23,8 @@ urlpatterns = [
     path("<uuid:pk>/transition/", OrderTransitionView.as_view(), name="orders-transition"),
     path("<uuid:order_pk>/bids/", BidListCreateView.as_view(), name="orders-bids"),
     path("<uuid:pk>/accept-bid/", AcceptBidView.as_view(), name="orders-accept-bid"),
+    path("<uuid:pk>/pickup-proof/", PickupProofView.as_view(), name="orders-pickup-proof"),
+    path("<uuid:pk>/revert-pickup/", RevertPickupView.as_view(), name="orders-revert-pickup"),
     path("<uuid:pk>/proof-of-delivery/", ProofOfDeliveryView.as_view(), name="orders-pod"),
     path("<uuid:pk>/confirm-delivery/", ConfirmDeliveryView.as_view(), name="orders-confirm"),
     path("<uuid:pk>/rate/", RateDeliveryView.as_view(), name="orders-rate"),

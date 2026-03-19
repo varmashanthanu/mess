@@ -7,13 +7,16 @@ services:
     build:
       args:
         REQUIREMENTS_FILE: development.txt
-    command: python manage.py runserver 0.0.0.0:8000
+    command: daphne -b 0.0.0.0 -p 8000 config.asgi:application
     volumes:
       - ./backend:/app           # live code reload
       - media_files:/app/media
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.development
       DJANGO_DEBUG: "True"
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
     ports:
       - "8000:8000"
 

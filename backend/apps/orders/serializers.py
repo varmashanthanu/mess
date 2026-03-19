@@ -42,6 +42,7 @@ class OrderAssignmentSerializer(serializers.ModelSerializer):
         fields = [
             "id", "driver", "driver_detail", "vehicle", "vehicle_detail",
             "assigned_at", "picked_up_at", "in_transit_at", "delivered_at",
+            "pickup_proof_photo", "pickup_proof_note",
             "proof_photo", "proof_note", "proof_signature",
             "delivery_confirmed_by_shipper",
             "shipper_rating", "driver_rating", "shipper_review", "driver_review",
@@ -163,6 +164,11 @@ class OrderStatusTransitionSerializer(serializers.Serializer):
 
 class AcceptBidSerializer(serializers.Serializer):
     bid_id = serializers.UUIDField()
+
+
+class PickupProofSerializer(serializers.Serializer):
+    pickup_proof_photo = serializers.ImageField(required=False)
+    pickup_proof_note = serializers.CharField(required=False, allow_blank=True)
 
 
 class ProofOfDeliverySerializer(serializers.Serializer):

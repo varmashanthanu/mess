@@ -132,6 +132,43 @@ class MeView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
+    def update(self, request, *args, **kwargs):
+        user = self.get_object()
+
+        # Update user-level fields (first_name, last_name, email, preferred_language)
+        user_fields = {k: v for k, v in request.data.items()
+                       if k not in ("shipper_profile", "driver_profile", "broker_profile")}
+        if user_fields:
+            user_serializer = self.get_serializer(user, data=user_fields, partial=True)
+            user_serializer.is_valid(raise_exception=True)
+            user_serializer.save()
+
+        # Update nested role profiles if provided
+        if "shipper_profile" in request.data and hasattr(user, "shipper_profile"):
+            sp = ShipperProfileSerializer(
+                user.shipper_profile, data=request.data["shipper_profile"], partial=True
+            )
+            sp.is_valid(raise_exception=True)
+            sp.save()
+
+        if "driver_profile" in request.data and hasattr(user, "driver_profile"):
+            dp = DriverProfileSerializer(
+                user.driver_profile, data=request.data["driver_profile"], partial=True
+            )
+            dp.is_valid(raise_exception=True)
+            dp.save()
+
+        if "broker_profile" in request.data and hasattr(user, "broker_profile"):
+            bp = BrokerProfileSerializer(
+                user.broker_profile, data=request.data["broker_profile"], partial=True
+            )
+            bp.is_valid(raise_exception=True)
+            bp.save()
+
+        # Re-fetch to get fresh nested data in the response
+        user.refresh_from_db()
+        return Response(self.get_serializer(user).data)
+
 
 class UpdateFCMTokenView(APIView):
     """Update FCM push token for the authenticated user."""

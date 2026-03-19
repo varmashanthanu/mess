@@ -75,7 +75,13 @@ export interface OrderAssignment {
   driver_detail: UserBasic;
   vehicle: string | null;
   assigned_at: string;
+  picked_up_at: string | null;
+  in_transit_at: string | null;
+  delivered_at: string | null;
+  pickup_proof_photo: string | null;
+  pickup_proof_note: string;
   proof_photo: string | null;
+  proof_note: string;
   proof_signature: string | null;
   delivery_confirmed_by_shipper: boolean;
   shipper_rating: number | null;

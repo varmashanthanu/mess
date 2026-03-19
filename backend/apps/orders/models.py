@@ -47,7 +47,7 @@ ORDER_TRANSITIONS = {
     OrderStatus.DRAFT: [OrderStatus.POSTED, OrderStatus.CANCELLED],
     OrderStatus.POSTED: [OrderStatus.BIDDING, OrderStatus.ASSIGNED, OrderStatus.CANCELLED],
     OrderStatus.BIDDING: [OrderStatus.ASSIGNED, OrderStatus.CANCELLED],
-    OrderStatus.ASSIGNED: [OrderStatus.PICKUP_PENDING, OrderStatus.CANCELLED],
+    OrderStatus.ASSIGNED: [OrderStatus.IN_TRANSIT, OrderStatus.PICKUP_PENDING, OrderStatus.CANCELLED],
     OrderStatus.PICKUP_PENDING: [OrderStatus.PICKED_UP, OrderStatus.CANCELLED],
     OrderStatus.PICKED_UP: [OrderStatus.IN_TRANSIT],
     OrderStatus.IN_TRANSIT: [OrderStatus.DELIVERED, OrderStatus.DISPUTED],
@@ -203,6 +203,10 @@ class OrderAssignment(BaseModel):
     in_transit_at = models.DateTimeField(null=True, blank=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+
+    # Proof of pickup (driver uploads when collecting cargo)
+    pickup_proof_photo = models.ImageField(upload_to="proof_of_pickup/", null=True, blank=True)
+    pickup_proof_note = models.TextField(blank=True)
 
     # Proof of delivery
     proof_photo = models.ImageField(upload_to="proof_of_delivery/", null=True, blank=True)

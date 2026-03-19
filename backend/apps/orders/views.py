@@ -26,6 +26,7 @@ from .serializers import (
     FreightOrderListSerializer,
     OrderBidSerializer,
     OrderStatusTransitionSerializer,
+    PickupProofSerializer,
     PriceEstimateRequestSerializer,
     ProofOfDeliverySerializer,
     RateDeliverySerializer,
@@ -209,10 +210,83 @@ class AcceptBidView(APIView):
         return Response({"message": "Bid accepted. Driver assigned.", "status": order.status})
 
 
+class PickupProofView(APIView):
+    """
+    POST /orders/<id>/pickup-proof/
+    - ASSIGNED:    first submission → saves proof, transitions to IN_TRANSIT.
+    - IN_TRANSIT:  re-upload → overwrites proof only, no state change.
+    - COMPLETED:   blocked.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        order = FreightOrder.objects.get(pk=pk)
+        if not hasattr(order, "assignment") or order.assignment.driver != request.user:
+            raise BusinessLogicError("Only the assigned driver can submit pickup proof.")
+        if order.status == OrderStatus.COMPLETED:
+            raise BusinessLogicError("Cannot modify proof on a completed order.")
+        if order.status not in [OrderStatus.ASSIGNED, OrderStatus.IN_TRANSIT]:
+            raise BusinessLogicError("Pickup proof can only be submitted when the order is Assigned or In Transit.")
+
+        serializer = PickupProofSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        assignment = order.assignment
+        if serializer.validated_data.get("pickup_proof_photo"):
+            assignment.pickup_proof_photo = serializer.validated_data["pickup_proof_photo"]
+        assignment.pickup_proof_note = serializer.validated_data.get("pickup_proof_note", "")
+
+        if order.status == OrderStatus.IN_TRANSIT:
+            # Re-upload: overwrite proof only, keep current status
+            assignment.save(update_fields=["pickup_proof_photo", "pickup_proof_note"])
+            return Response({"message": "Pickup proof updated."})
+
+        # First submission: record timestamps and advance status
+        assignment.picked_up_at = timezone.now()
+        assignment.in_transit_at = timezone.now()
+        assignment.save(update_fields=["pickup_proof_photo", "pickup_proof_note", "picked_up_at", "in_transit_at"])
+        order.transition_to(OrderStatus.IN_TRANSIT)
+        from apps.notifications.tasks import notify_order_status_change
+        notify_order_status_change.delay(str(order.id), OrderStatus.IN_TRANSIT)
+        return Response({"message": "Pickup confirmed. Order is now In Transit."})
+
+
+class RevertPickupView(APIView):
+    """
+    POST /orders/<id>/revert-pickup/
+    Driver reverts IN_TRANSIT → ASSIGNED and clears pickup proof.
+    Use when the proof was submitted by mistake and the cargo hasn't actually been picked up.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        order = FreightOrder.objects.get(pk=pk)
+        if not hasattr(order, "assignment") or order.assignment.driver != request.user:
+            raise BusinessLogicError("Only the assigned driver can revert pickup.")
+        if order.status != OrderStatus.IN_TRANSIT:
+            raise BusinessLogicError("Order must be In Transit to revert pickup.")
+
+        with transaction.atomic():
+            assignment = order.assignment
+            assignment.pickup_proof_photo = None
+            assignment.pickup_proof_note = ""
+            assignment.picked_up_at = None
+            assignment.in_transit_at = None
+            assignment.save(update_fields=["pickup_proof_photo", "pickup_proof_note", "picked_up_at", "in_transit_at"])
+
+            order.status = OrderStatus.ASSIGNED
+            order.status_changed_at = timezone.now()
+            order.save(update_fields=["status", "status_changed_at"])
+
+        return Response({"message": "Order reverted to Assigned. Re-submit pickup proof when ready."})
+
+
 class ProofOfDeliveryView(APIView):
     """
     POST /orders/<id>/proof-of-delivery/
-    Driver submits proof (photo, note, signature).
+    - IN_TRANSIT:              first submission → saves proof, transitions to DELIVERED.
+    - DELIVERED (unconfirmed): re-upload → overwrites proof only, no state change.
+    - COMPLETED or confirmed:  blocked.
     """
     permission_classes = [permissions.IsAuthenticated]
 
@@ -220,6 +294,10 @@ class ProofOfDeliveryView(APIView):
         order = FreightOrder.objects.get(pk=pk)
         if not hasattr(order, "assignment") or order.assignment.driver != request.user:
             raise BusinessLogicError("Only the assigned driver can submit proof of delivery.")
+        if order.status == OrderStatus.COMPLETED or order.assignment.delivery_confirmed_by_shipper:
+            raise BusinessLogicError("Cannot modify proof on a completed or shipper-confirmed order.")
+        if order.status not in [OrderStatus.IN_TRANSIT, OrderStatus.DELIVERED]:
+            raise BusinessLogicError("Proof of delivery can only be submitted when the order is In Transit or Delivered.")
 
         serializer = ProofOfDeliverySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -229,11 +307,19 @@ class ProofOfDeliveryView(APIView):
             assignment.proof_photo = serializer.validated_data["proof_photo"]
         assignment.proof_note = serializer.validated_data.get("proof_note", "")
         assignment.proof_signature = serializer.validated_data.get("proof_signature", "")
-        assignment.delivered_at = timezone.now()
-        assignment.save()
 
+        if order.status == OrderStatus.DELIVERED:
+            # Re-upload: overwrite proof only, keep current status
+            assignment.save(update_fields=["proof_photo", "proof_note", "proof_signature"])
+            return Response({"message": "Delivery proof updated."})
+
+        # First submission: record timestamp and advance status
+        assignment.delivered_at = timezone.now()
+        assignment.save(update_fields=["proof_photo", "proof_note", "proof_signature", "delivered_at"])
         order.transition_to(OrderStatus.DELIVERED)
-        return Response({"message": "Proof of delivery submitted."})
+        from apps.notifications.tasks import notify_order_status_change
+        notify_order_status_change.delay(str(order.id), OrderStatus.DELIVERED)
+        return Response({"message": "Proof of delivery submitted. Awaiting shipper confirmation."})
 
 
 class ConfirmDeliveryView(APIView):
