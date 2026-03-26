@@ -99,8 +99,6 @@ export class SidebarComponent {
     const roleMap: Record<string, string> = {
       SHIPPER: 'PROFILE.ROLES.SHIPPER',
       DRIVER: 'PROFILE.ROLES.DRIVER',
-      BROKER: 'PROFILE.ROLES.BROKER',
-      FLEET_MANAGER: 'PROFILE.ROLES.FLEET_MANAGER',
       ADMIN: 'PROFILE.ROLES.ADMIN',
     };
     return roleMap[this.auth.user()?.role ?? ''] ?? '';
@@ -108,10 +106,10 @@ export class SidebarComponent {
 
   private allItems: NavItem[] = [
     { labelKey: 'NAV.DASHBOARD',   icon: '📊', route: '/dashboard' },
-    { labelKey: 'NAV.ORDERS',      icon: '📦', route: '/orders',   roles: ['SHIPPER', 'BROKER', 'ADMIN'] },
+    { labelKey: 'NAV.ORDERS',      icon: '📦', route: '/orders',   roles: ['SHIPPER', 'ADMIN'] },
     { labelKey: 'NAV.MY_MISSIONS', icon: '🚛', route: '/orders',   roles: ['DRIVER'] },
-    { labelKey: 'NAV.TRACKING',    icon: '📍', route: '/tracking', roles: ['SHIPPER', 'BROKER', 'DRIVER', 'FLEET_MANAGER', 'ADMIN'] },
-    { labelKey: 'NAV.FLEET',       icon: '🚚', route: '/fleet',    roles: ['DRIVER', 'FLEET_MANAGER', 'ADMIN'] },
+    { labelKey: 'NAV.TRACKING',    icon: '📍', route: '/tracking', roles: ['SHIPPER', 'DRIVER', 'ADMIN'] },
+    { labelKey: 'NAV.FLEET',       icon: '🚚', route: '/fleet',    roles: ['DRIVER', 'ADMIN'] },
     { labelKey: 'NAV.MESSAGES',    icon: '💬', route: '/messaging' },
     { labelKey: 'NAV.PROFILE',     icon: '👤', route: '/profile' },
     { labelKey: 'NAV.ADMIN',       icon: '⚙️', route: '/admin',   roles: ['ADMIN'] },

@@ -103,7 +103,7 @@ import { AddressSearchComponent, LocationResult } from '../../../shared/componen
             </div>
             <div class="form-group">
               <label>{{ 'ORDERS.CREATE.DELIVERY_DEADLINE' | translate }}</label>
-              <input type="date" formControlName="delivery_deadline" [min]="minDeliveryDate()" />
+              <input type="datetime-local" formControlName="delivery_deadline" [min]="minDeliveryDate()" />
             </div>
           </div>
         </div>
@@ -202,11 +202,11 @@ export class OrderCreateComponent implements OnInit {
     return !!(ctrl && ctrl.invalid && ctrl.touched);
   }
 
-  /** Min date for delivery deadline: pickup date if set, else today */
+  /** Min datetime for delivery deadline: pickup datetime if set, else now */
   minDeliveryDate(): string {
     const pickup = this.form.get('pickup_scheduled_at')?.value;
-    if (pickup) return pickup.slice(0, 10);
-    return new Date().toISOString().slice(0, 10);
+    if (pickup) return pickup.slice(0, 16);
+    return new Date().toISOString().slice(0, 16);
   }
 
   onPickupSelected(loc: LocationResult): void {
@@ -245,9 +245,8 @@ export class OrderCreateComponent implements OnInit {
     if (v.pickup_scheduled_at && v.pickup_scheduled_at.length === 16) {
       v.pickup_scheduled_at = v.pickup_scheduled_at + ':00';
     }
-    // date input sends "YYYY-MM-DD" — backend field is DateTimeField
-    if (v.delivery_deadline && v.delivery_deadline.length === 10) {
-      v.delivery_deadline = v.delivery_deadline + 'T00:00:00';
+    if (v.delivery_deadline && v.delivery_deadline.length === 16) {
+      v.delivery_deadline = v.delivery_deadline + ':00';
     } else if (!v.delivery_deadline) {
       v.delivery_deadline = null;
     }

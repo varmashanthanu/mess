@@ -1,5 +1,5 @@
 export type OrderStatus =
-  | 'DRAFT' | 'POSTED' | 'BIDDING' | 'ASSIGNED'
+  | 'DRAFT' | 'POSTED' | 'ASSIGNED'
   | 'PICKUP_PENDING' | 'PICKED_UP' | 'IN_TRANSIT'
   | 'DELIVERED' | 'COMPLETED' | 'CANCELLED' | 'DISPUTED';
 
@@ -52,21 +52,7 @@ export interface FreightOrder {
   created_at: string;
   updated_at: string;
   assignment?: OrderAssignment;
-  bid_count?: number;
-  can_bid?: boolean;
-}
-
-export interface OrderBid {
-  id: string;
-  order: string;
-  carrier: string;
-  carrier_detail: UserBasic;
-  vehicle: string | null;
-  price: number;
-  estimated_pickup_time: string | null;
-  message: string;
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
-  created_at: string;
+  can_accept?: boolean;
 }
 
 export interface OrderAssignment {

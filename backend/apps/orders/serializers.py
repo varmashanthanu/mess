@@ -3,34 +3,7 @@ from rest_framework import serializers
 
 from apps.accounts.serializers import UserBasicSerializer
 from apps.fleet.serializers import VehicleListSerializer, VehicleTypeSerializer
-from .models import FreightOrder, OrderAssignment, OrderBid, OrderStatus
-
-
-class OrderBidSerializer(serializers.ModelSerializer):
-    carrier_detail = UserBasicSerializer(source="carrier", read_only=True)
-    vehicle_detail = VehicleListSerializer(source="vehicle", read_only=True)
-
-    class Meta:
-        model = OrderBid
-        fields = [
-            "id", "order", "carrier", "carrier_detail", "vehicle", "vehicle_detail",
-            "price", "message", "estimated_pickup_time", "status", "created_at",
-        ]
-        read_only_fields = ["id", "order", "status", "created_at", "carrier"]
-
-    def validate(self, attrs):
-        request = self.context["request"]
-        order = attrs.get("order") or (self.instance.order if self.instance else None)
-        if order and order.status not in [OrderStatus.POSTED, OrderStatus.BIDDING]:
-            raise serializers.ValidationError("This order is no longer accepting bids.")
-        vehicle = attrs.get("vehicle")
-        if vehicle and vehicle.owner != request.user:
-            raise serializers.ValidationError({"vehicle": "This vehicle does not belong to you."})
-        return attrs
-
-    def create(self, validated_data):
-        validated_data["carrier"] = self.context["request"].user
-        return super().create(validated_data)
+from .models import FreightOrder, OrderAssignment, OrderStatus
 
 
 class OrderAssignmentSerializer(serializers.ModelSerializer):
@@ -71,16 +44,14 @@ class FreightOrderDetailSerializer(serializers.ModelSerializer):
     """Full order detail with nested relations and an offline price suggestion."""
     shipper_detail = UserBasicSerializer(source="shipper", read_only=True)
     required_vehicle_type_detail = VehicleTypeSerializer(source="required_vehicle_type", read_only=True)
-    bids = OrderBidSerializer(many=True, read_only=True)
     assignment = OrderAssignmentSerializer(read_only=True)
-    bid_count = serializers.SerializerMethodField()
-    can_bid = serializers.SerializerMethodField()
+    can_accept = serializers.SerializerMethodField()
     suggested_price = serializers.SerializerMethodField()
 
     class Meta:
         model = FreightOrder
         fields = [
-            "id", "reference", "shipper", "shipper_detail", "broker",
+            "id", "reference", "shipper", "shipper_detail",
             "cargo_type", "cargo_description", "weight_kg", "volume_m3",
             "quantity", "special_instructions", "cargo_photos",
             "pickup_address", "pickup_city", "pickup_lat", "pickup_lng",
@@ -91,7 +62,7 @@ class FreightOrderDetailSerializer(serializers.ModelSerializer):
             "proposed_price", "final_price", "currency",
             "status", "status_changed_at", "cancellation_reason",
             "estimated_distance_km", "suggested_price",
-            "bids", "assignment", "bid_count", "can_bid",
+            "assignment", "can_accept",
             "created_at", "updated_at",
         ]
         read_only_fields = [
@@ -127,17 +98,15 @@ class FreightOrderDetailSerializer(serializers.ModelSerializer):
         except Exception:
             return None
 
-    def get_bid_count(self, obj):
-        return obj.bids.filter(status=OrderBid.BidStatus.PENDING).count()
-
-    def get_can_bid(self, obj):
+    def get_can_accept(self, obj):
+        """True if the current driver can accept this order."""
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
             return False
         return (
-            obj.status in [OrderStatus.POSTED, OrderStatus.BIDDING]
-            and request.user.role in ["DRIVER", "FLEET_MANAGER"]
-            and not obj.bids.filter(carrier=request.user).exists()
+            obj.status == OrderStatus.POSTED
+            and request.user.role == "DRIVER"
+            and not hasattr(obj, "assignment")
         )
 
     def create(self, validated_data):
@@ -162,8 +131,8 @@ class OrderStatusTransitionSerializer(serializers.Serializer):
     reason = serializers.CharField(required=False, allow_blank=True)
 
 
-class AcceptBidSerializer(serializers.Serializer):
-    bid_id = serializers.UUIDField()
+class AcceptOrderSerializer(serializers.Serializer):
+    vehicle = serializers.UUIDField(required=False, allow_null=True)
 
 
 class PickupProofSerializer(serializers.Serializer):

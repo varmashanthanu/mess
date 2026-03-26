@@ -53,8 +53,6 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
               <option value="">{{ 'AUTH.REGISTER.ROLE_SELECT' | translate }}</option>
               <option value="SHIPPER">{{ 'AUTH.REGISTER.ROLE_SHIPPER' | translate }}</option>
               <option value="DRIVER">{{ 'AUTH.REGISTER.ROLE_DRIVER' | translate }}</option>
-              <option value="BROKER">{{ 'AUTH.REGISTER.ROLE_BROKER' | translate }}</option>
-              <option value="FLEET_MANAGER">{{ 'AUTH.REGISTER.ROLE_FLEET_MANAGER' | translate }}</option>
             </select>
             <span class="field-error" *ngIf="submitted && f['role'].errors?.['required']">{{ 'COMMON.REQUIRED' | translate }}</span>
           </div>

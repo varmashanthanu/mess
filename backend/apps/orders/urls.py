@@ -1,8 +1,7 @@
 """Orders URLs — /api/v1/orders/"""
 from django.urls import path
 from .views import (
-    AcceptBidView,
-    BidListCreateView,
+    AcceptOrderView,
     ConfirmDeliveryView,
     FreightOrderDetailView,
     FreightOrderListCreateView,
@@ -21,8 +20,7 @@ urlpatterns = [
     path("<uuid:pk>/", FreightOrderDetailView.as_view(), name="orders-detail"),
     path("<uuid:pk>/post/", PostOrderView.as_view(), name="orders-post"),
     path("<uuid:pk>/transition/", OrderTransitionView.as_view(), name="orders-transition"),
-    path("<uuid:order_pk>/bids/", BidListCreateView.as_view(), name="orders-bids"),
-    path("<uuid:pk>/accept-bid/", AcceptBidView.as_view(), name="orders-accept-bid"),
+    path("<uuid:pk>/accept/", AcceptOrderView.as_view(), name="orders-accept"),
     path("<uuid:pk>/pickup-proof/", PickupProofView.as_view(), name="orders-pickup-proof"),
     path("<uuid:pk>/revert-pickup/", RevertPickupView.as_view(), name="orders-revert-pickup"),
     path("<uuid:pk>/proof-of-delivery/", ProofOfDeliveryView.as_view(), name="orders-pod"),

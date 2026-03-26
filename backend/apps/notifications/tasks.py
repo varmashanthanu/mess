@@ -167,7 +167,7 @@ def notify_order_status_change(order_id: str, new_status: str):
     from apps.orders.models import FreightOrder
     try:
         order = FreightOrder.objects.select_related(
-            "shipper", "broker"
+            "shipper"
         ).prefetch_related("assignment").get(id=order_id)
     except FreightOrder.DoesNotExist:
         return
@@ -191,10 +191,14 @@ def notify_order_status_change(order_id: str, new_status: str):
 
     # Notify driver if assigned
     if hasattr(order, "assignment"):
-        driver_msg = {
+        driver_messages = {
             "ASSIGNED": ("New Job Assigned", f"You've been assigned to order {order.reference}."),
+            "IN_TRANSIT": ("Order In Transit", f"Order {order.reference} is now marked as in transit."),
+            "DELIVERED": ("Proof of Delivery Submitted", f"You submitted delivery proof for order {order.reference}. Awaiting shipper confirmation."),
+            "COMPLETED": ("Order Completed", f"Order {order.reference} has been confirmed by the shipper. Well done!"),
             "CANCELLED": ("Order Cancelled", f"Order {order.reference} has been cancelled."),
-        }.get(new_status, (title, body))
+        }
+        driver_msg = driver_messages.get(new_status, (title, body))
         send_notification_task.delay(
             str(order.assignment.driver.id), *driver_msg,
             {"type": f"ORDER_{new_status}", "order_id": order_id}
@@ -224,21 +228,6 @@ def notify_new_order_posted(order_id: str):
             {"type": "ORDER_POSTED", "order_id": order_id},
         )
 
-
-@shared_task(name="apps.notifications.tasks.notify_bid_accepted")
-def notify_bid_accepted(bid_id: str):
-    """Notify the winning carrier that their bid was accepted."""
-    from apps.orders.models import OrderBid
-    try:
-        bid = OrderBid.objects.select_related("carrier", "order").get(id=bid_id)
-    except OrderBid.DoesNotExist:
-        return
-    send_notification_task.delay(
-        str(bid.carrier.id),
-        "Bid Accepted!",
-        f"Your bid of {bid.price} XOF for order {bid.order.reference} was accepted. Head to pickup.",
-        {"type": "BID_ACCEPTED", "order_id": str(bid.order.id)},
-    )
 
 
 @shared_task(name="apps.notifications.tasks.send_admin_daily_summary")

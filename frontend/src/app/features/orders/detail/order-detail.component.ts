@@ -6,7 +6,7 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { FreightOrder, OrderBid } from '../../../core/models/order.model';
+import { FreightOrder } from '../../../core/models/order.model';
 
 @Component({
   selector: 'app-order-detail',
@@ -31,9 +31,15 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
               </div>
               <div class="header-actions">
                 <button class="btn-action btn-orange"
-                  *ngIf="order()!.status === 'DRAFT' && auth.hasRole('SHIPPER','BROKER','ADMIN')"
+                  *ngIf="order()!.status === 'DRAFT' && auth.hasRole('SHIPPER', 'ADMIN')"
                   (click)="postOrder()">
                   {{ 'ORDERS.DETAIL.PUBLISH' | translate }}
+                </button>
+                <!-- Driver: accept posted order -->
+                <button class="btn-action btn-orange"
+                  *ngIf="order()!.status === 'POSTED' && auth.hasRole('DRIVER')"
+                  (click)="acceptOrder()">
+                  {{ 'ORDERS.DETAIL.ACCEPT_ORDER' | translate }}
                 </button>
                 <!-- Driver: confirm pickup (first time) -->
                 <button class="btn-action btn-orange"
@@ -196,62 +202,6 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
               </div>
             </div>
           </div>
-
-          <!-- Bids -->
-          <div class="card" *ngIf="showBids()">
-            <h3>{{ 'ORDERS.DETAIL.BIDS_TITLE' | translate }} ({{ bids().length }})</h3>
-
-            <!-- Submit bid (driver) -->
-            <div class="bid-form" *ngIf="auth.hasRole('DRIVER') && order()!.status === 'POSTED'">
-              <h4>{{ 'ORDERS.DETAIL.BID_FORM_TITLE' | translate }}</h4>
-              <form [formGroup]="bidForm" (ngSubmit)="submitBid()">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>{{ 'ORDERS.DETAIL.BID_AMOUNT' | translate }}</label>
-                    <input type="number" formControlName="price" placeholder="150000" />
-                  </div>
-                  <div class="form-group">
-                    <label>{{ 'ORDERS.DETAIL.BID_DATE' | translate }}</label>
-                    <input type="datetime-local" formControlName="estimated_pickup_time" />
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label>{{ 'ORDERS.DETAIL.BID_MESSAGE' | translate }}</label>
-                  <textarea formControlName="message" rows="2"
-                    [placeholder]="'ORDERS.DETAIL.BID_MESSAGE_PLACEHOLDER' | translate"></textarea>
-                </div>
-                <button type="submit" class="btn-action btn-orange" [disabled]="bidSubmitting()">
-                  {{ (bidSubmitting() ? 'ORDERS.DETAIL.BID_SUBMITTING' : 'ORDERS.DETAIL.BID_SUBMIT') | translate }}
-                </button>
-              </form>
-            </div>
-
-            <!-- Bids list -->
-            <div class="bids-list">
-              <div class="bid-item" *ngFor="let bid of bids()">
-                <div class="bid-main">
-                  <div>
-                    <strong>{{ bid.carrier_detail.full_name }}</strong>
-                    <span class="text-muted text-sm"> · {{ bid.carrier_detail.phone_number }}</span>
-                  </div>
-                  <div class="bid-amount">{{ bid.price | number }} XOF</div>
-                </div>
-                <div class="bid-message text-muted text-sm" *ngIf="bid.message">{{ bid.message }}</div>
-                <div class="bid-actions"
-                  *ngIf="auth.hasRole('SHIPPER','BROKER','ADMIN') && bid.status === 'PENDING'">
-                  <button class="btn-sm btn-green" (click)="acceptBid(bid.id)">
-                    {{ 'ORDERS.DETAIL.BID_ACCEPT' | translate }}
-                  </button>
-                </div>
-                <span class="badge badge--{{ bid.status.toLowerCase() }}">
-                  {{ statusLabel(bid.status) }}
-                </span>
-              </div>
-              <div class="empty-state" *ngIf="!bids().length">
-                {{ 'ORDERS.DETAIL.BID_EMPTY' | translate }}
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Sidebar -->
@@ -347,15 +297,11 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
     .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
     .badge--draft { background:#E0E0E0;color:#616161 }
     .badge--posted { background:#E3F2FD;color:#1565C0 }
-    .badge--bidding { background:#FFF3E0;color:#E65100 }
     .badge--assigned { background:#F3E5F5;color:#6A1B9A }
     .badge--in_transit { background:#E8F5E9;color:#2E7D32 }
     .badge--delivered { background:#E0F2F1;color:#00695C }
     .badge--completed { background:#C8E6C9;color:#1B5E20 }
     .badge--cancelled { background:#FFEBEE;color:#B71C1C }
-    .badge--pending { background:#E3F2FD;color:#1565C0 }
-    .badge--accepted { background:#C8E6C9;color:#1B5E20 }
-    .badge--rejected { background:#FFEBEE;color:#B71C1C }
     .route-display { display: flex; flex-direction: column; gap: 0; }
     .route-point { display: flex; gap: 16px; align-items: flex-start; padding: 12px 0; }
     .route-dot { font-size: 20px; margin-top: 2px; }
@@ -366,19 +312,11 @@ import { FreightOrder, OrderBid } from '../../../core/models/order.model';
     .info-grid, .info-list { display: flex; flex-direction: column; gap: 10px; }
     .info-item { display: flex; gap: 12px; font-size: 14px; }
     .info-key { color: #757575; min-width: 100px; font-size: 13px; }
-    .bid-form { background: #F9F9F9; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .form-group { margin-bottom: 12px; }
     label { display: block; font-size: 12px; font-weight: 600; color: #424242; margin-bottom: 5px; }
     input, textarea { width: 100%; padding: 9px 12px; border: 1.5px solid #E0E0E0; border-radius: 6px; font-size: 14px; outline: none; }
     input:focus, textarea:focus { border-color: #FF6B35; }
     textarea { resize: vertical; font-family: inherit; }
-    .bids-list { display: flex; flex-direction: column; gap: 12px; }
-    .bid-item { border: 1px solid #F0F0F0; border-radius: 8px; padding: 14px; }
-    .bid-main { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-    .bid-amount { font-size: 16px; font-weight: 800; color: #FF6B35; }
-    .bid-message { margin-bottom: 8px; }
-    .bid-actions { display: flex; gap: 8px; margin-top: 8px; }
     .driver-card { display: flex; gap: 14px; align-items: center; }
     .driver-avatar { font-size: 32px; }
     .mt-1 { margin-top: 8px; } .mt-2 { margin-top: 12px; }
@@ -411,8 +349,6 @@ export class OrderDetailComponent implements OnInit {
   private translate = inject(TranslateService);
 
   order = signal<FreightOrder | null>(null);
-  bids = signal<OrderBid[]>([]);
-  bidSubmitting = signal(false);
   lightboxUrl = signal<string | null>(null);
 
   // Pickup proof state
@@ -431,32 +367,17 @@ export class OrderDetailComponent implements OnInit {
 
   actionError = signal('');
 
-  bidForm = this.fb.group({
-    price:                [null as number | null, Validators.required],
-    estimated_pickup_time: [''],
-    message:              [''],
-  });
-
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.api.getOrder(id).subscribe({
-      next: (o) => { this.order.set(o); if (this.showBids()) this.loadBids(id); },
+      next: (o) => this.order.set(o),
     });
-  }
-
-  loadBids(id: string): void {
-    this.api.getBids(id).subscribe({ next: (res) => this.bids.set(res.results) });
-  }
-
-  showBids(): boolean {
-    const s = this.order()?.status;
-    return s === 'POSTED' || s === 'BIDDING';
   }
 
   canCancel(): boolean {
     const s = this.order()?.status;
-    return (s === 'DRAFT' || s === 'POSTED' || s === 'BIDDING') &&
-      this.auth.hasRole('SHIPPER', 'BROKER', 'ADMIN');
+    return (s === 'DRAFT' || s === 'POSTED') &&
+      this.auth.hasRole('SHIPPER', 'ADMIN');
   }
 
   isAssignedDriver(): boolean {
@@ -470,6 +391,14 @@ export class OrderDetailComponent implements OnInit {
     const id = this.order()!.id;
     this.api.postOrder(id).subscribe({
       next: () => this.api.getOrder(id).subscribe(o => this.order.set(o)),
+    });
+  }
+
+  acceptOrder(): void {
+    this.actionError.set('');
+    this.api.acceptOrder(this.order()!.id).subscribe({
+      next: () => this.api.getOrder(this.order()!.id).subscribe(o => this.order.set(o)),
+      error: (err) => this.actionError.set(err?.error?.error?.message ?? 'Failed to accept order.'),
     });
   }
 
@@ -540,33 +469,6 @@ export class OrderDetailComponent implements OnInit {
         this.actionError.set(err?.error?.error?.message ?? 'Failed to submit delivery proof.');
         this.deliverySubmitting.set(false);
       },
-    });
-  }
-
-  submitBid(): void {
-    if (this.bidForm.invalid) return;
-    this.bidSubmitting.set(true);
-    const v = this.bidForm.value;
-    this.api.submitBid(this.order()!.id, {
-      price:                 v.price!,
-      message:               v.message ?? '',
-      estimated_pickup_time: v.estimated_pickup_time ?? undefined,
-    }).subscribe({
-      next: (bid) => {
-        this.bids.update(bs => [bid, ...bs]);
-        this.bidSubmitting.set(false);
-        this.bidForm.reset();
-      },
-      error: () => this.bidSubmitting.set(false),
-    });
-  }
-
-  acceptBid(bidId: string): void {
-    this.api.acceptBid(this.order()!.id, bidId).subscribe({
-      next: () => this.api.getOrder(this.order()!.id).subscribe(o => {
-        this.order.set(o);
-        this.loadBids(o.id);
-      }),
     });
   }
 

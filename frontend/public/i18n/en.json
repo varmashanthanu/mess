@@ -57,8 +57,6 @@
       "ROLE_SELECT": "-- Select --",
       "ROLE_SHIPPER": "Shipper",
       "ROLE_DRIVER": "Driver",
-      "ROLE_BROKER": "Broker",
-      "ROLE_FLEET_MANAGER": "Fleet Manager",
       "PASSWORD": "Password",
       "PASSWORD_PLACEHOLDER": "Min. 8 characters",
       "PASSWORD_MIN": "Minimum 8 characters",
@@ -145,7 +143,6 @@
     "STATUS": {
       "DRAFT": "Draft",
       "POSTED": "Posted",
-      "BIDDING": "Bidding",
       "ASSIGNED": "Assigned",
       "PICKUP_PENDING": "Pickup pending",
       "PICKED_UP": "Picked up",
@@ -162,6 +159,7 @@
     "DETAIL": {
       "BACK": "← Back to orders",
       "PUBLISH": "Publish",
+      "ACCEPT_ORDER": "Accept Job",
       "CONFIRM_DELIVERY": "Confirm delivery",
       "CANCEL_ORDER": "Cancel",
       "CANCEL_CONFIRM": "Cancel this order?",
@@ -175,16 +173,6 @@
       "FINAL_PRICE": "Final price",
       "SUGGESTED_PRICE": "Estimate range",
       "CARGO_NOTES": "Notes",
-      "BIDS_TITLE": "Bids",
-      "BID_FORM_TITLE": "Submit a bid",
-      "BID_AMOUNT": "Amount (XOF)",
-      "BID_DATE": "Estimated pickup date",
-      "BID_MESSAGE": "Message",
-      "BID_MESSAGE_PLACEHOLDER": "Your message...",
-      "BID_SUBMIT": "Submit bid",
-      "BID_SUBMITTING": "Sending...",
-      "BID_ACCEPT": "✓ Accept",
-      "BID_EMPTY": "No bids yet.",
       "CONFIRM_PICKUP": "Confirm pickup",
       "SUBMIT_DELIVERY_PROOF": "Submit delivery proof",
       "PICKUP_PROOF_TITLE": "Pickup confirmation",
@@ -331,8 +319,6 @@
     "ROLES": {
       "SHIPPER": "Shipper",
       "DRIVER": "Driver",
-      "BROKER": "Broker",
-      "FLEET_MANAGER": "Fleet Manager",
       "ADMIN": "Administrator"
     }
   }

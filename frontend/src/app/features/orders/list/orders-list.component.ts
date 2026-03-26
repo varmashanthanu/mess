@@ -16,7 +16,7 @@ import { FreightOrder } from '../../../core/models/order.model';
       <div class="page-header">
         <h1>{{ 'ORDERS.TITLE' | translate }}</h1>
         <a class="btn-primary" routerLink="/orders/new"
-           *ngIf="auth.hasRole('SHIPPER','BROKER','ADMIN')">{{ 'ORDERS.NEW' | translate }}</a>
+           *ngIf="auth.hasRole('SHIPPER', 'ADMIN')">{{ 'ORDERS.NEW' | translate }}</a>
       </div>
 
       <div class="filters card mb-2">
@@ -84,7 +84,7 @@ import { FreightOrder } from '../../../core/models/order.model';
     .mess-table td { padding: 14px 16px; border-bottom: 1px solid #F0F0F0; }
     .mess-table tr:hover td { background: #FAFAFA; }
     .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-    .badge--draft{background:#E0E0E0;color:#616161}.badge--posted{background:#E3F2FD;color:#1565C0}.badge--bidding{background:#FFF3E0;color:#E65100}.badge--assigned{background:#F3E5F5;color:#6A1B9A}.badge--in_transit{background:#E8F5E9;color:#2E7D32}.badge--delivered{background:#E0F2F1;color:#00695C}.badge--completed{background:#C8E6C9;color:#1B5E20}.badge--cancelled{background:#FFEBEE;color:#B71C1C}.badge--disputed{background:#FCE4EC;color:#880E4F}.badge--pickup_pending{background:#FFF8E1;color:#F57F17}.badge--picked_up{background:#E8EAF6;color:#283593}
+    .badge--draft{background:#E0E0E0;color:#616161}.badge--posted{background:#E3F2FD;color:#1565C0}.badge--assigned{background:#F3E5F5;color:#6A1B9A}.badge--in_transit{background:#E8F5E9;color:#2E7D32}.badge--delivered{background:#E0F2F1;color:#00695C}.badge--completed{background:#C8E6C9;color:#1B5E20}.badge--cancelled{background:#FFEBEE;color:#B71C1C}.badge--disputed{background:#FCE4EC;color:#880E4F}.badge--pickup_pending{background:#FFF8E1;color:#F57F17}.badge--picked_up{background:#E8EAF6;color:#283593}
     .btn-sm { padding: 5px 12px; background: #F5F5F5; color: #424242; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; }
     .pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-top: 1px solid #F0F0F0; font-size: 13px; color: #757575; }
     .pagination button { padding: 8px 14px; border: 1px solid #E0E0E0; background: white; border-radius: 6px; cursor: pointer; font-size: 13px; }
@@ -110,7 +110,7 @@ export class OrdersListComponent implements OnInit {
   search = '';
 
   statuses = [
-    { value: 'DRAFT' }, { value: 'POSTED' }, { value: 'BIDDING' }, { value: 'ASSIGNED' },
+    { value: 'DRAFT' }, { value: 'POSTED' }, { value: 'ASSIGNED' },
     { value: 'IN_TRANSIT' }, { value: 'DELIVERED' }, { value: 'COMPLETED' }, { value: 'CANCELLED' },
   ];
 

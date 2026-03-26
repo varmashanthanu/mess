@@ -1,6 +1,6 @@
 """
 MESS Platform — Orders Models
-Core freight order lifecycle: DRAFT → POSTED → BIDDING → ASSIGNED →
+Core freight order lifecycle: DRAFT → POSTED → ASSIGNED →
 IN_TRANSIT → DELIVERED → COMPLETED
 """
 from django.db import models
@@ -23,8 +23,7 @@ class CargoType(models.TextChoices):
 
 class OrderStatus(models.TextChoices):
     DRAFT = "DRAFT", "Draft"
-    POSTED = "POSTED", "Posted — Awaiting Carriers"
-    BIDDING = "BIDDING", "Receiving Bids"
+    POSTED = "POSTED", "Posted — Awaiting Carrier"
     ASSIGNED = "ASSIGNED", "Carrier Assigned"
     PICKUP_PENDING = "PICKUP_PENDING", "Driver En Route to Pickup"
     PICKED_UP = "PICKED_UP", "Cargo Picked Up"
@@ -37,7 +36,7 @@ class OrderStatus(models.TextChoices):
 
 # States where the order is still actionable
 ACTIVE_ORDER_STATUSES = [
-    OrderStatus.POSTED, OrderStatus.BIDDING, OrderStatus.ASSIGNED,
+    OrderStatus.POSTED, OrderStatus.ASSIGNED,
     OrderStatus.PICKUP_PENDING, OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT,
     OrderStatus.DELIVERED,
 ]
@@ -45,8 +44,7 @@ ACTIVE_ORDER_STATUSES = [
 # Valid transitions map: current_state → allowed_next_states
 ORDER_TRANSITIONS = {
     OrderStatus.DRAFT: [OrderStatus.POSTED, OrderStatus.CANCELLED],
-    OrderStatus.POSTED: [OrderStatus.BIDDING, OrderStatus.ASSIGNED, OrderStatus.CANCELLED],
-    OrderStatus.BIDDING: [OrderStatus.ASSIGNED, OrderStatus.CANCELLED],
+    OrderStatus.POSTED: [OrderStatus.ASSIGNED, OrderStatus.CANCELLED],
     OrderStatus.ASSIGNED: [OrderStatus.IN_TRANSIT, OrderStatus.PICKUP_PENDING, OrderStatus.CANCELLED],
     OrderStatus.PICKUP_PENDING: [OrderStatus.PICKED_UP, OrderStatus.CANCELLED],
     OrderStatus.PICKED_UP: [OrderStatus.IN_TRANSIT],
@@ -65,10 +63,6 @@ class FreightOrder(BaseModel):
     shipper = models.ForeignKey(
         "accounts.User", on_delete=models.PROTECT,
         related_name="orders_as_shipper"
-    )
-    broker = models.ForeignKey(
-        "accounts.User", on_delete=models.SET_NULL, null=True, blank=True,
-        related_name="orders_as_broker"
     )
 
     # Reference
@@ -154,36 +148,6 @@ class FreightOrder(BaseModel):
             self.save(update_fields=["status", "status_changed_at"])
 
 
-class OrderBid(BaseModel):
-    """A carrier's bid on a posted order."""
-
-    class BidStatus(models.TextChoices):
-        PENDING = "PENDING", "Pending"
-        ACCEPTED = "ACCEPTED", "Accepted"
-        REJECTED = "REJECTED", "Rejected"
-        WITHDRAWN = "WITHDRAWN", "Withdrawn"
-
-    order = models.ForeignKey(FreightOrder, on_delete=models.CASCADE, related_name="bids")
-    carrier = models.ForeignKey(
-        "accounts.User", on_delete=models.CASCADE, related_name="bids_placed"
-    )
-    vehicle = models.ForeignKey(
-        "fleet.Vehicle", on_delete=models.SET_NULL, null=True, blank=True
-    )
-    price = models.DecimalField(max_digits=12, decimal_places=2, help_text="Bid price in XOF")
-    message = models.TextField(blank=True)
-    estimated_pickup_time = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=15, choices=BidStatus.choices, default=BidStatus.PENDING)
-
-    class Meta:
-        verbose_name = "Order Bid"
-        unique_together = [("order", "carrier")]  # One bid per carrier per order
-        ordering = ["price", "-created_at"]
-
-    def __str__(self):
-        return f"Bid by {self.carrier} on {self.order.reference}: {self.price} XOF"
-
-
 class OrderAssignment(BaseModel):
     """When an order is accepted and a driver is assigned."""
 
@@ -192,9 +156,6 @@ class OrderAssignment(BaseModel):
         "accounts.User", on_delete=models.PROTECT, related_name="assignments_as_driver"
     )
     vehicle = models.ForeignKey("fleet.Vehicle", on_delete=models.PROTECT, null=True, blank=True)
-    accepted_bid = models.OneToOneField(
-        OrderBid, on_delete=models.SET_NULL, null=True, blank=True
-    )
 
     # Timestamps for the delivery lifecycle
     assigned_at = models.DateTimeField(auto_now_add=True)

@@ -22,5 +22,3 @@ def create_order_conversation(sender, instance, created, **kwargs):
         order = instance.order
         conv, _ = Conversation.objects.get_or_create(order=order)
         conv.participants.add(order.shipper, instance.driver)
-        if order.broker:
-            conv.participants.add(order.broker)

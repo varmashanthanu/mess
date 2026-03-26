@@ -1,4 +1,4 @@
-export type UserRole = 'SHIPPER' | 'DRIVER' | 'BROKER' | 'FLEET_MANAGER' | 'ADMIN';
+export type UserRole = 'SHIPPER' | 'DRIVER' | 'ADMIN';
 
 export interface User {
   id: string;
@@ -10,7 +10,6 @@ export interface User {
   date_joined: string;
   driver_profile?: DriverProfile;
   shipper_profile?: ShipperProfile;
-  broker_profile?: BrokerProfile;
 }
 
 export interface DriverProfile {
@@ -30,12 +29,6 @@ export interface ShipperProfile {
   company_name: string;
   siret: string;
   business_address: string;
-}
-
-export interface BrokerProfile {
-  id: string;
-  company_name: string;
-  commission_rate: number;
 }
 
 export interface AuthTokens {

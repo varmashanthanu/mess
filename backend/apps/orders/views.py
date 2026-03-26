@@ -7,7 +7,6 @@ import logging
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import generics, permissions, status
-from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -17,14 +16,12 @@ from .models import (
     ACTIVE_ORDER_STATUSES,
     FreightOrder,
     OrderAssignment,
-    OrderBid,
     OrderStatus,
 )
 from .serializers import (
-    AcceptBidSerializer,
+    AcceptOrderSerializer,
     FreightOrderDetailSerializer,
     FreightOrderListSerializer,
-    OrderBidSerializer,
     OrderStatusTransitionSerializer,
     PickupProofSerializer,
     PriceEstimateRequestSerializer,
@@ -38,7 +35,7 @@ logger = logging.getLogger(__name__)
 class FreightOrderListCreateView(generics.ListCreateAPIView):
     """
     GET  — List orders (role-filtered)
-    POST — Create a new freight order (shippers/brokers only)
+    POST — Create a new freight order (shippers only)
     """
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ["status", "cargo_type", "pickup_city", "delivery_city"]
@@ -54,22 +51,20 @@ class FreightOrderListCreateView(generics.ListCreateAPIView):
         user = self.request.user
         qs = FreightOrder.objects.select_related(
             "shipper", "required_vehicle_type"
-        ).prefetch_related("bids")
+        )
 
-        if user.role in ["SHIPPER", "BROKER"]:
+        if user.role == "SHIPPER":
             return qs.filter(shipper=user)
-        if user.role in ["DRIVER", "FLEET_MANAGER"]:
-            # Drivers see posted/bidding orders + their own assigned ones
-            return qs.filter(
-                status__in=[OrderStatus.POSTED, OrderStatus.BIDDING]
-            ) | qs.filter(assignment__driver=user)
+        if user.role == "DRIVER":
+            # Drivers see posted orders + their own assigned ones
+            return qs.filter(status=OrderStatus.POSTED) | qs.filter(assignment__driver=user)
         if user.role == "ADMIN":
             return qs.all()
         return qs.none()
 
     def perform_create(self, serializer):
-        if self.request.user.role not in ["SHIPPER", "BROKER"]:
-            raise BusinessLogicError("Only shippers and brokers can create orders.")
+        if self.request.user.role != "SHIPPER":
+            raise BusinessLogicError("Only shippers can create orders.")
         serializer.save(shipper=self.request.user)
 
 
@@ -80,8 +75,8 @@ class FreightOrderDetailView(generics.RetrieveUpdateAPIView):
 
     def get_queryset(self):
         return FreightOrder.objects.select_related(
-            "shipper", "broker", "required_vehicle_type", "assignment__driver", "assignment__vehicle"
-        ).prefetch_related("bids__carrier", "bids__vehicle")
+            "shipper", "required_vehicle_type", "assignment__driver", "assignment__vehicle"
+        )
 
     def update(self, request, *args, **kwargs):
         order = self.get_object()
@@ -149,65 +144,49 @@ class PostOrderView(APIView):
         return Response({"message": "Order posted.", "status": order.status})
 
 
-class BidListCreateView(generics.ListCreateAPIView):
-    """List bids on an order / place a new bid."""
-    serializer_class = OrderBidSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        order_id = self.kwargs["order_pk"]
-        return OrderBid.objects.filter(order_id=order_id).select_related("carrier", "vehicle")
-
-    def perform_create(self, serializer):
-        order_id = self.kwargs["order_pk"]
-        order = FreightOrder.objects.get(id=order_id)
-        if order.status not in [OrderStatus.POSTED, OrderStatus.BIDDING]:
-            raise BusinessLogicError("This order is not accepting bids.")
-        # Transition to BIDDING if first bid
-        if order.status == OrderStatus.POSTED:
-            order.transition_to(OrderStatus.BIDDING)
-        serializer.save(order=order, carrier=self.request.user)
-
-
-class AcceptBidView(APIView):
+class AcceptOrderView(APIView):
     """
-    POST /orders/<id>/accept-bid/
-    Shipper accepts a bid → assigns driver.
+    POST /orders/<id>/accept/
+    Driver accepts a posted order at the shipper's proposed price.
     """
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
-        order = FreightOrder.objects.get(pk=pk, shipper=request.user)
-        serializer = AcceptBidSerializer(data=request.data)
+        if request.user.role != "DRIVER":
+            raise BusinessLogicError("Only drivers can accept orders.")
+
+        order = FreightOrder.objects.get(pk=pk)
+        if order.status != OrderStatus.POSTED:
+            raise BusinessLogicError("This order is not available for acceptance.")
+        if hasattr(order, "assignment"):
+            raise BusinessLogicError("This order has already been assigned.")
+
+        serializer = AcceptOrderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        with transaction.atomic():
-            bid = OrderBid.objects.select_for_update().get(
-                id=serializer.validated_data["bid_id"],
-                order=order,
-                status=OrderBid.BidStatus.PENDING,
-            )
-            # Reject all other bids
-            OrderBid.objects.filter(order=order).exclude(id=bid.id).update(
-                status=OrderBid.BidStatus.REJECTED
-            )
-            bid.status = OrderBid.BidStatus.ACCEPTED
-            bid.save()
+        vehicle = None
+        vehicle_id = serializer.validated_data.get("vehicle")
+        if vehicle_id:
+            from apps.fleet.models import Vehicle
+            try:
+                vehicle = Vehicle.objects.get(id=vehicle_id, owner=request.user)
+            except Vehicle.DoesNotExist:
+                raise BusinessLogicError("Vehicle not found or does not belong to you.")
 
-            order.final_price = bid.price
+        with transaction.atomic():
+            order.final_price = order.proposed_price
             order.transition_to(OrderStatus.ASSIGNED, save=False)
             order.save(update_fields=["final_price", "status", "status_changed_at"])
 
             OrderAssignment.objects.create(
                 order=order,
-                driver=bid.carrier,
-                vehicle=bid.vehicle,
-                accepted_bid=bid,
+                driver=request.user,
+                vehicle=vehicle,
             )
 
-        from apps.notifications.tasks import notify_bid_accepted
-        notify_bid_accepted.delay(str(bid.id))
-        return Response({"message": "Bid accepted. Driver assigned.", "status": order.status})
+        from apps.notifications.tasks import notify_order_status_change
+        notify_order_status_change.delay(str(order.id), OrderStatus.ASSIGNED)
+        return Response({"message": "Order accepted. You have been assigned.", "status": order.status})
 
 
 class PickupProofView(APIView):
@@ -339,6 +318,8 @@ class ConfirmDeliveryView(APIView):
             assignment.completed_at = timezone.now()
             assignment.save(update_fields=["delivery_confirmed_by_shipper", "completed_at"])
             order.transition_to(OrderStatus.COMPLETED)
+        from apps.notifications.tasks import notify_order_status_change
+        notify_order_status_change.delay(str(order.id), OrderStatus.COMPLETED)
         return Response({"message": "Delivery confirmed. Order completed."})
 
 

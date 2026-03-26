@@ -87,14 +87,6 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         return self.role == UserRole.DRIVER
 
     @property
-    def is_broker(self):
-        return self.role == UserRole.BROKER
-
-    @property
-    def is_fleet_manager(self):
-        return self.role == UserRole.FLEET_MANAGER
-
-    @property
     def is_admin_user(self):
         return self.role == UserRole.ADMIN
 
@@ -173,17 +165,3 @@ class DriverProfile(BaseModel):
         self.save(update_fields=["rating", "total_ratings"])
 
 
-class BrokerProfile(BaseModel):
-    """Extended profile for freight brokers."""
-
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="broker_profile")
-    company_name = models.CharField(max_length=255, blank=True)
-    commission_rate = models.DecimalField(
-        max_digits=5, decimal_places=2, default=5.00, help_text="Commission % per order"
-    )
-    avatar = models.ImageField(upload_to="avatars/brokers/", null=True, blank=True)
-    city = models.CharField(max_length=100, blank=True, default="Dakar")
-    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
-
-    def __str__(self):
-        return f"Broker: {self.user.full_name}"

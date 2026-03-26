@@ -4,7 +4,7 @@ Validates all valid transitions and rejects all invalid ones.
 """
 import pytest
 from core.exceptions import OrderStateError
-from apps.orders.models import FreightOrder, OrderStatus, ORDER_TRANSITIONS
+from apps.orders.models import FreightOrder, ORDER_TRANSITIONS, OrderStatus
 
 
 @pytest.mark.django_db
@@ -17,9 +17,6 @@ class TestOrderStateMachine:
         order.transition_to(OrderStatus.POSTED)
         assert order.status == OrderStatus.POSTED
         assert order.status_changed_at is not None
-
-        order.transition_to(OrderStatus.BIDDING)
-        assert order.status == OrderStatus.BIDDING
 
         order.transition_to(OrderStatus.ASSIGNED)
         assert order.status == OrderStatus.ASSIGNED
@@ -48,11 +45,6 @@ class TestOrderStateMachine:
             posted_order.transition_to(OrderStatus.DRAFT)
 
     def test_can_cancel_from_posted(self, posted_order):
-        posted_order.transition_to(OrderStatus.CANCELLED)
-        assert posted_order.status == OrderStatus.CANCELLED
-
-    def test_can_cancel_from_bidding(self, posted_order):
-        posted_order.transition_to(OrderStatus.BIDDING)
         posted_order.transition_to(OrderStatus.CANCELLED)
         assert posted_order.status == OrderStatus.CANCELLED
 
