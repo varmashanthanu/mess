@@ -24,29 +24,23 @@ class IsDriver(BasePermission):
         return bool(request.user and request.user.is_authenticated and request.user.role == UserRole.DRIVER)
 
 
-class IsBroker(BasePermission):
-    """Only freight brokers."""
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.role == UserRole.BROKER)
-
-
 class IsCarrier(BasePermission):
-    """Drivers or fleet managers acting as carriers."""
+    """Drivers acting as carriers."""
     def has_permission(self, request, view):
         return bool(
             request.user
             and request.user.is_authenticated
-            and request.user.role in (UserRole.DRIVER, UserRole.FLEET_MANAGER)
+            and request.user.role == UserRole.DRIVER
         )
 
 
 class IsShipperOrBroker(BasePermission):
-    """Shippers or brokers — those who create orders."""
+    """Shippers — those who create orders."""
     def has_permission(self, request, view):
         return bool(
             request.user
             and request.user.is_authenticated
-            and request.user.role in (UserRole.SHIPPER, UserRole.BROKER)
+            and request.user.role == UserRole.SHIPPER
         )
 
 

@@ -18,7 +18,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from core.permissions import IsAdmin, IsOwnerOrAdmin
 from .models import PhoneVerification
 from .serializers import (
-    BrokerProfileSerializer,
     CustomTokenObtainPairSerializer,
     DriverAvailabilitySerializer,
     DriverProfileSerializer,
@@ -137,7 +136,7 @@ class MeView(generics.RetrieveUpdateAPIView):
 
         # Update user-level fields (first_name, last_name, email, preferred_language)
         user_fields = {k: v for k, v in request.data.items()
-                       if k not in ("shipper_profile", "driver_profile", "broker_profile")}
+                       if k not in ("shipper_profile", "driver_profile")}
         if user_fields:
             user_serializer = self.get_serializer(user, data=user_fields, partial=True)
             user_serializer.is_valid(raise_exception=True)
@@ -157,13 +156,6 @@ class MeView(generics.RetrieveUpdateAPIView):
             )
             dp.is_valid(raise_exception=True)
             dp.save()
-
-        if "broker_profile" in request.data and hasattr(user, "broker_profile"):
-            bp = BrokerProfileSerializer(
-                user.broker_profile, data=request.data["broker_profile"], partial=True
-            )
-            bp.is_valid(raise_exception=True)
-            bp.save()
 
         # Re-fetch to get fresh nested data in the response
         user.refresh_from_db()

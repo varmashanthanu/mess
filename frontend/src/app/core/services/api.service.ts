@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { PaginatedResponse, FreightOrder, OrderBid, CreateOrderPayload, OrderAssignment, SuggestedPrice } from '../models/order.model';
+import { PaginatedResponse, FreightOrder, CreateOrderPayload, OrderAssignment, SuggestedPrice } from '../models/order.model';
 import { Vehicle, VehicleType } from '../models/fleet.model';
 import { Conversation, Message } from '../models/messaging.model';
 import { Notification } from '../models/notification.model';
@@ -74,17 +74,9 @@ export class ApiService {
     return this.http.post<SuggestedPrice & { currency: string }>(`${this.base}/orders/estimate-price/`, payload);
   }
 
-  // ── Bids ──────────────────────────────────────────────────────
-  getBids(orderId: string): Observable<PaginatedResponse<OrderBid>> {
-    return this.http.get<PaginatedResponse<OrderBid>>(`${this.base}/orders/${orderId}/bids/`);
-  }
-
-  submitBid(orderId: string, payload: { price: number; message?: string; estimated_pickup_time?: string }): Observable<OrderBid> {
-    return this.http.post<OrderBid>(`${this.base}/orders/${orderId}/bids/`, payload);
-  }
-
-  acceptBid(orderId: string, bidId: string): Observable<FreightOrder> {
-    return this.http.post<FreightOrder>(`${this.base}/orders/${orderId}/accept-bid/`, { bid_id: bidId });
+  acceptOrder(orderId: string, vehicleId?: string): Observable<{ message: string; status: string }> {
+    const payload = vehicleId ? { vehicle: vehicleId } : {};
+    return this.http.post<{ message: string; status: string }>(`${this.base}/orders/${orderId}/accept/`, payload);
   }
 
   confirmDelivery(orderId: string): Observable<FreightOrder> {

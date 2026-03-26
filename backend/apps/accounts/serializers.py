@@ -7,7 +7,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .constants import UserRole
-from .models import BrokerProfile, DriverProfile, PhoneVerification, ShipperProfile
+from .models import DriverProfile, PhoneVerification, ShipperProfile
 
 User = get_user_model()
 
@@ -64,8 +64,6 @@ def _create_role_profile(user):
         ShipperProfile.objects.get_or_create(user=user)
     elif user.role == UserRole.DRIVER:
         DriverProfile.objects.get_or_create(user=user, defaults={"license_number": "PENDING"})
-    elif user.role == UserRole.BROKER:
-        BrokerProfile.objects.get_or_create(user=user)
 
 
 # ── OTP Verification ──────────────────────────────────────────────
@@ -112,7 +110,6 @@ class UserDetailSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)
     shipper_profile = serializers.SerializerMethodField()
     driver_profile = serializers.SerializerMethodField()
-    broker_profile = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -120,7 +117,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "id", "phone_number", "email", "first_name", "last_name",
             "full_name", "role", "preferred_language", "is_verified",
             "is_identity_verified", "date_joined",
-            "shipper_profile", "driver_profile", "broker_profile",
+            "shipper_profile", "driver_profile",
         ]
         read_only_fields = ["id", "phone_number", "is_verified", "is_identity_verified", "date_joined"]
 
@@ -132,11 +129,6 @@ class UserDetailSerializer(serializers.ModelSerializer):
     def get_driver_profile(self, obj):
         if hasattr(obj, "driver_profile"):
             return DriverProfileSerializer(obj.driver_profile).data
-        return None
-
-    def get_broker_profile(self, obj):
-        if hasattr(obj, "broker_profile"):
-            return BrokerProfileSerializer(obj.broker_profile).data
         return None
 
 
@@ -174,8 +166,3 @@ class DriverAvailabilitySerializer(serializers.Serializer):
     current_lng = serializers.DecimalField(max_digits=9, decimal_places=6, required=False)
 
 
-class BrokerProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BrokerProfile
-        fields = ["company_name", "commission_rate", "avatar", "city", "rating"]
-        read_only_fields = ["rating"]

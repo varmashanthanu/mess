@@ -36,7 +36,7 @@ class Vehicle(BaseModel):
 
     owner = models.ForeignKey(
         "accounts.User", on_delete=models.PROTECT,
-        related_name="vehicles", limit_choices_to={"role__in": ["DRIVER", "FLEET_MANAGER"]}
+        related_name="vehicles", limit_choices_to={"role": "DRIVER"}
     )
     vehicle_type = models.ForeignKey(VehicleType, on_delete=models.PROTECT, related_name="vehicles")
 

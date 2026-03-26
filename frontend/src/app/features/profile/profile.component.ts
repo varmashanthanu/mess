@@ -168,8 +168,6 @@ export class ProfileComponent implements OnInit {
     const roleMap: Record<string, string> = {
       SHIPPER: 'PROFILE.ROLES.SHIPPER',
       DRIVER: 'PROFILE.ROLES.DRIVER',
-      BROKER: 'PROFILE.ROLES.BROKER',
-      FLEET_MANAGER: 'PROFILE.ROLES.FLEET_MANAGER',
       ADMIN: 'PROFILE.ROLES.ADMIN',
     };
     return roleMap[this.auth.user()?.role ?? ''] ?? '';

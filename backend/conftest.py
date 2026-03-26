@@ -47,23 +47,6 @@ def driver(db):
     return user
 
 
-@pytest.fixture
-def driver2(db):
-    """A second driver for multi-bid tests."""
-    from apps.accounts.models import DriverProfile, User
-    user = User.objects.create_user(
-        phone_number="+221773456789",
-        password="testpass123",
-        first_name="Oumar",
-        last_name="Seck",
-        role="DRIVER",
-        is_verified=True,
-    )
-    DriverProfile.objects.get_or_create(
-        user=user,
-        defaults={"license_number": "SN-DK-002", "is_available": True},
-    )
-    return user
 
 
 @pytest.fixture
@@ -84,21 +67,24 @@ def admin_user(db):
 # ── Authenticated clients ──────────────────────────────────────────────────
 
 @pytest.fixture
-def shipper_client(api_client, shipper):
-    api_client.force_authenticate(user=shipper)
-    return api_client
+def shipper_client(shipper):
+    client = APIClient()
+    client.force_authenticate(user=shipper)
+    return client
 
 
 @pytest.fixture
-def driver_client(api_client, driver):
-    api_client.force_authenticate(user=driver)
-    return api_client
+def driver_client(driver):
+    client = APIClient()
+    client.force_authenticate(user=driver)
+    return client
 
 
 @pytest.fixture
-def admin_client(api_client, admin_user):
-    api_client.force_authenticate(user=admin_user)
-    return api_client
+def admin_client(admin_user):
+    client = APIClient()
+    client.force_authenticate(user=admin_user)
+    return client
 
 
 # ── Fleet ──────────────────────────────────────────────────────────────────
@@ -175,21 +161,13 @@ def posted_order(db, shipper, vehicle_type):
 @pytest.fixture
 def accepted_order(db, posted_order, driver, vehicle):
     """An ASSIGNED order with a driver and vehicle."""
-    from apps.orders.models import OrderAssignment, OrderBid, OrderStatus
-    bid = OrderBid.objects.create(
-        order=posted_order,
-        carrier=driver,
-        vehicle=vehicle,
-        price=150_000,
-        status=OrderBid.BidStatus.ACCEPTED,
-    )
+    from apps.orders.models import OrderAssignment, OrderStatus
     posted_order.transition_to(OrderStatus.ASSIGNED)
-    posted_order.final_price = bid.price
+    posted_order.final_price = 150_000
     posted_order.save(update_fields=["final_price"])
     OrderAssignment.objects.create(
         order=posted_order,
         driver=driver,
         vehicle=vehicle,
-        accepted_bid=bid,
     )
     return posted_order

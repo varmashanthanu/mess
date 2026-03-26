@@ -57,8 +57,6 @@
       "ROLE_SELECT": "-- Sélectionner --",
       "ROLE_SHIPPER": "Expéditeur (Shipper)",
       "ROLE_DRIVER": "Chauffeur (Driver)",
-      "ROLE_BROKER": "Courtier (Broker)",
-      "ROLE_FLEET_MANAGER": "Gestionnaire de flotte",
       "PASSWORD": "Mot de passe",
       "PASSWORD_PLACEHOLDER": "Min. 8 caractères",
       "PASSWORD_MIN": "Minimum 8 caractères",
@@ -145,7 +143,6 @@
     "STATUS": {
       "DRAFT": "Brouillon",
       "POSTED": "Publié",
-      "BIDDING": "Enchères",
       "ASSIGNED": "Assigné",
       "PICKUP_PENDING": "Collecte",
       "PICKED_UP": "Récupéré",
@@ -162,6 +159,7 @@
     "DETAIL": {
       "BACK": "← Retour aux commandes",
       "PUBLISH": "Publier",
+      "ACCEPT_ORDER": "Accepter la mission",
       "CONFIRM_DELIVERY": "Confirmer livraison",
       "CANCEL_ORDER": "Annuler",
       "CANCEL_CONFIRM": "Annuler cette commande ?",
@@ -175,16 +173,6 @@
       "FINAL_PRICE": "Prix final",
       "SUGGESTED_PRICE": "Fourchette estimée",
       "CARGO_NOTES": "Notes",
-      "BIDS_TITLE": "Offres",
-      "BID_FORM_TITLE": "Soumettre une offre",
-      "BID_AMOUNT": "Montant (XOF)",
-      "BID_DATE": "Date de collecte prévue",
-      "BID_MESSAGE": "Message",
-      "BID_MESSAGE_PLACEHOLDER": "Votre message...",
-      "BID_SUBMIT": "Soumettre l'offre",
-      "BID_SUBMITTING": "Envoi...",
-      "BID_ACCEPT": "✓ Accepter",
-      "BID_EMPTY": "Aucune offre pour l'instant.",
       "CONFIRM_PICKUP": "Confirmer la collecte",
       "SUBMIT_DELIVERY_PROOF": "Soumettre preuve de livraison",
       "PICKUP_PROOF_TITLE": "Confirmation de collecte",
@@ -331,8 +319,6 @@
     "ROLES": {
       "SHIPPER": "Expéditeur",
       "DRIVER": "Chauffeur",
-      "BROKER": "Courtier",
-      "FLEET_MANAGER": "Gestionnaire flotte",
       "ADMIN": "Administrateur"
     }
   }

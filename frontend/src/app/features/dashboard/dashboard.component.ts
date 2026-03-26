@@ -19,7 +19,7 @@ interface StatCard { label: string; value: string | number; icon: string; color:
           <h1>{{ 'DASHBOARD.GREETING' | translate: { name: firstName() } }}</h1>
           <p class="text-muted">{{ today() }}</p>
         </div>
-        <a class="btn-action" routerLink="/orders/new" *ngIf="auth.hasRole('SHIPPER', 'BROKER', 'ADMIN')">
+        <a class="btn-action" routerLink="/orders/new" *ngIf="auth.hasRole('SHIPPER', 'ADMIN')">
           {{ 'DASHBOARD.NEW_ORDER' | translate }}
         </a>
       </div>
@@ -90,7 +90,7 @@ interface StatCard { label: string; value: string | number; icon: string; color:
     .route-arrow { color: #BDBDBD; }
     .order-meta { margin-left: auto; }
     .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-    .badge--draft{background:#E0E0E0;color:#616161}.badge--posted{background:#E3F2FD;color:#1565C0}.badge--bidding{background:#FFF3E0;color:#E65100}.badge--assigned{background:#F3E5F5;color:#6A1B9A}.badge--in_transit{background:#E8F5E9;color:#2E7D32}.badge--delivered{background:#E0F2F1;color:#00695C}.badge--completed{background:#C8E6C9;color:#1B5E20}.badge--cancelled{background:#FFEBEE;color:#B71C1C}.badge--disputed{background:#FCE4EC;color:#880E4F}.badge--pickup_pending{background:#FFF8E1;color:#F57F17}.badge--picked_up{background:#E8EAF6;color:#283593}
+    .badge--draft{background:#E0E0E0;color:#616161}.badge--posted{background:#E3F2FD;color:#1565C0}.badge--assigned{background:#F3E5F5;color:#6A1B9A}.badge--in_transit{background:#E8F5E9;color:#2E7D32}.badge--delivered{background:#E0F2F1;color:#00695C}.badge--completed{background:#C8E6C9;color:#1B5E20}.badge--cancelled{background:#FFEBEE;color:#B71C1C}.badge--disputed{background:#FCE4EC;color:#880E4F}.badge--pickup_pending{background:#FFF8E1;color:#F57F17}.badge--picked_up{background:#E8EAF6;color:#283593}
     .text-sm { font-size: 12px; } .text-muted { color: #757575; }
     .loading-overlay { text-align: center; padding: 40px; color: #757575; }
     .empty-state { padding: 48px; text-align: center; color: #757575; }

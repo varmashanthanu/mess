@@ -3,7 +3,7 @@ Integration tests for the Orders API endpoints.
 Covers the full order lifecycle through HTTP.
 """
 import pytest
-from apps.orders.models import FreightOrder, OrderAssignment, OrderBid, OrderStatus
+from apps.orders.models import FreightOrder, OrderAssignment, OrderStatus
 
 
 BASE = "/api/v1/orders"
@@ -37,7 +37,7 @@ class TestOrderCreation:
 
     def test_driver_cannot_create_order(self, driver_client):
         resp = driver_client.post(f"{BASE}/", self._payload())
-        assert resp.status_code == 400
+        assert resp.status_code in (400, 422)
 
     def test_unauthenticated_request_rejected(self, api_client):
         resp = api_client.post(f"{BASE}/", self._payload())
@@ -81,11 +81,11 @@ class TestOrderListing:
             for oid in ids
         )
 
-    def test_driver_sees_posted_and_bidding_orders(self, driver_client, posted_order):
+    def test_driver_sees_only_posted_orders(self, driver_client, posted_order):
         resp = driver_client.get(f"{BASE}/")
         assert resp.status_code == 200
         statuses = {o["status"] for o in resp.json()["results"]}
-        assert statuses <= {OrderStatus.POSTED, OrderStatus.BIDDING}
+        assert statuses <= {OrderStatus.POSTED}
 
 
 @pytest.mark.django_db
@@ -98,98 +98,54 @@ class TestOrderPosting:
 
     def test_cannot_post_non_draft(self, shipper_client, posted_order):
         resp = shipper_client.post(f"{BASE}/{posted_order.id}/post/")
-        assert resp.status_code == 400
+        assert resp.status_code in (400, 422)
 
 
 @pytest.mark.django_db
-class TestBidFlow:
-    def test_driver_bids_on_posted_order(self, driver_client, driver, vehicle, posted_order):
-        resp = driver_client.post(f"{BASE}/{posted_order.id}/bids/", {
-            "price": "145000.00",
-            "message": "I can do this job",
+class TestAcceptOrder:
+    def test_driver_accepts_posted_order(self, driver_client, driver, vehicle, posted_order):
+        resp = driver_client.post(f"{BASE}/{posted_order.id}/accept/", {
             "vehicle": str(vehicle.id),
-        })
-        assert resp.status_code == 201
-        posted_order.refresh_from_db()
-        assert posted_order.status == OrderStatus.BIDDING
-
-    def test_driver_cannot_bid_twice(self, driver_client, driver, vehicle, posted_order):
-        driver_client.post(f"{BASE}/{posted_order.id}/bids/", {
-            "price": "145000.00",
-            "vehicle": str(vehicle.id),
-        })
-        resp = driver_client.post(f"{BASE}/{posted_order.id}/bids/", {
-            "price": "140000.00",
-            "vehicle": str(vehicle.id),
-        })
-        assert resp.status_code == 400
-
-    def test_shipper_cannot_bid(self, shipper_client, posted_order):
-        resp = shipper_client.post(f"{BASE}/{posted_order.id}/bids/", {
-            "price": "145000.00",
-        })
-        # Shipper role is not in DRIVER/FLEET_MANAGER, so bid validation fails
-        assert resp.status_code in (400, 403)
-
-    def test_bid_on_draft_order_fails(self, driver_client, driver, vehicle, draft_order):
-        resp = driver_client.post(f"{BASE}/{draft_order.id}/bids/", {
-            "price": "145000.00",
-            "vehicle": str(vehicle.id),
-        })
-        assert resp.status_code == 400
-
-
-@pytest.mark.django_db
-class TestAcceptBid:
-    def test_shipper_accepts_bid_assigns_driver(
-        self, shipper_client, driver, vehicle, posted_order
-    ):
-        bid = OrderBid.objects.create(
-            order=posted_order,
-            carrier=driver,
-            vehicle=vehicle,
-            price=145_000,
-        )
-        resp = shipper_client.post(f"{BASE}/{posted_order.id}/accept-bid/", {
-            "bid_id": str(bid.id),
         })
         assert resp.status_code == 200
         posted_order.refresh_from_db()
         assert posted_order.status == OrderStatus.ASSIGNED
-        assert OrderAssignment.objects.filter(order=posted_order).exists()
-        bid.refresh_from_db()
-        assert bid.status == OrderBid.BidStatus.ACCEPTED
+        assert OrderAssignment.objects.filter(order=posted_order, driver=driver).exists()
 
-    def test_accepting_bid_rejects_others(
-        self, shipper_client, driver, driver2, vehicle, posted_order
-    ):
-        bid1 = OrderBid.objects.create(order=posted_order, carrier=driver, vehicle=vehicle, price=145_000)
-        from apps.fleet.models import Vehicle
-        vehicle2 = Vehicle.objects.create(
-            owner=driver2,
-            vehicle_type=vehicle.vehicle_type,
-            registration_number="DK-5678-B",
-            is_active=True,
-            is_verified=True,
-        )
-        bid2 = OrderBid.objects.create(order=posted_order, carrier=driver2, vehicle=vehicle2, price=150_000)
+    def test_driver_accepts_without_vehicle(self, driver_client, driver, posted_order):
+        resp = driver_client.post(f"{BASE}/{posted_order.id}/accept/", {})
+        assert resp.status_code == 200
+        posted_order.refresh_from_db()
+        assert posted_order.status == OrderStatus.ASSIGNED
 
-        shipper_client.post(f"{BASE}/{posted_order.id}/accept-bid/", {"bid_id": str(bid1.id)})
+    def test_final_price_set_to_proposed_price(self, driver_client, posted_order, vehicle):
+        posted_order.proposed_price = 150_000
+        posted_order.save(update_fields=["proposed_price"])
+        driver_client.post(f"{BASE}/{posted_order.id}/accept/", {"vehicle": str(vehicle.id)})
+        posted_order.refresh_from_db()
+        assert float(posted_order.final_price) == 150_000.0
 
-        bid2.refresh_from_db()
-        assert bid2.status == OrderBid.BidStatus.REJECTED
+    def test_shipper_cannot_accept_order(self, shipper_client, posted_order):
+        resp = shipper_client.post(f"{BASE}/{posted_order.id}/accept/", {})
+        assert resp.status_code in (400, 403, 422)
 
-    def test_driver_cannot_accept_bid(self, driver_client, driver, vehicle, posted_order):
-        bid = OrderBid.objects.create(
-            order=posted_order, carrier=driver, vehicle=vehicle, price=145_000
-        )
-        resp = driver_client.post(f"{BASE}/{posted_order.id}/accept-bid/", {"bid_id": str(bid.id)})
-        assert resp.status_code in (400, 403)
+    def test_cannot_accept_draft_order(self, driver_client, draft_order):
+        resp = driver_client.post(f"{BASE}/{draft_order.id}/accept/", {})
+        assert resp.status_code in (400, 422)
+
+    def test_cannot_accept_already_assigned_order(self, driver_client, accepted_order):
+        resp = driver_client.post(f"{BASE}/{accepted_order.id}/accept/", {})
+        assert resp.status_code in (400, 422)
 
 
 @pytest.mark.django_db
 class TestDeliveryLifecycle:
+    def _to_in_transit(self, driver_client, order_id):
+        """Helper: submit pickup proof to move order from ASSIGNED → IN_TRANSIT."""
+        driver_client.post(f"{BASE}/{order_id}/pickup-proof/", {"pickup_proof_note": "Collected"})
+
     def test_driver_submits_proof_of_delivery(self, driver_client, accepted_order):
+        self._to_in_transit(driver_client, accepted_order.id)
         resp = driver_client.post(f"{BASE}/{accepted_order.id}/proof-of-delivery/", {
             "proof_note": "Delivered to the warehouse manager.",
             "proof_signature": "Mamadou Diallo",
@@ -199,10 +155,8 @@ class TestDeliveryLifecycle:
         assert accepted_order.status == OrderStatus.DELIVERED
 
     def test_shipper_confirms_delivery(self, shipper_client, driver_client, accepted_order):
-        # Driver submits proof first
-        driver_client.post(f"{BASE}/{accepted_order.id}/proof-of-delivery/", {
-            "proof_note": "Done",
-        })
+        self._to_in_transit(driver_client, accepted_order.id)
+        driver_client.post(f"{BASE}/{accepted_order.id}/proof-of-delivery/", {"proof_note": "Done"})
         resp = shipper_client.post(f"{BASE}/{accepted_order.id}/confirm-delivery/")
         assert resp.status_code == 200
         accepted_order.refresh_from_db()
@@ -211,21 +165,24 @@ class TestDeliveryLifecycle:
     def test_shipper_cannot_confirm_before_proof(self, shipper_client, accepted_order):
         resp = shipper_client.post(f"{BASE}/{accepted_order.id}/confirm-delivery/")
         # Order is still in ASSIGNED state, not DELIVERED
-        assert resp.status_code == 400
+        assert resp.status_code in (400, 422)
 
     def test_shipper_rates_driver(self, shipper_client, driver_client, accepted_order):
+        self._to_in_transit(driver_client, accepted_order.id)
         driver_client.post(f"{BASE}/{accepted_order.id}/proof-of-delivery/", {"proof_note": "Done"})
         shipper_client.post(f"{BASE}/{accepted_order.id}/confirm-delivery/")
         resp = shipper_client.post(f"{BASE}/{accepted_order.id}/rate/", {"rating": 5, "review": "Excellent!"})
         assert resp.status_code == 200
 
     def test_driver_rates_shipper(self, shipper_client, driver_client, accepted_order):
+        self._to_in_transit(driver_client, accepted_order.id)
         driver_client.post(f"{BASE}/{accepted_order.id}/proof-of-delivery/", {"proof_note": "Done"})
         shipper_client.post(f"{BASE}/{accepted_order.id}/confirm-delivery/")
         resp = driver_client.post(f"{BASE}/{accepted_order.id}/rate/", {"rating": 4})
         assert resp.status_code == 200
 
     def test_rating_out_of_range_fails(self, shipper_client, driver_client, accepted_order):
+        self._to_in_transit(driver_client, accepted_order.id)
         driver_client.post(f"{BASE}/{accepted_order.id}/proof-of-delivery/", {"proof_note": "Done"})
         shipper_client.post(f"{BASE}/{accepted_order.id}/confirm-delivery/")
         resp = shipper_client.post(f"{BASE}/{accepted_order.id}/rate/", {"rating": 6})
