@@ -94,15 +94,21 @@
 
   "NAV": {
     "DASHBOARD": "Tableau de bord",
+    "MY_DASHBOARD": "Mon tableau de bord",
     "ORDERS": "Commandes",
-    "MY_MISSIONS": "Mes missions",
+    "LOAD_BOARD": "Tableau des charges",
     "TRACKING": "Suivi GPS",
-    "FLEET": "Flotte",
     "MESSAGES": "Messages",
     "NOTIFICATIONS": "Notifications",
     "PROFILE": "Profil",
     "ADMIN": "Admin",
     "LOGOUT": "Déconnexion"
+  },
+
+  "LOAD_BOARD": {
+    "SUBTITLE": "Emplois disponibles que vous pouvez accepter",
+    "EMPTY_TITLE": "Aucun emploi disponible",
+    "EMPTY_SUBTITLE": "Revenez bientôt pour de nouvelles charges."
   },
 
   "TOPBAR": {
@@ -116,10 +122,10 @@
     "GREETING": "Bonjour, {{name}} 👋",
     "NEW_ORDER": "+ Nouvelle commande",
     "STATS": {
-      "TOTAL": "Total commandes",
+      "AVAILABLE": "Commandes disponibles",
       "IN_TRANSIT": "En transit",
-      "COMPLETED": "Livrées",
-      "PENDING": "En attente"
+      "DELIVERED": "Livrées",
+      "COMPLETED": "Terminées"
     },
     "RECENT_ORDERS": "Commandes récentes",
     "EMPTY_TITLE": "Aucune commande",

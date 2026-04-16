@@ -6,7 +6,8 @@ import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { FreightOrder } from '../../core/models/order.model';
 
-interface StatCard { label: string; value: string | number; icon: string; color: string; }
+type StatFilter = 'available' | 'in_transit' | 'delivered' | 'completed' | null;
+interface StatCard { label: string; value: string | number; icon: string; color: string; filter: StatFilter; }
 
 @Component({
   selector: 'app-dashboard',
@@ -25,7 +26,9 @@ interface StatCard { label: string; value: string | number; icon: string; color:
       </div>
 
       <div class="stats-grid">
-        <div class="stat-card" *ngFor="let s of stats()">
+        <div class="stat-card" *ngFor="let s of stats()"
+             [class.stat-card--active]="activeFilter() === s.filter"
+             (click)="setFilter(s.filter)" style="cursor:pointer">
           <div class="stat-icon" [style.background]="s.color + '20'" [style.color]="s.color">{{ s.icon }}</div>
           <div class="stat-body">
             <div class="stat-value">{{ s.value }}</div>
@@ -37,13 +40,18 @@ interface StatCard { label: string; value: string | number; icon: string; color:
       <div class="section">
         <div class="section-header">
           <h2>{{ 'DASHBOARD.RECENT_ORDERS' | translate }}</h2>
-          <a routerLink="/orders" class="see-all">{{ 'COMMON.SEE_ALL' | translate }}</a>
+          <div class="section-header-right">
+            <span class="filter-badge" *ngIf="activeFilter()" (click)="setFilter(null)">
+              {{ 'DASHBOARD.STATS.' + activeFilter()!.toUpperCase() | translate }} ✕
+            </span>
+            <a routerLink="/orders" class="see-all">{{ 'COMMON.SEE_ALL' | translate }}</a>
+          </div>
         </div>
 
         <div class="loading-overlay" *ngIf="loading()">⏳ {{ 'COMMON.LOADING' | translate }}</div>
 
-        <div class="orders-list" *ngIf="!loading() && recentOrders().length">
-          <div class="order-row" *ngFor="let o of recentOrders()" [routerLink]="['/orders', o.id]">
+        <div class="orders-list" *ngIf="!loading() && filteredOrders().length">
+          <div class="order-row" *ngFor="let o of filteredOrders()" [routerLink]="['/orders', o.id]">
             <div class="order-ref">
               <strong>{{ o.reference }}</strong>
               <span class="badge badge--{{ o.status.toLowerCase() }}">{{ 'ORDERS.STATUS.' + o.status | translate }}</span>
@@ -59,7 +67,7 @@ interface StatCard { label: string; value: string | number; icon: string; color:
           </div>
         </div>
 
-        <div class="empty-state" *ngIf="!loading() && !recentOrders().length">
+        <div class="empty-state" *ngIf="!loading() && !filteredOrders().length">
           <div class="empty-icon">📦</div>
           <h3>{{ 'DASHBOARD.EMPTY_TITLE' | translate }}</h3>
           <p>{{ 'DASHBOARD.EMPTY_SUBTITLE' | translate }}</p>
@@ -74,12 +82,16 @@ interface StatCard { label: string; value: string | number; icon: string; color:
     .btn-action { padding: 10px 20px; background: #FF6B35; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background .2s; }
     .btn-action:hover { background: #e55a24; }
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
-    .stat-card { background: white; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .stat-card { background: white; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: box-shadow .15s, transform .15s; }
+    .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-1px); }
+    .stat-card--active { box-shadow: 0 0 0 2px #FF6B35, 0 4px 16px rgba(0,0,0,0.1); }
     .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
     .stat-value { font-size: 24px; font-weight: 800; color: #212121; }
     .stat-label { font-size: 12px; color: #757575; margin-top: 2px; }
     .section { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .section-header-right { display: flex; align-items: center; gap: 12px; }
+    .filter-badge { background: #FF6B3520; color: #FF6B35; border: 1px solid #FF6B35; border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
     h2 { font-size: 18px; font-weight: 700; }
     .see-all { color: #FF6B35; font-size: 13px; font-weight: 600; text-decoration: none; }
     .order-row { display: flex; align-items: center; gap: 20px; padding: 14px 8px; border-bottom: 1px solid #F0F0F0; cursor: pointer; border-radius: 6px; }
@@ -104,21 +116,41 @@ export class DashboardComponent implements OnInit {
 
   loading = signal(true);
   recentOrders = signal<FreightOrder[]>([]);
+  activeFilter = signal<StatFilter>(null);
 
   firstName = computed(() => (this.auth.user()?.full_name || '').split(' ')[0]);
+
+  private inTransitStatuses = ['ASSIGNED', 'PICKUP_PENDING', 'PICKED_UP', 'IN_TRANSIT'];
 
   stats = computed<StatCard[]>(() => {
     const orders = this.recentOrders();
     return [
-      { label: 'DASHBOARD.STATS.TOTAL',     value: orders.length,                                              icon: '📦', color: '#FF6B35' },
-      { label: 'DASHBOARD.STATS.IN_TRANSIT', value: orders.filter(o => o.status === 'IN_TRANSIT').length,      icon: '🚛', color: '#2196F3' },
-      { label: 'DASHBOARD.STATS.COMPLETED',  value: orders.filter(o => o.status === 'COMPLETED').length,       icon: '✅', color: '#00C896' },
-      { label: 'DASHBOARD.STATS.PENDING',    value: orders.filter(o => o.status === 'POSTED').length,          icon: '⏳', color: '#FF9800' },
+      { label: 'DASHBOARD.STATS.AVAILABLE',  value: orders.filter(o => o.status === 'POSTED').length,                              icon: '📦', color: '#FF6B35', filter: 'available' },
+      { label: 'DASHBOARD.STATS.IN_TRANSIT', value: orders.filter(o => this.inTransitStatuses.includes(o.status)).length,          icon: '🚛', color: '#2196F3', filter: 'in_transit' },
+      { label: 'DASHBOARD.STATS.DELIVERED',  value: orders.filter(o => o.status === 'DELIVERED').length,                           icon: '📬', color: '#00C896', filter: 'delivered' },
+      { label: 'DASHBOARD.STATS.COMPLETED',  value: orders.filter(o => o.status === 'COMPLETED').length,                           icon: '✅', color: '#FF9800', filter: 'completed' },
     ];
   });
 
+  filteredOrders = computed<FreightOrder[]>(() => {
+    const orders = this.recentOrders();
+    const filter = this.activeFilter();
+    if (!filter) return orders;
+    switch (filter) {
+      case 'available':   return orders.filter(o => o.status === 'POSTED');
+      case 'in_transit':  return orders.filter(o => this.inTransitStatuses.includes(o.status));
+      case 'delivered':   return orders.filter(o => o.status === 'DELIVERED');
+      case 'completed':   return orders.filter(o => o.status === 'COMPLETED');
+      default:            return orders;
+    }
+  });
+
+  setFilter(filter: StatFilter): void {
+    this.activeFilter.set(this.activeFilter() === filter ? null : filter);
+  }
+
   ngOnInit(): void {
-    this.api.getOrders({ page_size: '10' }).subscribe({
+    this.api.getOrders({ page_size: '100' }).subscribe({
       next: (res) => { this.recentOrders.set(res.results); this.loading.set(false); },
       error: () => this.loading.set(false),
     });

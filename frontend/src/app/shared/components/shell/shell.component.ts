@@ -51,6 +51,12 @@ export class ShellComponent implements OnInit {
 
   ngOnInit(): void {
     this.notifSvc.connectWebSocket();
+    if (sessionStorage.getItem('showSidebarOnLoad')) {
+      sessionStorage.removeItem('showSidebarOnLoad');
+      if (window.innerWidth <= 768) {
+        this.mobileSidebarOpen.set(true);
+      }
+    }
   }
 
   desktopMargin(): string {

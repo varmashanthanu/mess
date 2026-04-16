@@ -56,8 +56,8 @@ export const routes: Routes = [
         loadComponent: () => import('./features/tracking/tracking.component').then(m => m.TrackingComponent),
       },
       {
-        path: 'fleet',
-        loadComponent: () => import('./features/fleet/fleet.component').then(m => m.FleetComponent),
+        path: 'load-board',
+        loadComponent: () => import('./features/load-board/load-board.component').then(m => m.LoadBoardComponent),
       },
       {
         path: 'messaging',

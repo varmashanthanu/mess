@@ -112,7 +112,7 @@ export class LoginComponent {
     if (this.form.invalid) return;
     this.loading = true;
     this.auth.login(this.f['phone_number'].value, this.f['password'].value).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
+      next: () => { sessionStorage.setItem('showSidebarOnLoad', 'true'); this.router.navigate(['/dashboard']); },
       error: (err: any) => {
         this.error = err?.error?.error?.message || err?.error?.detail || 'AUTH.LOGIN.ERROR_INVALID';
         this.loading = false;

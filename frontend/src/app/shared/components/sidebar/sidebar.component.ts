@@ -74,7 +74,7 @@ interface NavItem {
     .logout-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; border-radius: 8px; font-size: 14px; transition: all .15s; white-space: nowrap; }
     .logout-btn:hover { background: rgba(255,255,255,0.08); color: white; }
     @media (max-width: 768px) {
-      .sidebar { transform: translateX(-100%); width: var(--sidebar-width) !important; z-index: 150; }
+      .sidebar { transform: translateX(-100%); width: 100% !important; z-index: 150; }
       .sidebar.mobile-open { transform: translateX(0); }
       .sidebar-close { display: flex; }
     }
@@ -105,14 +105,13 @@ export class SidebarComponent {
   });
 
   private allItems: NavItem[] = [
-    { labelKey: 'NAV.DASHBOARD',   icon: '📊', route: '/dashboard' },
-    { labelKey: 'NAV.ORDERS',      icon: '📦', route: '/orders',   roles: ['SHIPPER', 'ADMIN'] },
-    { labelKey: 'NAV.MY_MISSIONS', icon: '🚛', route: '/orders',   roles: ['DRIVER'] },
-    { labelKey: 'NAV.TRACKING',    icon: '📍', route: '/tracking', roles: ['SHIPPER', 'DRIVER', 'ADMIN'] },
-    { labelKey: 'NAV.FLEET',       icon: '🚚', route: '/fleet',    roles: ['DRIVER', 'ADMIN'] },
-    { labelKey: 'NAV.MESSAGES',    icon: '💬', route: '/messaging' },
-    { labelKey: 'NAV.PROFILE',     icon: '👤', route: '/profile' },
-    { labelKey: 'NAV.ADMIN',       icon: '⚙️', route: '/admin',   roles: ['ADMIN'] },
+    { labelKey: 'NAV.LOAD_BOARD',   icon: '📋', route: '/load-board', roles: ['DRIVER'] },
+    { labelKey: 'NAV.MY_DASHBOARD', icon: '📊', route: '/dashboard' },
+    { labelKey: 'NAV.ORDERS',       icon: '📦', route: '/orders',     roles: ['SHIPPER', 'ADMIN'] },
+    { labelKey: 'NAV.TRACKING',     icon: '📍', route: '/tracking' },
+    { labelKey: 'NAV.MESSAGES',     icon: '💬', route: '/messaging' },
+    { labelKey: 'NAV.PROFILE',      icon: '👤', route: '/profile' },
+    { labelKey: 'NAV.ADMIN',        icon: '⚙️', route: '/admin',     roles: ['ADMIN'] },
   ];
 
   visibleItems = computed(() => {
