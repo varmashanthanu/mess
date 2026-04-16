@@ -94,15 +94,21 @@
 
   "NAV": {
     "DASHBOARD": "Dashboard",
+    "MY_DASHBOARD": "My Dashboard",
     "ORDERS": "Orders",
-    "MY_MISSIONS": "My Missions",
+    "LOAD_BOARD": "Load Board",
     "TRACKING": "GPS Tracking",
-    "FLEET": "Fleet",
     "MESSAGES": "Messages",
     "NOTIFICATIONS": "Notifications",
     "PROFILE": "Profile",
     "ADMIN": "Admin",
     "LOGOUT": "Sign out"
+  },
+
+  "LOAD_BOARD": {
+    "SUBTITLE": "Available jobs you can pick up",
+    "EMPTY_TITLE": "No available jobs",
+    "EMPTY_SUBTITLE": "Check back soon for new loads."
   },
 
   "TOPBAR": {
@@ -116,10 +122,10 @@
     "GREETING": "Hello, {{name}} 👋",
     "NEW_ORDER": "+ New order",
     "STATS": {
-      "TOTAL": "Total orders",
-      "IN_TRANSIT": "In transit",
-      "COMPLETED": "Delivered",
-      "PENDING": "Pending"
+      "AVAILABLE": "Available Orders",
+      "IN_TRANSIT": "In Transit",
+      "DELIVERED": "Delivered",
+      "COMPLETED": "Completed"
     },
     "RECENT_ORDERS": "Recent orders",
     "EMPTY_TITLE": "No orders",
