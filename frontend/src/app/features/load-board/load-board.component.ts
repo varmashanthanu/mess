@@ -1,0 +1,120 @@
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
+import { ApiService } from '../../core/services/api.service';
+import { FreightOrder } from '../../core/models/order.model';
+
+@Component({
+  selector: 'app-load-board',
+  standalone: true,
+  imports: [CommonModule, RouterLink, FormsModule, TranslateModule],
+  template: `
+    <div class="load-board-page">
+      <div class="page-header">
+        <div>
+          <h1>{{ 'NAV.LOAD_BOARD' | translate }}</h1>
+          <p class="subtitle">{{ 'LOAD_BOARD.SUBTITLE' | translate }}</p>
+        </div>
+      </div>
+
+      <div class="filters card mb-2">
+        <input type="text" [(ngModel)]="search" [placeholder]="'COMMON.SEARCH' | translate" (input)="load()" />
+      </div>
+
+      <div class="loading-overlay" *ngIf="loading()">⏳ {{ 'COMMON.LOADING' | translate }}</div>
+
+      <div class="card" *ngIf="!loading()">
+        <div class="empty-state" *ngIf="!orders().length">
+          <div class="empty-icon">📋</div>
+          <h3>{{ 'LOAD_BOARD.EMPTY_TITLE' | translate }}</h3>
+          <p>{{ 'LOAD_BOARD.EMPTY_SUBTITLE' | translate }}</p>
+        </div>
+
+        <table class="mess-table" *ngIf="orders().length">
+          <thead>
+            <tr>
+              <th>{{ 'ORDERS.COL_REF' | translate }}</th>
+              <th>{{ 'ORDERS.COL_ROUTE' | translate }}</th>
+              <th>{{ 'ORDERS.COL_WEIGHT' | translate }}</th>
+              <th>{{ 'ORDERS.COL_DATE' | translate }}</th>
+              <th>{{ 'ORDERS.COL_BUDGET' | translate }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let o of orders()" [routerLink]="['/orders', o.id]" style="cursor:pointer">
+              <td><strong>{{ o.reference }}</strong></td>
+              <td>
+                <div style="font-size:13px">{{ o.pickup_city }} → {{ o.delivery_city }}</div>
+                <div style="font-size:11px;color:#757575">{{ o.pickup_address | slice:0:40 }}...</div>
+              </td>
+              <td>{{ o.weight_kg }} kg</td>
+              <td>{{ o.pickup_scheduled_at | date:'dd/MM/yy' }}</td>
+              <td>{{ o.proposed_price ? (o.proposed_price | number) + ' XOF' : '—' }}</td>
+              <td><a [routerLink]="['/orders', o.id]" class="btn-sm">{{ 'COMMON.VIEW' | translate }}</a></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="pagination" *ngIf="totalCount() > pageSize">
+          <button [disabled]="page === 1" (click)="changePage(-1)">{{ 'ORDERS.PREV' | translate }}</button>
+          <span>{{ 'ORDERS.PAGE_OF' | translate: { page: page, total: totalCount() } }}</span>
+          <button [disabled]="!hasNext()" (click)="changePage(1)">{{ 'ORDERS.NEXT' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .load-board-page { max-width: 1100px; }
+    .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 2px; }
+    .subtitle { font-size: 13px; color: #757575; }
+    .filters { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; padding: 16px; }
+    input { flex: 1; padding: 9px 12px; border: 1.5px solid #E0E0E0; border-radius: 8px; font-size: 14px; outline: none; }
+    .mess-table { width: 100%; border-collapse: collapse; }
+    .mess-table th { text-align: left; padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #757575; border-bottom: 2px solid #F0F0F0; background: #FAFAFA; }
+    .mess-table td { padding: 14px 16px; border-bottom: 1px solid #F0F0F0; }
+    .mess-table tr:hover td { background: #FAFAFA; }
+    .btn-sm { padding: 5px 12px; background: #FF6B35; color: white; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; }
+    .pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-top: 1px solid #F0F0F0; font-size: 13px; color: #757575; }
+    .pagination button { padding: 8px 14px; border: 1px solid #E0E0E0; background: white; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .mb-2 { margin-bottom: 16px; }
+    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .empty-state { padding: 48px; text-align: center; color: #757575; }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+    h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .loading-overlay { text-align: center; padding: 40px; color: #757575; }
+  `]
+})
+export class LoadBoardComponent implements OnInit {
+  private api = inject(ApiService);
+
+  loading = signal(true);
+  orders = signal<FreightOrder[]>([]);
+  totalCount = signal(0);
+  page = 1;
+  pageSize = 20;
+  search = '';
+
+  ngOnInit(): void { this.load(); }
+
+  load(): void {
+    this.loading.set(true);
+    const params: Record<string, string> = {
+      page: String(this.page),
+      page_size: String(this.pageSize),
+      status: 'POSTED',
+    };
+    if (this.search) params['search'] = this.search;
+    this.api.getOrders(params).subscribe({
+      next: (res) => { this.orders.set(res.results); this.totalCount.set(res.count); this.loading.set(false); },
+      error: () => this.loading.set(false),
+    });
+  }
+
+  changePage(dir: number): void { this.page += dir; this.load(); }
+  hasNext(): boolean { return this.page * this.pageSize < this.totalCount(); }
+}
