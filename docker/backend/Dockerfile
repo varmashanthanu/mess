@@ -27,8 +27,9 @@ COPY backend/ .
 
 # Copy entrypoint BEFORE switching to non-root user (needs root to write to /)
 COPY docker/backend/entrypoint.sh /entrypoint.sh
+COPY docker/backend/entrypoint.celery.sh /entrypoint.celery.sh
 # Set permissions as root before switching user
-RUN chmod 755 /entrypoint.sh
+RUN chmod 755 /entrypoint.sh /entrypoint.celery.sh
 
 # Ensure media/static directories exist and are owned by the app user
 RUN mkdir -p /app/media /app/staticfiles && \
