@@ -116,6 +116,7 @@ services:
       args:
         REQUIREMENTS_FILE: production.txt
     restart: unless-stopped
+    entrypoint: ["/bin/bash", "/entrypoint.celery.sh"]
     command: celery -A config.celery_app worker --loglevel=info --concurrency=2 -Q default,payments,notifications
     volumes:
       - media_files:/app/media
@@ -137,6 +138,7 @@ services:
       args:
         REQUIREMENTS_FILE: production.txt
     restart: unless-stopped
+    entrypoint: ["/bin/bash", "/entrypoint.celery.sh"]
     command: celery -A config.celery_app beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     environment:
       <<: *backend-env
