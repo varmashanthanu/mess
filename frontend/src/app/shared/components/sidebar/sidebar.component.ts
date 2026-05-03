@@ -81,10 +81,9 @@ interface NavItem {
       .sidebar.mobile-open { transform: translateX(0); }
       .sidebar-close { display: flex; }
       .sidebar-nav { display: flex; flex-direction: column; padding: 12px 12px; gap: 10px; overflow: visible; }
-      .nav-item { flex: 1; padding: 0 20px; margin-bottom: 0; font-size: 23px; border-radius: 12px; box-shadow: 0 6px 0 color-mix(in srgb, var(--item-color) 60%, black); justify-content: center; }
+      .nav-item { flex: 1; padding: 0 20px; margin-bottom: 0; font-size: 2.25rem; font-weight: 800; border-radius: 12px; box-shadow: 0 6px 0 color-mix(in srgb, var(--item-color) 60%, black); justify-content: flex-start; }
       .nav-item:active { transform: translateY(5px); box-shadow: 0 1px 0 color-mix(in srgb, var(--item-color) 60%, black); }
       .nav-icon { font-size: 22px; width: 24px; }
-      .nav-label { flex: none; }
     }
     .sidebar-close { display: none; align-items: center; justify-content: center; margin-left: auto; width: 32px; height: 32px; background: none; border: none; color: rgba(255,255,255,0.65); font-size: 18px; cursor: pointer; border-radius: 6px; transition: all .15s; }
     .sidebar-close:hover { background: rgba(255,255,255,0.12); color: white; }
