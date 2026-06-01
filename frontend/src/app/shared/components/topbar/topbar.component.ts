@@ -74,6 +74,12 @@ import { ApiService } from '../../../core/services/api.service';
     .topbar-right { display: flex; align-items: center; gap: 12px; }
     .availability-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; }
     .avail-label { color: #757575; font-weight: 500; }
+    @media (max-width: 600px) {
+      .topbar { padding: 0 12px; }
+      .avail-label { display: none; }
+      .lang-code, .lang-chevron { display: none; }
+      .topbar-right { gap: 6px; }
+    }
     .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
     .toggle-switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; inset: 0; background: #BDBDBD; border-radius: 22px; transition: .3s; }

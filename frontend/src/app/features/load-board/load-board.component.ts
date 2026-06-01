@@ -32,7 +32,8 @@ import { FreightOrder } from '../../core/models/order.model';
           <p>{{ 'LOAD_BOARD.EMPTY_SUBTITLE' | translate }}</p>
         </div>
 
-        <table class="mess-table" *ngIf="orders().length">
+        <div class="table-wrap" *ngIf="orders().length">
+        <table class="mess-table">
           <thead>
             <tr>
               <th>{{ 'ORDERS.COL_REF' | translate }}</th>
@@ -57,6 +58,7 @@ import { FreightOrder } from '../../core/models/order.model';
             </tr>
           </tbody>
         </table>
+        </div>
 
         <div class="pagination" *ngIf="totalCount() > pageSize">
           <button [disabled]="page === 1" (click)="changePage(-1)">{{ 'ORDERS.PREV' | translate }}</button>
@@ -68,17 +70,18 @@ import { FreightOrder } from '../../core/models/order.model';
   `,
   styles: [`
     .load-board-page { max-width: 1100px; }
-    .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+    .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
     h1 { font-size: 24px; font-weight: 700; margin-bottom: 2px; }
     .subtitle { font-size: 13px; color: #757575; }
     .filters { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; padding: 16px; }
     input { flex: 1; padding: 9px 12px; border: 1.5px solid #E0E0E0; border-radius: 8px; font-size: 14px; outline: none; }
-    .mess-table { width: 100%; border-collapse: collapse; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .mess-table { width: 100%; border-collapse: collapse; min-width: 550px; }
     .mess-table th { text-align: left; padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #757575; border-bottom: 2px solid #F0F0F0; background: #FAFAFA; }
     .mess-table td { padding: 14px 16px; border-bottom: 1px solid #F0F0F0; }
     .mess-table tr:hover td { background: #FAFAFA; }
     .btn-sm { padding: 5px 12px; background: #FF6B35; color: white; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; }
-    .pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-top: 1px solid #F0F0F0; font-size: 13px; color: #757575; }
+    .pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-top: 1px solid #F0F0F0; font-size: 13px; color: #757575; gap: 8px; flex-wrap: wrap; }
     .pagination button { padding: 8px 14px; border: 1px solid #E0E0E0; background: white; border-radius: 6px; cursor: pointer; font-size: 13px; }
     .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
     .mb-2 { margin-bottom: 16px; }
@@ -87,6 +90,13 @@ import { FreightOrder } from '../../core/models/order.model';
     .empty-icon { font-size: 40px; margin-bottom: 12px; }
     h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
     .loading-overlay { text-align: center; padding: 40px; color: #757575; }
+    @media (max-width: 600px) {
+      h1 { font-size: 20px; }
+      .filters { padding: 12px; }
+      .card { padding: 12px; }
+      .mess-table th, .mess-table td { padding: 10px 12px; }
+      .pagination { justify-content: center; }
+    }
   `]
 })
 export class LoadBoardComponent implements OnInit {
