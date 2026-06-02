@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { ApiService } from '../../../core/services/api.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 @Component({
   selector: 'app-topbar',
@@ -27,7 +28,7 @@ import { ApiService } from '../../../core/services/api.service';
           </span>
           <label class="toggle-switch">
             <input type="checkbox" [checked]="isAvailable" (change)="toggleAvailability()">
-            <span class="slider"></span>
+            <span class="slider slider--green"></span>
           </label>
         </div>
 
@@ -50,7 +51,12 @@ import { ApiService } from '../../../core/services/api.service';
           </div>
         </div>
 
-        <!-- Notifications bell only -->
+        <!-- Dark mode toggle -->
+        <button class="theme-toggle" (click)="themeSvc.toggle()" [title]="themeSvc.isDark() ? 'Mode clair' : 'Mode sombre'">
+          <span class="theme-icon">{{ themeSvc.isDark() ? '☀️' : '🌙' }}</span>
+        </button>
+
+        <!-- Notifications bell -->
         <a class="notif-btn" routerLink="/notifications">
           <span>🔔</span>
           <span class="notif-badge" *ngIf="notifSvc.unreadCount() > 0">
@@ -63,43 +69,74 @@ import { ApiService } from '../../../core/services/api.service';
   `,
   styles: [`
     .topbar {
-      height: var(--topbar-height); background: white;
+      height: var(--topbar-height);
+      background: var(--topbar-bg, white);
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px; border-bottom: 1px solid #E0E0E0;
+      padding: 0 24px; border-bottom: 1px solid var(--border);
       position: sticky; top: 0; z-index: 50;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      box-shadow: var(--shadow);
+      transition: background-color 0.25s ease;
     }
-    .menu-toggle { background: none; border: none; font-size: 22px; cursor: pointer; color: #424242; padding: 8px; border-radius: 8px; transition: background .15s; }
-    .menu-toggle:hover { background: #F5F5F5; }
-    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .menu-toggle {
+      background: none; border: none; font-size: 22px; cursor: pointer;
+      color: var(--text-primary); padding: 8px; border-radius: 8px; transition: background .15s;
+    }
+    .menu-toggle:hover { background: var(--gold-bg, rgba(201,162,39,0.08)); }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
     .availability-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-    .avail-label { color: #757575; font-weight: 500; }
+    .avail-label { color: var(--text-secondary); font-weight: 500; }
     @media (max-width: 600px) {
       .topbar { padding: 0 12px; }
       .avail-label { display: none; }
       .lang-code, .lang-chevron { display: none; }
-      .topbar-right { gap: 6px; }
+      .topbar-right { gap: 4px; }
     }
     .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
     .toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; inset: 0; background: #BDBDBD; border-radius: 22px; transition: .3s; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background: var(--border, #BDBDBD); border-radius: 22px; transition: .3s; }
     .slider:before { position: absolute; content: ''; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
-    input:checked + .slider { background: #00C896; }
-    input:checked + .slider:before { transform: translateX(18px); }
+    input:checked + .slider--green { background: #43A047; }
+    input:checked + .slider--green:before { transform: translateX(18px); }
     .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-    .status-dot--online { background: #00C896; }
+    .status-dot--online { background: #43A047; }
     .status-dot--offline { background: #9E9E9E; }
+
+    /* Language picker */
     .lang-picker { position: relative; }
-    .lang-btn { display: flex; align-items: center; gap: 5px; padding: 7px 10px; border: 1.5px solid #E0E0E0; background: white; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: #424242; transition: border-color .15s; }
-    .lang-btn:hover { border-color: #FF6B35; }
-    .lang-chevron { font-size: 10px; color: #757575; }
-    .lang-dropdown { position: absolute; top: calc(100% + 6px); right: 0; background: white; border: 1px solid #E0E0E0; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); overflow: hidden; min-width: 140px; z-index: 200; }
-    .lang-option { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 14px; border: none; background: none; cursor: pointer; font-size: 13px; text-align: left; transition: background .1s; }
-    .lang-option:hover { background: #F5F5F5; }
-    .lang-option.active { background: #FFF3F0; color: #FF6B35; font-weight: 700; }
+    .lang-btn {
+      display: flex; align-items: center; gap: 5px; padding: 7px 10px;
+      border: 1.5px solid var(--border); background: var(--surface); border-radius: 8px;
+      cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-primary);
+      transition: border-color .15s;
+    }
+    .lang-btn:hover { border-color: var(--gold); }
+    .lang-chevron { font-size: 10px; color: var(--text-secondary); }
+    .lang-dropdown {
+      position: absolute; top: calc(100% + 6px); right: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; box-shadow: var(--shadow-lg); overflow: hidden; min-width: 140px; z-index: 200;
+    }
+    .lang-option {
+      display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 14px;
+      border: none; background: none; cursor: pointer; font-size: 13px;
+      color: var(--text-primary); text-align: left; transition: background .1s;
+    }
+    .lang-option:hover { background: var(--surface-raised); }
+    .lang-option.active { background: rgba(201,162,39,0.1); color: var(--gold); font-weight: 700; }
+
+    /* Dark mode toggle */
+    .theme-toggle {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; background: none; border: 1.5px solid var(--border);
+      border-radius: 8px; cursor: pointer; transition: all .15s; font-size: 16px;
+    }
+    .theme-toggle:hover { border-color: var(--gold); background: var(--gold-bg, rgba(201,162,39,0.08)); }
+    .theme-icon { line-height: 1; }
+
+    /* Notifications */
     .notif-btn { position: relative; text-decoration: none; font-size: 20px; padding: 8px; border-radius: 8px; display: flex; align-items: center; }
-    .notif-btn:hover { background: #F5F5F5; }
-    .notif-badge { position: absolute; top: 2px; right: 2px; background: #F44336; color: white; font-size: 9px; font-weight: 700; padding: 1px 4px; border-radius: 10px; min-width: 16px; text-align: center; }
+    .notif-btn:hover { background: var(--surface-raised); }
+    .notif-badge { position: absolute; top: 2px; right: 2px; background: #E53935; color: white; font-size: 9px; font-weight: 700; padding: 1px 4px; border-radius: 10px; min-width: 16px; text-align: center; }
   `]
 })
 export class TopbarComponent implements OnInit {
@@ -107,6 +144,7 @@ export class TopbarComponent implements OnInit {
   auth = inject(AuthService);
   notifSvc = inject(NotificationService);
   langSvc = inject(LanguageService);
+  themeSvc = inject(ThemeService);
   private api = inject(ApiService);
 
   isAvailable = false;

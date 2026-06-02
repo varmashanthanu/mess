@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -8,4 +9,8 @@ import { RouterOutlet } from '@angular/router';
   template: '<router-outlet />',
   styles: [':host { display: block; height: 100%; }'],
 })
-export class AppComponent {}
+export class AppComponent {
+  // Injecting ThemeService here ensures the effect runs at app startup
+  // and applies the saved dark-mode preference before first render.
+  private _theme = inject(ThemeService);
+}

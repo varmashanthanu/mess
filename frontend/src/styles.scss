@@ -1,24 +1,67 @@
 // ── Leaflet ──────────────────────────────────────────────────────
 @import 'leaflet/dist/leaflet.css';
 
-// ── CSS Custom Properties ────────────────────────────────────────
+// ── Yoolo Brand Variables (Light Mode) ──────────────────────────
 :root {
-  --primary: #FF6B35;
-  --primary-dark: #e55a24;
-  --primary-light: #ff8f60;
-  --secondary: #1A1A2E;
-  --accent: #00C896;
-  --warn: #F44336;
+  // Brand palette
+  --gold: #C9A227;
+  --gold-dark: #A8861F;
+  --gold-light: #E8BF4D;
+  --gold-bg: rgba(201,162,39,0.10);
+  --brand-black: #1A1A1A;
+
+  // Semantic tokens
+  --primary: #C9A227;
+  --primary-dark: #A8861F;
+  --primary-light: #E8BF4D;
+  --secondary: #1A1A1A;
+  --accent: #C9A227;
+  --warn: #E53935;
+  --success: #43A047;
+
+  // Surfaces
   --surface: #FFFFFF;
-  --background: #F5F5F5;
-  --text-primary: #212121;
-  --text-secondary: #757575;
-  --border: #E0E0E0;
+  --surface-raised: #FAFAF8;
+  --background: #F5F3EE;
+  --sidebar-bg: #111111;
+  --topbar-bg: #FFFFFF;
+
+  // Text
+  --text-primary: #1A1A1A;
+  --text-secondary: #5E5E5E;
+  --text-inverse: #FFFFFF;
+
+  // Borders
+  --border: #E5E2DA;
+  --border-strong: #C9A227;
+
+  // Layout
   --sidebar-width: 260px;
   --topbar-height: 64px;
   --radius: 8px;
-  --shadow: 0 2px 8px rgba(0,0,0,0.1);
-  --shadow-lg: 0 4px 20px rgba(0,0,0,0.15);
+  --radius-lg: 14px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-lg: 0 6px 24px rgba(0,0,0,0.14);
+  --shadow-gold: 0 4px 16px rgba(201,162,39,0.25);
+}
+
+// ── Dark Mode Variables ──────────────────────────────────────────
+html.dark-mode {
+  --surface: #1E1E1E;
+  --surface-raised: #252525;
+  --background: #141414;
+  --sidebar-bg: #0A0A0A;
+  --topbar-bg: #1E1E1E;
+
+  --text-primary: #F0EDE6;
+  --text-secondary: #9E9B94;
+  --text-inverse: #1A1A1A;
+
+  --border: #2E2E2E;
+  --border-strong: #C9A227;
+
+  --shadow: 0 2px 8px rgba(0,0,0,0.35);
+  --shadow-lg: 0 6px 24px rgba(0,0,0,0.5);
 }
 
 // ── Base Reset ───────────────────────────────────────────────────
@@ -35,6 +78,7 @@ html, body {
   background-color: var(--background);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 a {
@@ -75,7 +119,13 @@ a {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 20px;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
+
+// ── Gold accent utilities ────────────────────────────────────────
+.text-gold { color: var(--gold); }
+.bg-gold { background: var(--gold); color: #fff; }
+.border-gold { border-color: var(--gold) !important; }
 
 // ── Badge ────────────────────────────────────────────────────────
 .badge {
@@ -139,17 +189,18 @@ a {
     letter-spacing: 0.5px;
     color: var(--text-secondary);
     border-bottom: 2px solid var(--border);
-    background: #FAFAFA;
+    background: var(--surface-raised);
   }
 
   td {
     padding: 14px 16px;
     border-bottom: 1px solid var(--border);
     vertical-align: middle;
+    color: var(--text-primary);
   }
 
   tr:hover td {
-    background: #FAFAFA;
+    background: var(--surface-raised);
     cursor: pointer;
   }
 }
@@ -167,8 +218,8 @@ a {
 // ── Scrollbar ────────────────────────────────────────────────────
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #BDBDBD; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #9E9E9E; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 
 // ── Loading Overlay ──────────────────────────────────────────────
 .loading-overlay {
