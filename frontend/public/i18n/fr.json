@@ -121,7 +121,7 @@
   },
 
   "DASHBOARD": {
-    "GREETING": "Bonjour, {{name}} 👋",
+    "GREETING": "Bonjour 👋",
     "NEW_ORDER": "+ Nouvelle commande",
     "STATS": {
       "AVAILABLE": "Commandes disponibles",
