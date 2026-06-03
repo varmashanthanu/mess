@@ -1,7 +1,7 @@
 {
-  "name": "mess-frontend",
-  "short_name": "mess-frontend",
-  "theme_color": "#1976d2",
+  "name": "Yoolo",
+  "short_name": "Yoolo",
+  "theme_color": "#C9A227",
   "background_color": "#fafafa",
   "display": "standalone",
   "scope": "./",
