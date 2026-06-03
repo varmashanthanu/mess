@@ -22,10 +22,10 @@ interface NavItem {
       <!-- Brand -->
       <div class="sidebar-brand">
         <div class="brand-mark" *ngIf="!collapsed()">
-          <img src="yoolo-logo.jpg" class="brand-logo" alt="Yoolo" />
+          <img src="yoolo-logo.png" class="brand-logo" alt="Yoolo" />
         </div>
         <div class="brand-icon" *ngIf="collapsed()">
-          <img src="yoolo-logo.jpg" class="brand-logo-mini" alt="Yoolo" />
+          <img src="yoolo-logo.png" class="brand-logo-mini" alt="Yoolo" />
         </div>
         <button class="sidebar-close" (click)="onClose()" aria-label="Close sidebar">✕</button>
       </div>

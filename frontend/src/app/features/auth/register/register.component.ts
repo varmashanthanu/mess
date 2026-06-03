@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserRole } from '../../../core/models/user.model';
+import { LanguageService } from '../../../core/services/language.service';
 
 function passwordsMatch(group: AbstractControl): ValidationErrors | null {
   const pw  = group.get('password')?.value;
@@ -19,6 +20,25 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
   template: `
     <div class="auth-page">
       <div class="auth-card">
+
+        <!-- Language switcher -->
+        <div class="lang-picker">
+          <button class="lang-btn" (click)="langOpen = !langOpen">
+            <span>{{ langSvc.currentLang().flag }}</span>
+            <span class="lang-code">{{ langSvc.currentLang().code | uppercase }}</span>
+            <span>▾</span>
+          </button>
+          <div class="lang-dropdown" *ngIf="langOpen">
+            <button *ngFor="let lang of langSvc.languages"
+              class="lang-option"
+              [class.active]="lang.code === langSvc.current()"
+              (click)="selectLang(lang.code)">
+              <span>{{ lang.flag }}</span>
+              <span>{{ lang.label }}</span>
+            </button>
+          </div>
+        </div>
+
         <div class="auth-logo">
           <img src="yoolo-logo.jpg" class="logo-img" alt="Yoolo" />
         </div>
@@ -52,13 +72,13 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
             <div class="role-selector">
               <div class="role-card" [class.role-card--active]="f['role'].value === 'SHIPPER'" (click)="f['role'].setValue('SHIPPER')">
                 <span class="role-emoji">📦</span>
-                <span class="role-name">Expéditeur</span>
-                <span class="role-desc">J'envoie des colis</span>
+                <span class="role-name">{{ 'AUTH.REGISTER.ROLE_SHIPPER' | translate }}</span>
+                <span class="role-desc">{{ 'AUTH.REGISTER.ROLE_SHIPPER_DESC' | translate }}</span>
               </div>
               <div class="role-card" [class.role-card--active]="f['role'].value === 'DRIVER'" (click)="f['role'].setValue('DRIVER')">
                 <span class="role-emoji">🚚</span>
-                <span class="role-name">Conducteur</span>
-                <span class="role-desc">Je transporte des marchandises</span>
+                <span class="role-name">{{ 'AUTH.REGISTER.ROLE_DRIVER' | translate }}</span>
+                <span class="role-desc">{{ 'AUTH.REGISTER.ROLE_DRIVER_DESC' | translate }}</span>
               </div>
             </div>
             <span class="field-error" *ngIf="submitted && f['role'].errors?.['required']">{{ 'COMMON.REQUIRED' | translate }}</span>
@@ -109,6 +129,27 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
     </div>
   `,
   styles: [`
+    .lang-picker { position: relative; display: flex; justify-content: flex-end; margin-bottom: 12px; }
+    .lang-btn {
+      display: flex; align-items: center; gap: 6px; padding: 6px 10px;
+      background: #F5F3EE; border: 1.5px solid #E5E2DA; border-radius: 8px;
+      cursor: pointer; font-size: 13px; font-weight: 600; color: #333;
+    }
+    .lang-btn:hover { border-color: #C9A227; }
+    .lang-code { font-size: 11px; color: #757575; }
+    .lang-dropdown {
+      position: absolute; top: calc(100% + 4px); right: 0; z-index: 100;
+      background: white; border: 1.5px solid #E5E2DA; border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12); overflow: hidden; min-width: 130px;
+    }
+    .lang-option {
+      display: flex; align-items: center; gap: 8px; width: 100%;
+      padding: 10px 14px; background: none; border: none; cursor: pointer;
+      font-size: 13px; color: #333; text-align: left;
+    }
+    .lang-option:hover { background: #F5F3EE; }
+    .lang-option.active { color: #C9A227; font-weight: 700; }
+
     .auth-page {
       min-height: 100vh; display: flex; align-items: center; justify-content: center;
       background: #111111; padding: 24px;
@@ -175,7 +216,9 @@ export class RegisterComponent {
   showPwd = false;
   showPwdConfirm = false;
 
-  constructor(private fb: FormBuilder, private auth: AuthService) {
+  langOpen = false;
+
+  constructor(private fb: FormBuilder, private auth: AuthService, public langSvc: LanguageService) {
     this.form = this.fb.group({
       full_name:        ['', Validators.required],
       phone_number:     ['', Validators.required],
@@ -184,6 +227,8 @@ export class RegisterComponent {
       password_confirm: ['', Validators.required],
     }, { validators: passwordsMatch });
   }
+
+  selectLang(code: string): void { this.langSvc.use(code); this.langOpen = false; }
 
   get f() { return this.form.controls; }
 
