@@ -238,7 +238,6 @@ export class RegisterComponent {
     if (this.form.invalid) return;
     this.loading = true;
 
-    // Split "First Last" → first_name + last_name (backend uses separate fields)
     const fullName: string = this.f['full_name'].value.trim();
     const spaceIdx = fullName.indexOf(' ');
     const first_name = spaceIdx > -1 ? fullName.slice(0, spaceIdx) : fullName;
