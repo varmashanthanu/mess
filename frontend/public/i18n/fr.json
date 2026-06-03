@@ -96,9 +96,9 @@
 
   "NAV": {
     "DASHBOARD": "Tableau de bord",
-    "MY_DASHBOARD": "Mon tableau de bord",
+    "MY_DASHBOARD": "Tableau de bord",
     "ORDERS": "Commandes",
-    "LOAD_BOARD": "Tableau des charges",
+    "LOAD_BOARD": "Chargements",
     "TRACKING": "Suivi GPS",
     "MESSAGES": "Messages",
     "NOTIFICATIONS": "Notifications",
