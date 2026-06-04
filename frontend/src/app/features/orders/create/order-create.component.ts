@@ -183,13 +183,13 @@ export class OrderCreateComponent implements OnInit {
     volume_m3:            [null as number | null],
     pickup_address:       ['', Validators.required],
     pickup_city:          ['', Validators.required],
-    pickup_lat:           [null as number | null, Validators.required],
-    pickup_lng:           [null as number | null, Validators.required],
+    pickup_lat:           [null as number | null],
+    pickup_lng:           [null as number | null],
     pickup_scheduled_at:  ['', Validators.required],
     delivery_address:     ['', Validators.required],
     delivery_city:        ['', Validators.required],
-    delivery_lat:         [null as number | null, Validators.required],
-    delivery_lng:         [null as number | null, Validators.required],
+    delivery_lat:         [null as number | null],
+    delivery_lng:         [null as number | null],
     delivery_deadline:    [''],
     proposed_price:       [null as number | null],
     special_instructions: [''],
@@ -212,23 +212,21 @@ export class OrderCreateComponent implements OnInit {
   onPickupSelected(loc: LocationResult): void {
     this.form.patchValue({
       pickup_address: loc.address,
-      pickup_city: loc.city,
-      pickup_lat: loc.lat,
-      pickup_lng: loc.lng,
+      pickup_city: loc.city || this.form.get('pickup_city')?.value || '',
+      pickup_lat: loc.lat ?? null,
+      pickup_lng: loc.lng ?? null,
     });
     this.form.get('pickup_address')?.markAsTouched();
-    this.form.get('pickup_city')?.markAsTouched();
   }
 
   onDeliverySelected(loc: LocationResult): void {
     this.form.patchValue({
       delivery_address: loc.address,
-      delivery_city: loc.city,
-      delivery_lat: loc.lat,
-      delivery_lng: loc.lng,
+      delivery_city: loc.city || this.form.get('delivery_city')?.value || '',
+      delivery_lat: loc.lat ?? null,
+      delivery_lng: loc.lng ?? null,
     });
     this.form.get('delivery_address')?.markAsTouched();
-    this.form.get('delivery_city')?.markAsTouched();
   }
 
   submit(andPost = true): void {
