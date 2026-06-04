@@ -46,10 +46,10 @@ import { Notification } from '../../core/models/notification.model';
   `,
   styles: [`
     .notif-page { max-width: 700px; }
-    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
     h1 { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
     .badge-count { background: #FF6B35; color: white; font-size: 12px; padding: 2px 8px; border-radius: 12px; }
-    .btn-mark-read { padding: 8px 14px; border: 1px solid #E0E0E0; background: white; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: #424242; }
+    .btn-mark-read { padding: 8px 14px; border: 1px solid #E0E0E0; background: white; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: #424242; white-space: nowrap; }
     .card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden; }
     .notif-list { }
     .notif-item { display: flex; gap: 14px; padding: 16px 20px; border-bottom: 1px solid #F5F5F5; align-items: flex-start; position: relative; }
@@ -58,15 +58,20 @@ import { Notification } from '../../core/models/notification.model';
     .notif-item.clickable { cursor: pointer; }
     .notif-item.clickable:hover { background: #FFF3F0; }
     .notif-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
-    .notif-body { flex: 1; }
+    .notif-body { flex: 1; min-width: 0; }
     .notif-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
-    .notif-body-text { margin-bottom: 6px; }
+    .notif-body-text { margin-bottom: 6px; word-break: break-word; }
     .notif-time { }
     .unread-dot { width: 8px; height: 8px; border-radius: 50%; background: #FF6B35; flex-shrink: 0; margin-top: 6px; }
     .text-sm { font-size: 12px; } .text-muted { color: #757575; }
     .empty-state { padding: 48px; text-align: center; color: #757575; }
     .empty-icon { font-size: 40px; margin-bottom: 12px; }
     h3 { font-size: 16px; font-weight: 600; }
+    @media (max-width: 600px) {
+      h1 { font-size: 20px; }
+      .notif-item { padding: 14px 16px; gap: 10px; }
+      .notif-icon { font-size: 20px; }
+    }
   `]
 })
 export class NotificationsComponent {
