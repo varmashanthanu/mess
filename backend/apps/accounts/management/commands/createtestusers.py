@@ -22,6 +22,13 @@ TEST_USERS = [
         "password": "Driver123#",
         "role": UserRole.DRIVER,
     },
+    {
+        "first_name": "Mess",
+        "last_name": "Admin",
+        "phone_number": "+221771234580",
+        "password": "Admin123#",
+        "role": UserRole.ADMIN,
+    },
 ]
 
 PROFILE_MAP = {
@@ -31,7 +38,7 @@ PROFILE_MAP = {
 
 
 class Command(BaseCommand):
-    help = "Create test accounts for shipper and driver roles."
+    help = "Create test accounts for shipper, driver, and admin roles."
 
     def handle(self, *args, **options):
         for data in TEST_USERS:
@@ -48,7 +55,11 @@ class Command(BaseCommand):
 
             if created:
                 user.set_password(data["password"])
-                user.save(update_fields=["password"])
+                if data["role"] == UserRole.ADMIN:
+                    user.is_staff = True
+                    user.save(update_fields=["password", "is_staff"])
+                else:
+                    user.save(update_fields=["password"])
                 action = "Created"
             else:
                 action = "Already exists"
