@@ -33,7 +33,7 @@ interface NavItem {
       <!-- Role badge -->
       <div class="role-badge" *ngIf="!collapsed()">
         <span class="role-pill" [class.role-pill--driver]="auth.role() === 'DRIVER'" [class.role-pill--shipper]="auth.role() === 'SHIPPER'">
-          {{ auth.role() === 'DRIVER' ? '🚚 Conducteur' : auth.role() === 'SHIPPER' ? '📦 Expéditeur' : '⚙️ Admin' }}
+          {{ auth.role() === 'DRIVER' ? '🚚 Chauffeur' : auth.role() === 'SHIPPER' ? '📦 Expéditeur' : '⚙️ Admin' }}
         </span>
       </div>
 

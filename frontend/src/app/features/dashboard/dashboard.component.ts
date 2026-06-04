@@ -29,7 +29,7 @@ interface StatCard { label: string; value: string | number; icon: string; color:
             {{ 'DASHBOARD.NEW_ORDER' | translate }}
           </a>
           <a class="btn-primary btn-driver" routerLink="/load-board" *ngIf="isDriver()">
-            🗺️ Voir les missions
+            🗺️ Mes livraisons
           </a>
         </div>
       </div>
@@ -97,13 +97,13 @@ interface StatCard { label: string; value: string | number; icon: string; color:
       <div class="section">
         <div class="section-header">
           <h2>
-            {{ isDriver() ? '🚛 Mes missions récentes' : '📦 Commandes récentes' }}
+            {{ isDriver() ? '🚛 Mes livraisons récentes' : '📦 Commandes récentes' }}
           </h2>
           <div class="section-header-right">
             <span class="filter-badge" *ngIf="activeFilter()" (click)="setFilter(null)">
               {{ 'DASHBOARD.STATS.' + activeFilter()!.toUpperCase() | translate }} ✕
             </span>
-            <a routerLink="/orders" class="see-all">{{ 'COMMON.SEE_ALL' | translate }} →</a>
+            <a routerLink="/orders" class="see-all">{{ 'COMMON.SEE_ALL' | translate }}</a>
           </div>
         </div>
 
@@ -131,7 +131,7 @@ interface StatCard { label: string; value: string | number; icon: string; color:
           <h3>{{ isDriver() ? 'Aucune mission trouvée' : 'DASHBOARD.EMPTY_TITLE' | translate }}</h3>
           <p>{{ isDriver() ? 'Consultez le tableau de bord missions pour de nouvelles opportunités.' : ('DASHBOARD.EMPTY_SUBTITLE' | translate) }}</p>
           <a class="btn-primary mt-2" [routerLink]="isDriver() ? '/load-board' : '/orders/new'">
-            {{ isDriver() ? 'Voir les missions' : 'Créer une commande' }}
+            {{ isDriver() ? 'Mes livraisons' : 'Créer une commande' }}
           </a>
         </div>
       </div>
