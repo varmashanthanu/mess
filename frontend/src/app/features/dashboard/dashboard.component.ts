@@ -26,7 +26,7 @@ interface StatCard { label: string; value: string | number; icon: string; color:
         </div>
         <div class="banner-actions">
           <a class="btn-primary" routerLink="/orders/new" *ngIf="isShipper()">
-            + {{ 'DASHBOARD.NEW_ORDER' | translate }}
+            {{ 'DASHBOARD.NEW_ORDER' | translate }}
           </a>
           <a class="btn-primary btn-driver" routerLink="/load-board" *ngIf="isDriver()">
             🗺️ Voir les missions

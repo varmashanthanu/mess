@@ -43,6 +43,7 @@ interface NavItem {
             [routerLink]="item.route"
             routerLinkActive="active"
             class="nav-item"
+            [style.--item-color]="item.color"
             [title]="collapsed() ? (item.labelKey | translate) : ''"
             (click)="onNavClick()"
           >
@@ -108,21 +109,18 @@ interface NavItem {
     /* Nav */
     .sidebar-nav { flex: 1; padding: 10px 10px; overflow-y: auto; overflow-x: hidden; }
     .nav-item {
-      display: flex; align-items: center; gap: 13px; padding: 12px 16px;
-      border-radius: 10px; color: #C8C4BC; text-decoration: none;
-      font-size: 14px; font-weight: 600; margin-bottom: 4px; white-space: nowrap;
-      transition: background .15s, color .15s, border-left-color .15s;
-      border-left: 3px solid transparent; letter-spacing: 0.1px;
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+      border-radius: 10px; color: white; text-decoration: none;
+      font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 8px; white-space: nowrap; position: relative;
+      background: var(--item-color);
+      box-shadow: 0 4px 0 color-mix(in srgb, var(--item-color) 60%, black);
+      transition: transform .1s ease, box-shadow .1s ease; user-select: none;
     }
-    .nav-item:hover {
-      background: rgba(201,162,39,0.12); color: #F0D060;
-      text-decoration: none; border-left-color: rgba(201,162,39,0.5);
-    }
-    .nav-item.active {
-      background: rgba(201,162,39,0.18); color: #F0D060;
-      border-left-color: #C9A227; font-weight: 700;
-    }
-    .nav-icon { font-size: 19px; flex-shrink: 0; width: 22px; text-align: center; }
+    .nav-item:hover { text-decoration: none; filter: brightness(1.08); }
+    .nav-item:active { transform: translateY(3px); box-shadow: 0 1px 0 color-mix(in srgb, var(--item-color) 60%, black); }
+    .nav-item.active { filter: brightness(1.1); }
+    .nav-icon { font-size: 18px; flex-shrink: 0; width: 20px; text-align: center; }
     .nav-label { flex: 1; }
 
     /* Footer */
@@ -153,9 +151,10 @@ interface NavItem {
       .sidebar { transform: translateX(-100%); width: 100% !important; z-index: 150; }
       .sidebar.mobile-open { transform: translateX(0); }
       .sidebar-close { display: flex; }
-      .sidebar-nav { display: flex; flex-direction: column; padding: 10px; gap: 6px; overflow: visible; }
-      .nav-item { padding: 14px 20px; font-size: 15px; margin-bottom: 0; border-radius: 12px; }
-      .nav-icon { font-size: 20px; }
+      .sidebar-nav { display: flex; flex-direction: column; padding: 12px; gap: 10px; overflow: visible; }
+      .nav-item { flex: 1; padding: 0 20px; margin-bottom: 0; font-size: 2.25rem; font-weight: 800; border-radius: 12px; box-shadow: 0 6px 0 color-mix(in srgb, var(--item-color) 60%, black); justify-content: flex-start; }
+      .nav-item:active { transform: translateY(5px); box-shadow: 0 1px 0 color-mix(in srgb, var(--item-color) 60%, black); }
+      .nav-icon { font-size: 22px; width: 24px; }
     }
     .sidebar-close {
       display: none; align-items: center; justify-content: center;
@@ -189,13 +188,13 @@ export class SidebarComponent {
   });
 
   private allItems: NavItem[] = [
-    { labelKey: 'NAV.LOAD_BOARD',   icon: '📋', route: '/load-board', color: '#C9A227', roles: ['DRIVER'] },
-    { labelKey: 'NAV.MY_DASHBOARD', icon: '📊', route: '/dashboard',  color: '#C9A227' },
-    { labelKey: 'NAV.ORDERS',       icon: '📦', route: '/orders',     color: '#C9A227', roles: ['SHIPPER', 'ADMIN'] },
-    { labelKey: 'NAV.TRACKING',     icon: '🗺️', route: '/tracking',  color: '#C9A227' },
-    { labelKey: 'NAV.MESSAGES',     icon: '💬', route: '/messaging',  color: '#C9A227' },
-    { labelKey: 'NAV.PROFILE',      icon: '👤', route: '/profile',    color: '#C9A227' },
-    { labelKey: 'NAV.ADMIN',        icon: '⚙️', route: '/admin',     color: '#C9A227', roles: ['ADMIN'] },
+    { labelKey: 'NAV.LOAD_BOARD',   icon: '📋', route: '/load-board', color: '#F5A623', roles: ['DRIVER'] },
+    { labelKey: 'NAV.MY_DASHBOARD', icon: '📊', route: '/dashboard',  color: '#2196F3' },
+    { labelKey: 'NAV.ORDERS',       icon: '📦', route: '/orders',     color: '#9C27B0', roles: ['SHIPPER', 'ADMIN'] },
+    { labelKey: 'NAV.TRACKING',     icon: '🗺️', route: '/tracking',  color: '#E53935' },
+    { labelKey: 'NAV.MESSAGES',     icon: '💬', route: '/messaging',  color: '#43A047' },
+    { labelKey: 'NAV.PROFILE',      icon: '👤', route: '/profile',    color: '#757575' },
+    { labelKey: 'NAV.ADMIN',        icon: '⚙️', route: '/admin',     color: '#455A64', roles: ['ADMIN'] },
   ];
 
   visibleItems = computed(() => {
