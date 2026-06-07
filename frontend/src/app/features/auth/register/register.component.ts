@@ -238,7 +238,6 @@ export class RegisterComponent {
     if (this.form.invalid) return;
     this.loading = true;
 
-    // Split "First Last" → first_name + last_name (backend uses separate fields)
     const fullName: string = this.f['full_name'].value.trim();
     const spaceIdx = fullName.indexOf(' ');
     const first_name = spaceIdx > -1 ? fullName.slice(0, spaceIdx) : fullName;
@@ -258,15 +257,15 @@ export class RegisterComponent {
         this.loading = false;
       },
       error: (err: any) => {
-        const detail = err?.error;
-        // DRF returns field errors as { field: ["msg"] } — flatten to a readable string
-        if (detail && typeof detail === 'object' && !detail.message) {
-          const messages = Object.entries(detail)
-            .map(([field, msgs]) => `${field}: ${(msgs as string[]).join(', ')}`)
+        const envelope = err?.error?.error;
+        if (envelope?.message) {
+          this.error = envelope.message;
+        } else if (envelope?.detail && typeof envelope.detail === 'object') {
+          this.error = Object.values(envelope.detail)
+            .map((msgs: any) => Array.isArray(msgs) ? msgs.join(', ') : String(msgs))
             .join(' | ');
-          this.error = messages;
         } else {
-          this.error = detail?.message || detail?.detail || 'AUTH.REGISTER.ERROR_GENERIC';
+          this.error = 'AUTH.REGISTER.ERROR_GENERIC';
         }
         this.loading = false;
       },
