@@ -33,7 +33,7 @@ interface NavItem {
       <!-- Role badge -->
       <div class="role-badge" *ngIf="!collapsed()">
         <span class="role-pill" [class.role-pill--driver]="auth.role() === 'DRIVER'" [class.role-pill--shipper]="auth.role() === 'SHIPPER'">
-          {{ auth.role() === 'DRIVER' ? ('🚚 ' + ('PROFILE.ROLES.DRIVER' | translate)) : auth.role() === 'SHIPPER' ? ('📦 ' + ('PROFILE.ROLES.SHIPPER' | translate)) : ('⚙️ ' + ('PROFILE.ROLES.ADMIN' | translate)) }}
+          {{ auth.role() === 'DRIVER' ? '🚚 Chauffeur' : auth.role() === 'SHIPPER' ? '📦 Expéditeur' : '⚙️ Admin' }}
         </span>
       </div>
 
@@ -151,6 +151,9 @@ interface NavItem {
       .sidebar { transform: translateX(-100%); width: 100% !important; z-index: 150; }
       .sidebar.mobile-open { transform: translateX(0); }
       .sidebar-close { display: flex; }
+      .sidebar-brand { justify-content: center; position: relative; padding: 14px; }
+      .brand-mark { flex: unset; justify-content: center; }
+      .sidebar-close { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); }
       .sidebar-nav { display: flex; flex-direction: column; padding: 12px; gap: 10px; overflow: visible; }
       .nav-item { flex: 1; padding: 0 16px; margin-bottom: 0; font-size: 1.5rem; font-weight: 800; border-radius: 12px; box-shadow: 0 6px 0 color-mix(in srgb, var(--item-color) 60%, black); justify-content: flex-start; overflow: hidden; }
       .nav-item:active { transform: translateY(5px); box-shadow: 0 1px 0 color-mix(in srgb, var(--item-color) 60%, black); }

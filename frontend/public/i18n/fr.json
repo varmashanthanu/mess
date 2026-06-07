@@ -71,7 +71,10 @@
       "LOGIN_LINK": "Se connecter",
       "SUCCESS": "Compte créé !",
       "VERIFY_LINK": "Vérifier mon numéro →",
-      "ERROR_GENERIC": "Erreur lors de l'inscription."
+      "ERROR_GENERIC": "Erreur lors de l'inscription.",
+      "ERROR_PHONE_EXISTS": "Ce numéro de téléphone est déjà utilisé.",
+      "ERROR_PASSWORD": "Le mot de passe ne respecte pas les critères requis.",
+      "ERROR_ROLE": "Veuillez sélectionner un rôle valide."
     },
     "VERIFY": {
       "TITLE": "Vérification SMS",
@@ -143,7 +146,7 @@
     "EMPTY_MISSIONS_SUBTITLE": "Consultez le tableau de bord missions pour de nouvelles opportunités.",
     "CREATE_ORDER": "Créer une commande",
     "STATS": {
-      "AVAILABLE": "Commandes disponibles",
+      "AVAILABLE": "Mes commandes",
       "IN_TRANSIT": "En transit",
       "DELIVERED": "Livrées",
       "COMPLETED": "Terminées"
