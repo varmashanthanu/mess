@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { Router, RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserRole } from '../../../core/models/user.model';
 import { LanguageService } from '../../../core/services/language.service';
@@ -120,13 +120,11 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
           <a routerLink="/auth/login">{{ 'AUTH.REGISTER.LOGIN_LINK' | translate }}</a>
         </div>
 
-        <!-- SMS verification disabled — no SMS provider configured -->
-        <!-- Uncomment when SMS service is available -->
-        <!-- <div class="text-center mt-3" *ngIf="success">
+        <div class="text-center mt-3" *ngIf="success">
           <a routerLink="/auth/verify" class="btn-gold" style="display:inline-block;text-decoration:none;padding:12px 28px">
             {{ 'AUTH.REGISTER.VERIFY_LINK' | translate }}
           </a>
-        </div> -->
+        </div>
       </div>
     </div>
   `,
@@ -220,7 +218,13 @@ export class RegisterComponent {
 
   langOpen = false;
 
-  constructor(private fb: FormBuilder, private auth: AuthService, public langSvc: LanguageService) {
+  constructor(
+    private fb: FormBuilder,
+    private auth: AuthService,
+    public langSvc: LanguageService,
+    private router: Router,
+    private translate: TranslateService,
+  ) {
     this.form = this.fb.group({
       full_name:        ['', Validators.required],
       phone_number:     ['', Validators.required],
@@ -254,22 +258,19 @@ export class RegisterComponent {
       password_confirm: this.f['password_confirm'].value,
     }).subscribe({
       next: () => {
-        this.success = 'AUTH.REGISTER.SUCCESS';
-        // SMS verification disabled — no SMS provider configured
-        // Uncomment the line below when SMS service is available
-        // sessionStorage.setItem('pending_phone', this.f['phone_number'].value);
-        this.loading = false;
+        sessionStorage.setItem('pending_phone', this.f['phone_number'].value);
+        this.router.navigate(['/dashboard']);
       },
       error: (err: any) => {
-        const envelope = err?.error?.error;
-        if (envelope?.message) {
-          this.error = envelope.message;
-        } else if (envelope?.detail && typeof envelope.detail === 'object') {
-          this.error = Object.values(envelope.detail)
-            .map((msgs: any) => Array.isArray(msgs) ? msgs.join(', ') : String(msgs))
-            .join(' | ');
+        const detail = err?.error?.error?.detail ?? err?.error;
+        if (detail?.phone_number) {
+          this.error = this.translate.instant('AUTH.REGISTER.ERROR_PHONE_EXISTS');
+        } else if (detail?.password || detail?.password_confirm) {
+          this.error = this.translate.instant('AUTH.REGISTER.ERROR_PASSWORD');
+        } else if (detail?.role) {
+          this.error = this.translate.instant('AUTH.REGISTER.ERROR_ROLE');
         } else {
-          this.error = 'AUTH.REGISTER.ERROR_GENERIC';
+          this.error = this.translate.instant('AUTH.REGISTER.ERROR_GENERIC');
         }
         this.loading = false;
       },

@@ -71,7 +71,10 @@
       "LOGIN_LINK": "Sign in",
       "SUCCESS": "Account created!",
       "VERIFY_LINK": "Verify my number →",
-      "ERROR_GENERIC": "Registration failed."
+      "ERROR_GENERIC": "Registration failed.",
+      "ERROR_PHONE_EXISTS": "This phone number is already registered.",
+      "ERROR_PASSWORD": "The password does not meet the requirements.",
+      "ERROR_ROLE": "Please select a valid role."
     },
     "VERIFY": {
       "TITLE": "SMS Verification",
