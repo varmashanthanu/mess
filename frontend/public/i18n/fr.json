@@ -69,7 +69,7 @@
       "SUBMITTING": "Inscription...",
       "HAS_ACCOUNT": "Déjà un compte ?",
       "LOGIN_LINK": "Se connecter",
-      "SUCCESS": "Compte créé ! Vérifiez votre numéro par SMS.",
+      "SUCCESS": "Compte créé !",
       "VERIFY_LINK": "Vérifier mon numéro →",
       "ERROR_GENERIC": "Erreur lors de l'inscription."
     },

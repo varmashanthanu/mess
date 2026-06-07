@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
-from config.views import health_check
+# from config.views import health_check
 
 api_v1_urlpatterns = [
     path("auth/", include("apps.accounts.urls.auth")),
@@ -27,7 +27,7 @@ urlpatterns = [
     path("api/v1/", include(api_v1_urlpatterns)),
 
     # Health check
-    path("health/", health_check, name="health_check"),
+    # path("health/", health_check, name="health_check"),
 
     # OpenAPI schema + docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

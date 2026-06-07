@@ -69,7 +69,7 @@
       "SUBMITTING": "Signing up...",
       "HAS_ACCOUNT": "Already have an account?",
       "LOGIN_LINK": "Sign in",
-      "SUCCESS": "Account created! Check your phone for the verification SMS.",
+      "SUCCESS": "Account created!",
       "VERIFY_LINK": "Verify my number →",
       "ERROR_GENERIC": "Registration failed."
     },
