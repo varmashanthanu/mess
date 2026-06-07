@@ -96,9 +96,9 @@
 
   "NAV": {
     "DASHBOARD": "Dashboard",
-    "MY_DASHBOARD": "My Dashboard",
+    "MY_DASHBOARD": "Dashboard",
     "ORDERS": "Orders",
-    "LOAD_BOARD": "Load Board",
+    "LOAD_BOARD": "Loads",
     "TRACKING": "GPS Tracking",
     "MESSAGES": "Messages",
     "NOTIFICATIONS": "Notifications",
@@ -121,7 +121,7 @@
   },
 
   "DASHBOARD": {
-    "GREETING": "Hello, {{name}} 👋",
+    "GREETING": "Hello 👋",
     "NEW_ORDER": "+ New order",
     "STATS": {
       "AVAILABLE": "Available Orders",
