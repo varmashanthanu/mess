@@ -23,7 +23,7 @@
     "SUBMIT": "Submit",
     "SUBMITTING": "Submitting...",
     "REFRESH": "Refresh",
-    "SEE_ALL": "See all →",
+    "SEE_ALL": "See all",
     "NO_DATA": "No data",
     "ERROR_GENERIC": "An error occurred.",
     "SUCCESS": "Success!",
@@ -117,19 +117,37 @@
     "AVAILABLE": "Available",
     "UNAVAILABLE": "Unavailable",
     "REALTIME": "Connected (real-time)",
-    "DISCONNECTED": "Disconnected"
+    "DISCONNECTED": "Disconnected",
+    "LIGHT_MODE": "Light mode",
+    "DARK_MODE": "Dark mode"
   },
 
   "DASHBOARD": {
     "GREETING": "Hello 👋",
     "NEW_ORDER": "+ New order",
+    "DRIVER_SPACE": "Driver Space",
+    "SHIPPER_SPACE": "Shipper Space",
+    "VIEW_MISSIONS": "View loads",
+    "QUICK_ACTIONS": "Quick actions",
+    "MISSION_BOARD": "Mission board",
+    "REAL_TIME_TRACKING": "Real-time tracking",
+    "MESSAGING": "Messaging",
+    "MY_PROFILE": "My profile",
+    "NEW_ORDER_QUICK": "New order",
+    "MY_ORDERS": "My orders",
+    "DELIVERY_TRACKING": "Delivery tracking",
+    "CARRIER_MESSAGES": "Carrier messages",
+    "RECENT_MISSIONS": "Recent missions",
+    "RECENT_ORDERS": "Recent orders",
+    "EMPTY_MISSIONS": "No missions found",
+    "EMPTY_MISSIONS_SUBTITLE": "Check the mission board for new opportunities.",
+    "CREATE_ORDER": "Create order",
     "STATS": {
       "AVAILABLE": "Available Orders",
       "IN_TRANSIT": "In Transit",
       "DELIVERED": "Delivered",
       "COMPLETED": "Completed"
     },
-    "RECENT_ORDERS": "Recent orders",
     "EMPTY_TITLE": "No orders",
     "EMPTY_SUBTITLE": "Your orders will appear here."
   },

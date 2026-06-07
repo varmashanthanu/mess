@@ -23,7 +23,7 @@
     "SUBMIT": "Envoyer",
     "SUBMITTING": "Envoi en cours...",
     "REFRESH": "Actualiser",
-    "SEE_ALL": "Voir tout →",
+    "SEE_ALL": "Voir tout",
     "NO_DATA": "Aucune donnée",
     "ERROR_GENERIC": "Une erreur est survenue.",
     "SUCCESS": "Succès !",
@@ -117,19 +117,37 @@
     "AVAILABLE": "Disponible",
     "UNAVAILABLE": "Indisponible",
     "REALTIME": "Connecté (temps réel)",
-    "DISCONNECTED": "Non connecté"
+    "DISCONNECTED": "Non connecté",
+    "LIGHT_MODE": "Mode clair",
+    "DARK_MODE": "Mode sombre"
   },
 
   "DASHBOARD": {
     "GREETING": "Bonjour 👋",
     "NEW_ORDER": "+ Nouvelle commande",
+    "DRIVER_SPACE": "Espace Conducteur",
+    "SHIPPER_SPACE": "Espace Expéditeur",
+    "VIEW_MISSIONS": "Voir les missions",
+    "QUICK_ACTIONS": "Actions rapides",
+    "MISSION_BOARD": "Tableau de bord missions",
+    "REAL_TIME_TRACKING": "Suivi en temps réel",
+    "MESSAGING": "Messagerie",
+    "MY_PROFILE": "Mon profil",
+    "NEW_ORDER_QUICK": "Nouvelle commande",
+    "MY_ORDERS": "Mes commandes",
+    "DELIVERY_TRACKING": "Suivi des livraisons",
+    "CARRIER_MESSAGES": "Messages transporteurs",
+    "RECENT_MISSIONS": "Mes missions récentes",
+    "RECENT_ORDERS": "Commandes récentes",
+    "EMPTY_MISSIONS": "Aucune mission trouvée",
+    "EMPTY_MISSIONS_SUBTITLE": "Consultez le tableau de bord missions pour de nouvelles opportunités.",
+    "CREATE_ORDER": "Créer une commande",
     "STATS": {
       "AVAILABLE": "Commandes disponibles",
       "IN_TRANSIT": "En transit",
       "DELIVERED": "Livrées",
       "COMPLETED": "Terminées"
     },
-    "RECENT_ORDERS": "Commandes récentes",
     "EMPTY_TITLE": "Aucune commande",
     "EMPTY_SUBTITLE": "Vos commandes apparaîtront ici."
   },

@@ -52,7 +52,7 @@ import { ThemeService } from '../../../core/services/theme.service';
         </div>
 
         <!-- Dark mode toggle -->
-        <button class="theme-toggle" (click)="themeSvc.toggle()" [title]="themeSvc.isDark() ? 'Mode clair' : 'Mode sombre'">
+        <button class="theme-toggle" (click)="themeSvc.toggle()" [title]="(themeSvc.isDark() ? 'TOPBAR.LIGHT_MODE' : 'TOPBAR.DARK_MODE') | translate">
           <span class="theme-icon">{{ themeSvc.isDark() ? '☀️' : '🌙' }}</span>
         </button>
 
