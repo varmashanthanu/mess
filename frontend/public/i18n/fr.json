@@ -23,7 +23,7 @@
     "SUBMIT": "Envoyer",
     "SUBMITTING": "Envoi en cours...",
     "REFRESH": "Actualiser",
-    "SEE_ALL": "Voir tout →",
+    "SEE_ALL": "Voir tout",
     "NO_DATA": "Aucune donnée",
     "ERROR_GENERIC": "Une erreur est survenue.",
     "SUCCESS": "Succès !",
@@ -71,7 +71,10 @@
       "LOGIN_LINK": "Se connecter",
       "SUCCESS": "Compte créé ! Vérifiez votre numéro par SMS.",
       "VERIFY_LINK": "Vérifier mon numéro →",
-      "ERROR_GENERIC": "Erreur lors de l'inscription."
+      "ERROR_GENERIC": "Erreur lors de l'inscription.",
+      "ERROR_PHONE_EXISTS": "Ce numéro de téléphone est déjà utilisé.",
+      "ERROR_PASSWORD": "Le mot de passe ne respecte pas les critères requis.",
+      "ERROR_ROLE": "Veuillez sélectionner un rôle valide."
     },
     "VERIFY": {
       "TITLE": "Vérification SMS",
@@ -124,7 +127,7 @@
     "GREETING": "Bonjour 👋",
     "NEW_ORDER": "+ Nouvelle commande",
     "STATS": {
-      "AVAILABLE": "Commandes disponibles",
+      "AVAILABLE": "Mes commandes",
       "IN_TRANSIT": "En transit",
       "DELIVERED": "Livrées",
       "COMPLETED": "Terminées"
