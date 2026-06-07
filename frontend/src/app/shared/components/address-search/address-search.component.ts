@@ -10,8 +10,8 @@ import { Subject, switchMap, debounceTime, distinctUntilChanged, of } from 'rxjs
 export interface LocationResult {
   address: string;
   city: string;
-  lat: number;
-  lng: number;
+  lat: number | null;
+  lng: number | null;
 }
 
 interface NominatimResult {
@@ -41,6 +41,8 @@ interface NominatimResult {
         [placeholder]="placeholder()"
         (ngModelChange)="onInput($event)"
         (focus)="showDropdown = results().length > 0"
+        (blur)="onBlur()"
+        (keydown.enter)="onEnter()"
         autocomplete="off"
       />
       <div class="addr-spinner" *ngIf="loading()">⏳</div>
@@ -122,6 +124,31 @@ export class AddressSearchComponent implements OnDestroy, OnInit {
       city,
       lat: parseFloat(r.lat),
       lng: parseFloat(r.lon),
+    });
+  }
+
+  onBlur(): void {
+    setTimeout(() => {
+      this.showDropdown = false;
+      if (this.query.trim()) {
+        this.emitFreeText();
+      }
+    }, 200);
+  }
+
+  onEnter(): void {
+    this.showDropdown = false;
+    if (this.query.trim()) {
+      this.emitFreeText();
+    }
+  }
+
+  private emitFreeText(): void {
+    this.locationSelected.emit({
+      address: this.query.trim(),
+      city: '',
+      lat: null,
+      lng: null,
     });
   }
 
