@@ -2,7 +2,7 @@
 MESS Platform — Accounts Views
 """
 import logging
-from datetime import timedelta
+# from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -16,13 +16,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from core.permissions import IsAdmin, IsOwnerOrAdmin
-from .models import PhoneVerification
+# from .models import PhoneVerification
 from .serializers import (
     CustomTokenObtainPairSerializer,
     DriverAvailabilitySerializer,
     DriverProfileSerializer,
     RegisterSerializer,
-    RequestOTPSerializer,
+    # RequestOTPSerializer,
     ShipperProfileSerializer,
     UpdateFCMTokenSerializer,
     UserDetailSerializer,
@@ -31,7 +31,8 @@ from .serializers import (
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
-OTP_EXPIRY_MINUTES = 10
+# SMS verification disabled — no SMS provider configured
+# OTP_EXPIRY_MINUTES = 10
 
 
 # ── Auth views ────────────────────────────────────────────────────
@@ -45,12 +46,16 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        # Trigger OTP immediately after registration
-        _send_otp(user)
+        # SMS verification disabled — no SMS provider configured
+        # Uncomment the line below when SMS service is available
+        # _send_otp(user)
+        user.is_verified = True
+        user.save(update_fields=["is_verified"])
         tokens = _get_tokens(user)
         return Response(
             {
-                "message": "Registration successful. OTP sent to your phone number.",
+                "message": "Registration successful.",
+                # "message": "Registration successful. OTP sent to your phone number.",
                 "user": UserDetailSerializer(user).data,
                 **tokens,
             },
@@ -80,31 +85,35 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         return response
 
 
-class RequestOTPView(APIView):
-    """Request a new OTP for phone verification."""
-    permission_classes = [permissions.IsAuthenticated]
+# SMS verification disabled — no SMS provider configured
+# Uncomment when SMS service is available
+# class RequestOTPView(APIView):
+#     """Request a new OTP for phone verification."""
+#     permission_classes = [permissions.IsAuthenticated]
+#
+#     def post(self, request):
+#         serializer = RequestOTPSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         _send_otp(request.user)
+#         return Response({"message": "OTP sent to your registered phone number."})
 
-    def post(self, request):
-        serializer = RequestOTPSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        _send_otp(request.user)
-        return Response({"message": "OTP sent to your registered phone number."})
 
-
-class VerifyOTPView(APIView):
-    """Verify the OTP and mark the user's phone as verified."""
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request):
-        from .serializers import VerifyOTPSerializer
-        serializer = VerifyOTPSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        verification = serializer.validated_data["verification"]
-        verification.is_used = True
-        verification.save(update_fields=["is_used"])
-        request.user.is_verified = True
-        request.user.save(update_fields=["is_verified"])
-        return Response({"message": "Phone number verified successfully."})
+# SMS verification disabled — no SMS provider configured
+# Uncomment when SMS service is available
+# class VerifyOTPView(APIView):
+#     """Verify the OTP and mark the user's phone as verified."""
+#     permission_classes = [permissions.IsAuthenticated]
+#
+#     def post(self, request):
+#         from .serializers import VerifyOTPSerializer
+#         serializer = VerifyOTPSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         verification = serializer.validated_data["verification"]
+#         verification.is_used = True
+#         verification.save(update_fields=["is_used"])
+#         request.user.is_verified = True
+#         request.user.save(update_fields=["is_verified"])
+#         return Response({"message": "Phone number verified successfully."})
 
 
 class LogoutView(APIView):
@@ -240,20 +249,22 @@ def _get_tokens(user):
     }
 
 
-def _send_otp(user):
-    """Create an OTP record and dispatch SMS (async via Celery)."""
-    from core.utils import generate_otp
-    otp = generate_otp()
-    PhoneVerification.objects.create(
-        user=user,
-        otp=otp,
-        phone_number=user.phone_number,
-        expires_at=timezone.now() + timedelta(minutes=OTP_EXPIRY_MINUTES),
-    )
-    # Dispatch async SMS
-    from apps.notifications.tasks import send_sms_task
-    send_sms_task.delay(
-        phone=str(user.phone_number),
-        message=f"Your MESS verification code is: {otp}. Valid for {OTP_EXPIRY_MINUTES} minutes.",
-    )
-    logger.info(f"OTP sent to {user.phone_number}")
+# SMS verification disabled — no SMS provider configured
+# Uncomment when SMS service is available
+# def _send_otp(user):
+#     """Create an OTP record and dispatch SMS (async via Celery)."""
+#     from core.utils import generate_otp
+#     otp = generate_otp()
+#     PhoneVerification.objects.create(
+#         user=user,
+#         otp=otp,
+#         phone_number=user.phone_number,
+#         expires_at=timezone.now() + timedelta(minutes=OTP_EXPIRY_MINUTES),
+#     )
+#     # Dispatch async SMS
+#     from apps.notifications.tasks import send_sms_task
+#     send_sms_task.delay(
+#         phone=str(user.phone_number),
+#         message=f"Your MESS verification code is: {otp}. Valid for {OTP_EXPIRY_MINUTES} minutes.",
+#     )
+#     logger.info(f"OTP sent to {user.phone_number}")

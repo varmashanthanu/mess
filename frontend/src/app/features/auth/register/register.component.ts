@@ -120,11 +120,13 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
           <a routerLink="/auth/login">{{ 'AUTH.REGISTER.LOGIN_LINK' | translate }}</a>
         </div>
 
-        <div class="text-center mt-3" *ngIf="success">
+        <!-- SMS verification disabled — no SMS provider configured -->
+        <!-- Uncomment when SMS service is available -->
+        <!-- <div class="text-center mt-3" *ngIf="success">
           <a routerLink="/auth/verify" class="btn-gold" style="display:inline-block;text-decoration:none;padding:12px 28px">
             {{ 'AUTH.REGISTER.VERIFY_LINK' | translate }}
           </a>
-        </div>
+        </div> -->
       </div>
     </div>
   `,
@@ -253,7 +255,9 @@ export class RegisterComponent {
     }).subscribe({
       next: () => {
         this.success = 'AUTH.REGISTER.SUCCESS';
-        sessionStorage.setItem('pending_phone', this.f['phone_number'].value);
+        // SMS verification disabled — no SMS provider configured
+        // Uncomment the line below when SMS service is available
+        // sessionStorage.setItem('pending_phone', this.f['phone_number'].value);
         this.loading = false;
       },
       error: (err: any) => {
