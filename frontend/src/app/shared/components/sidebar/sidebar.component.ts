@@ -32,8 +32,11 @@ interface NavItem {
 
       <!-- Role badge -->
       <div class="role-badge" *ngIf="!collapsed()">
-        <span class="role-pill" [class.role-pill--driver]="auth.role() === 'DRIVER'" [class.role-pill--shipper]="auth.role() === 'SHIPPER'">
-          {{ auth.role() === 'DRIVER' ? '🚚 Chauffeur' : auth.role() === 'SHIPPER' ? '📦 Expéditeur' : '⚙️ Admin' }}
+        <span class="role-pill"
+          [class.role-pill--driver]="auth.role() === 'DRIVER'"
+          [class.role-pill--shipper]="auth.role() === 'SHIPPER'"
+          [class.role-pill--carrier]="auth.role() === 'CARRIER'">
+          {{ auth.role() === 'DRIVER' ? '🚚 Chauffeur' : auth.role() === 'SHIPPER' ? '📦 Expéditeur' : auth.role() === 'CARRIER' ? '🏢 Transporteur' : '⚙️ Admin' }}
         </span>
       </div>
 
@@ -105,6 +108,7 @@ interface NavItem {
     }
     .role-pill--driver { background: rgba(67,160,71,0.15); color: #81C784; border-color: rgba(102,187,106,0.4); }
     .role-pill--shipper { background: rgba(201,162,39,0.15); color: #E8C84A; border-color: rgba(201,162,39,0.4); }
+    .role-pill--carrier { background: rgba(33,150,243,0.15); color: #64B5F6; border-color: rgba(33,150,243,0.4); }
 
     /* Nav */
     .sidebar-nav { flex: 1; padding: 10px 10px; overflow-y: auto; overflow-x: hidden; }
@@ -185,6 +189,7 @@ export class SidebarComponent {
     const roleMap: Record<string, string> = {
       SHIPPER: 'PROFILE.ROLES.SHIPPER',
       DRIVER: 'PROFILE.ROLES.DRIVER',
+      CARRIER: 'PROFILE.ROLES.CARRIER',
       ADMIN: 'PROFILE.ROLES.ADMIN',
     };
     return roleMap[this.auth.user()?.role ?? ''] ?? '';
@@ -194,6 +199,7 @@ export class SidebarComponent {
     { labelKey: 'NAV.LOAD_BOARD',   icon: '📋', route: '/load-board', color: '#F5A623', roles: ['DRIVER'] },
     { labelKey: 'NAV.MY_DASHBOARD', icon: '📊', route: '/dashboard',  color: '#2196F3' },
     { labelKey: 'NAV.ORDERS',       icon: '📦', route: '/orders',     color: '#9C27B0', roles: ['SHIPPER', 'ADMIN'] },
+    { labelKey: 'NAV.FLEET',        icon: '🚛', route: '/fleet',      color: '#0288D1', roles: ['CARRIER'] },
     { labelKey: 'NAV.TRACKING',     icon: '🗺️', route: '/tracking',  color: '#E53935' },
     { labelKey: 'NAV.MESSAGES',     icon: '💬', route: '/messaging',  color: '#43A047' },
     { labelKey: 'NAV.PROFILE',      icon: '👤', route: '/profile',    color: '#757575' },

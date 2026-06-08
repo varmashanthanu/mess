@@ -42,11 +42,18 @@ class Vehicle(BaseModel):
 
     # Identity
     registration_number = models.CharField(max_length=50, unique=True, db_index=True)
+    vin = models.CharField(max_length=17, blank=True, help_text="Vehicle Identification Number")
     make = models.CharField(max_length=100, blank=True, help_text="e.g. Mercedes-Benz")
     model = models.CharField(max_length=100, blank=True, help_text="e.g. Actros")
     year = models.PositiveSmallIntegerField(null=True, blank=True)
     fuel_type = models.CharField(max_length=10, choices=FuelType.choices, default=FuelType.DIESEL)
     color = models.CharField(max_length=50, blank=True)
+    trailer_type = models.CharField(max_length=100, blank=True, help_text="e.g. Flatbed, Reefer, Dry Van")
+
+    # Registration & compliance
+    registration_expiry = models.DateField(null=True, blank=True)
+    axle_count = models.PositiveSmallIntegerField(null=True, blank=True)
+    gross_weight_kg = models.PositiveIntegerField(null=True, blank=True, help_text="Gross vehicle weight in kg")
 
     # Capacity (may differ from VehicleType defaults for this specific vehicle)
     payload_kg = models.PositiveIntegerField(null=True, blank=True)
