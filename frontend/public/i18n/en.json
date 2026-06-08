@@ -59,6 +59,8 @@
       "ROLE_SHIPPER_DESC": "I send packages",
       "ROLE_DRIVER": "Driver",
       "ROLE_DRIVER_DESC": "I transport goods",
+      "ROLE_CARRIER": "Carrier",
+      "ROLE_CARRIER_DESC": "I manage a fleet of vehicles",
       "PASSWORD": "Password",
       "PASSWORD_PLACEHOLDER": "Min. 8 characters",
       "PASSWORD_MIN": "Minimum 8 characters",
@@ -102,6 +104,7 @@
     "MY_DASHBOARD": "Dashboard",
     "ORDERS": "Orders",
     "LOAD_BOARD": "Loads",
+    "FLEET": "My Fleet",
     "TRACKING": "GPS Tracking",
     "MESSAGES": "Messages",
     "NOTIFICATIONS": "Notifications",
@@ -348,6 +351,7 @@
     "ROLES": {
       "SHIPPER": "Shipper",
       "DRIVER": "Driver",
+      "CARRIER": "Carrier",
       "ADMIN": "Administrator"
     }
   }

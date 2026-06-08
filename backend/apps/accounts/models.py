@@ -7,7 +7,7 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
 from core.models import BaseModel
-from .constants import Language, UserRole
+from .constants import DrugTestingStatus, Language, OperatingAuthority, PaymentMethod, UserRole
 
 
 class UserManager(BaseUserManager):
@@ -134,11 +134,44 @@ class DriverProfile(BaseModel):
     """Extended profile for drivers."""
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="driver_profile")
+
+    # Identity & license
     license_number = models.CharField(max_length=100)
+    license_class = models.CharField(max_length=10, blank=True, help_text="A, B, C, etc.")
     license_expiry = models.DateField(null=True, blank=True)
     license_photo = models.ImageField(upload_to="licenses/", null=True, blank=True)
+    license_state = models.CharField(max_length=100, blank=True, help_text="Issuing country/region")
+    cdl_endorsements = models.CharField(max_length=255, blank=True, help_text="e.g. hazmat, tanker, doubles")
     national_id = models.CharField(max_length=100, blank=True)
     avatar = models.ImageField(upload_to="avatars/drivers/", null=True, blank=True)
+
+    # Medical & compliance
+    medical_card_expiry = models.DateField(null=True, blank=True)
+    medical_card_photo = models.ImageField(upload_to="drivers/medical/", null=True, blank=True)
+    drug_testing_status = models.CharField(
+        max_length=20, choices=DrugTestingStatus.choices,
+        default=DrugTestingStatus.PENDING, blank=True
+    )
+
+    # Experience & equipment
+    home_address = models.TextField(blank=True)
+    driving_experience_years = models.PositiveSmallIntegerField(null=True, blank=True)
+    equipment_types = models.CharField(max_length=500, blank=True, help_text="Types of equipment handled")
+    preferred_lanes = models.TextField(blank=True, help_text="Preferred routes or service area")
+
+    # Payment & dispatch
+    payment_method = models.CharField(
+        max_length=20, choices=PaymentMethod.choices, blank=True
+    )
+    bank_account_name = models.CharField(max_length=255, blank=True)
+    bank_account_number = models.CharField(max_length=100, blank=True)
+    bank_routing_number = models.CharField(max_length=100, blank=True)
+    dispatch_contact_name = models.CharField(max_length=255, blank=True)
+    dispatch_contact_phone = models.CharField(max_length=30, blank=True)
+
+    # Terms
+    terms_accepted = models.BooleanField(default=False)
+    terms_accepted_at = models.DateTimeField(null=True, blank=True)
 
     # Location — updated by the mobile client
     is_available = models.BooleanField(default=False, db_index=True)
@@ -158,7 +191,79 @@ class DriverProfile(BaseModel):
         return f"Driver: {self.user.full_name}"
 
     def update_rating(self, new_score: int):
-        """Recalculate running average rating."""
+        total = self.rating * self.total_ratings + new_score
+        self.total_ratings += 1
+        self.rating = total / self.total_ratings
+        self.save(update_fields=["rating", "total_ratings"])
+
+
+class CarrierProfile(BaseModel):
+    """Extended profile for carriers (transport companies)."""
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="carrier_profile")
+
+    # Company identity
+    legal_company_name = models.CharField(max_length=255, blank=True)
+    dot_number = models.CharField(max_length=50, blank=True, help_text="DOT number")
+    mc_number = models.CharField(max_length=50, blank=True, help_text="MC / authority number")
+    operating_authority = models.CharField(
+        max_length=20, choices=OperatingAuthority.choices, blank=True
+    )
+    tax_id = models.CharField(max_length=100, blank=True, help_text="Tax ID / NINEA")
+    w9_document = models.FileField(upload_to="carriers/w9/", null=True, blank=True)
+    avatar = models.ImageField(upload_to="avatars/carriers/", null=True, blank=True)
+
+    # Company address & contacts
+    company_address = models.TextField(blank=True)
+    company_city = models.CharField(max_length=100, blank=True, default="Dakar")
+    company_country = models.CharField(max_length=100, blank=True, default="Senegal")
+    primary_contact_name = models.CharField(max_length=255, blank=True)
+    primary_contact_phone = models.CharField(max_length=30, blank=True)
+    primary_contact_email = models.EmailField(blank=True)
+    dispatch_contact_name = models.CharField(max_length=255, blank=True)
+    dispatch_contact_phone = models.CharField(max_length=30, blank=True)
+
+    # Insurance
+    auto_liability_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    cargo_insurance_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    insurance_provider = models.CharField(max_length=255, blank=True)
+    insurance_policy_number = models.CharField(max_length=100, blank=True)
+    insurance_expiry = models.DateField(null=True, blank=True)
+    certificate_of_insurance = models.FileField(upload_to="carriers/insurance/", null=True, blank=True)
+
+    # Payment
+    payment_method = models.CharField(
+        max_length=20, choices=PaymentMethod.choices, blank=True
+    )
+    bank_account_name = models.CharField(max_length=255, blank=True)
+    bank_account_number = models.CharField(max_length=100, blank=True)
+    bank_routing_number = models.CharField(max_length=100, blank=True)
+
+    # Operational
+    preferred_lanes = models.TextField(blank=True)
+    service_area = models.TextField(blank=True)
+    availability_notes = models.TextField(blank=True)
+    drug_testing_status = models.CharField(
+        max_length=20, choices=DrugTestingStatus.choices,
+        default=DrugTestingStatus.PENDING, blank=True
+    )
+
+    # Compliance
+    carrier_agreement_accepted = models.BooleanField(default=False)
+    carrier_agreement_accepted_at = models.DateTimeField(null=True, blank=True)
+
+    # Stats
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    total_loads = models.PositiveIntegerField(default=0)
+    total_ratings = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "Carrier Profile"
+
+    def __str__(self):
+        return f"Carrier: {self.legal_company_name or self.user.full_name}"
+
+    def update_rating(self, new_score: int):
         total = self.rating * self.total_ratings + new_score
         self.total_ratings += 1
         self.rating = total / self.total_ratings

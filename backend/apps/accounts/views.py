@@ -18,6 +18,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from core.permissions import IsAdmin, IsOwnerOrAdmin
 # from .models import PhoneVerification
 from .serializers import (
+    CarrierProfileSerializer,
     CustomTokenObtainPairSerializer,
     DriverAvailabilitySerializer,
     DriverProfileSerializer,
@@ -145,7 +146,7 @@ class MeView(generics.RetrieveUpdateAPIView):
 
         # Update user-level fields (first_name, last_name, email, preferred_language)
         user_fields = {k: v for k, v in request.data.items()
-                       if k not in ("shipper_profile", "driver_profile")}
+                       if k not in ("shipper_profile", "driver_profile", "carrier_profile")}
         if user_fields:
             user_serializer = self.get_serializer(user, data=user_fields, partial=True)
             user_serializer.is_valid(raise_exception=True)
@@ -165,6 +166,13 @@ class MeView(generics.RetrieveUpdateAPIView):
             )
             dp.is_valid(raise_exception=True)
             dp.save()
+
+        if "carrier_profile" in request.data and hasattr(user, "carrier_profile"):
+            cp = CarrierProfileSerializer(
+                user.carrier_profile, data=request.data["carrier_profile"], partial=True
+            )
+            cp.is_valid(raise_exception=True)
+            cp.save()
 
         # Re-fetch to get fresh nested data in the response
         user.refresh_from_db()
@@ -221,6 +229,14 @@ class DriverProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user.driver_profile
+
+
+class CarrierProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = CarrierProfileSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+
+    def get_object(self):
+        return self.request.user.carrier_profile
 
 
 # ── Admin views ───────────────────────────────────────────────────

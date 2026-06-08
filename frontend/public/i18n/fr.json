@@ -57,8 +57,10 @@
       "ROLE_SELECT": "-- Sélectionner --",
       "ROLE_SHIPPER": "Expéditeur",
       "ROLE_SHIPPER_DESC": "J'envoie des colis",
-      "ROLE_DRIVER": "Conducteur",
+      "ROLE_DRIVER": "Chauffeur",
       "ROLE_DRIVER_DESC": "Je transporte des marchandises",
+      "ROLE_CARRIER": "Transporteur",
+      "ROLE_CARRIER_DESC": "Je gère une flotte de véhicules",
       "PASSWORD": "Mot de passe",
       "PASSWORD_PLACEHOLDER": "Min. 8 caractères",
       "PASSWORD_MIN": "Minimum 8 caractères",
@@ -102,6 +104,7 @@
     "MY_DASHBOARD": "Tableau de bord",
     "ORDERS": "Commandes",
     "LOAD_BOARD": "Chargements",
+    "FLEET": "Ma Flotte",
     "TRACKING": "Suivi GPS",
     "MESSAGES": "Messages",
     "NOTIFICATIONS": "Notifications",
@@ -348,6 +351,7 @@
     "ROLES": {
       "SHIPPER": "Expéditeur",
       "DRIVER": "Chauffeur",
+      "CARRIER": "Transporteur",
       "ADMIN": "Administrateur"
     }
   }
