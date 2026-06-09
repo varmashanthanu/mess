@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { PaginatedResponse, FreightOrder, CreateOrderPayload, OrderAssignment, SuggestedPrice } from '../models/order.model';
 import { Vehicle, VehicleType } from '../models/fleet.model';
@@ -151,6 +152,20 @@ export class ApiService {
 
   updateMe(payload: Partial<User>): Observable<User> {
     return this.http.patch<User>(`${this.base}/accounts/me/`, payload);
+  }
+
+  getMyDrivers(): Observable<User[]> {
+    return this.http.get<any>(`${this.base}/accounts/me/drivers/`).pipe(
+      map((res: any) => res.results ?? res)
+    );
+  }
+
+  inviteDriver(phone_number: string): Observable<any> {
+    return this.http.put(`${this.base}/accounts/me/drivers/invite/`, { phone_number });
+  }
+
+  deleteVehicle(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/fleet/vehicles/${id}/`);
   }
 
   getUsers(params?: Record<string, string>): Observable<PaginatedResponse<User>> {
