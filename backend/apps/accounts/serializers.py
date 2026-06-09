@@ -158,9 +158,15 @@ class ShipperProfileSerializer(serializers.ModelSerializer):
 
 
 class DriverProfileSerializer(serializers.ModelSerializer):
+    employer_id = serializers.PrimaryKeyRelatedField(
+        source="employer", queryset=CarrierProfile.objects.all(),
+        allow_null=True, required=False
+    )
+
     class Meta:
         model = DriverProfile
         fields = [
+            "employer_id",
             # License & identity
             "license_number", "license_class", "license_expiry", "license_photo",
             "license_state", "cdl_endorsements", "national_id", "avatar",

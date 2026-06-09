@@ -230,6 +230,40 @@ class CarrierProfileView(generics.RetrieveUpdateAPIView):
         return self.request.user.carrier_profile
 
 
+class CarrierDriversView(generics.ListAPIView):
+    """List drivers associated with the authenticated carrier."""
+    serializer_class = UserDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        carrier_profile = getattr(self.request.user, "carrier_profile", None)
+        if not carrier_profile:
+            return User.objects.none()
+        return User.objects.filter(
+            driver_profile__employer=carrier_profile
+        ).select_related("driver_profile")
+
+
+class CarrierInviteDriverView(generics.UpdateAPIView):
+    """Associate a driver with this carrier by phone number."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        from .models import DriverProfile as DP
+        carrier_profile = getattr(request.user, "carrier_profile", None)
+        if not carrier_profile:
+            return Response({"error": "Not a carrier account."}, status=status.HTTP_403_FORBIDDEN)
+        phone = request.data.get("phone_number")
+        try:
+            driver = User.objects.get(phone_number=phone, role="DRIVER")
+            dp, _ = DP.objects.get_or_create(user=driver, defaults={"license_number": "PENDING"})
+            dp.employer = carrier_profile
+            dp.save(update_fields=["employer"])
+            return Response({"message": "Driver associated."})
+        except User.DoesNotExist:
+            return Response({"error": "Driver not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
 # ── Admin views ───────────────────────────────────────────────────
 
 class UserListView(generics.ListAPIView):

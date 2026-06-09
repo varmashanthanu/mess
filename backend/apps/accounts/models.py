@@ -134,6 +134,10 @@ class DriverProfile(BaseModel):
     """Extended profile for drivers."""
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="driver_profile")
+    employer = models.ForeignKey(
+        "CarrierProfile", null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="drivers"
+    )
 
     # Identity & license
     license_number = models.CharField(max_length=100)
