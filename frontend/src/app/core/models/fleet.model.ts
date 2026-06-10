@@ -10,14 +10,19 @@ export interface VehicleType {
 export interface Vehicle {
   id: string;
   registration_number: string;
+  vin?: string;
   make: string;
   model: string;
   year: number;
   vehicle_type: string;
-  vehicle_type_name: string;
+  vehicle_type_name?: string;
+  trailer_type?: string;
   owner: string;
-  owner_name: string;
+  owner_name?: string;
   payload_kg: number;
+  gross_weight_kg?: number;
+  axle_count?: number;
+  registration_expiry?: string;
   is_active: boolean;
   created_at: string;
 }

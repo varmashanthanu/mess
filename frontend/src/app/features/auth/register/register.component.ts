@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { Router, RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserRole } from '../../../core/models/user.model';
 import { LanguageService } from '../../../core/services/language.service';
@@ -79,6 +79,11 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                 <span class="role-emoji">🚚</span>
                 <span class="role-name">{{ 'AUTH.REGISTER.ROLE_DRIVER' | translate }}</span>
                 <span class="role-desc">{{ 'AUTH.REGISTER.ROLE_DRIVER_DESC' | translate }}</span>
+              </div>
+              <div class="role-card role-card--wide" [class.role-card--active]="f['role'].value === 'CARRIER'" (click)="f['role'].setValue('CARRIER')">
+                <span class="role-emoji">🏢</span>
+                <span class="role-name">{{ 'AUTH.REGISTER.ROLE_CARRIER' | translate }}</span>
+                <span class="role-desc">{{ 'AUTH.REGISTER.ROLE_CARRIER_DESC' | translate }}</span>
               </div>
             </div>
             <span class="field-error" *ngIf="submitted && f['role'].errors?.['required']">{{ 'COMMON.REQUIRED' | translate }}</span>
@@ -179,6 +184,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 
     /* Role selector */
     .role-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .role-card--wide { grid-column: 1 / -1; flex-direction: row; justify-content: center; gap: 10px; padding: 12px 16px; }
     .role-card {
       display: flex; flex-direction: column; align-items: center; gap: 4px;
       padding: 14px 10px; border: 2px solid #E5E2DA; border-radius: 12px;
@@ -218,7 +224,13 @@ export class RegisterComponent {
 
   langOpen = false;
 
-  constructor(private fb: FormBuilder, private auth: AuthService, public langSvc: LanguageService) {
+  constructor(
+    private fb: FormBuilder,
+    private auth: AuthService,
+    public langSvc: LanguageService,
+    private router: Router,
+    private translate: TranslateService,
+  ) {
     this.form = this.fb.group({
       full_name:        ['', Validators.required],
       phone_number:     ['', Validators.required],
@@ -252,20 +264,19 @@ export class RegisterComponent {
       password_confirm: this.f['password_confirm'].value,
     }).subscribe({
       next: () => {
-        this.success = 'AUTH.REGISTER.SUCCESS';
         sessionStorage.setItem('pending_phone', this.f['phone_number'].value);
-        this.loading = false;
+        this.router.navigate(['/dashboard']);
       },
       error: (err: any) => {
-        const envelope = err?.error?.error;
-        if (envelope?.message) {
-          this.error = envelope.message;
-        } else if (envelope?.detail && typeof envelope.detail === 'object') {
-          this.error = Object.values(envelope.detail)
-            .map((msgs: any) => Array.isArray(msgs) ? msgs.join(', ') : String(msgs))
-            .join(' | ');
+        const detail = err?.error?.error?.detail ?? err?.error;
+        if (detail?.phone_number) {
+          this.error = this.translate.instant('AUTH.REGISTER.ERROR_PHONE_EXISTS');
+        } else if (detail?.password || detail?.password_confirm) {
+          this.error = this.translate.instant('AUTH.REGISTER.ERROR_PASSWORD');
+        } else if (detail?.role) {
+          this.error = this.translate.instant('AUTH.REGISTER.ERROR_ROLE');
         } else {
-          this.error = 'AUTH.REGISTER.ERROR_GENERIC';
+          this.error = this.translate.instant('AUTH.REGISTER.ERROR_GENERIC');
         }
         this.loading = false;
       },

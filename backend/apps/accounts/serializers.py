@@ -7,7 +7,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .constants import UserRole
-from .models import DriverProfile, PhoneVerification, ShipperProfile
+from .models import CarrierProfile, DriverProfile, PhoneVerification, ShipperProfile
 
 User = get_user_model()
 
@@ -65,6 +65,8 @@ def _create_role_profile(user):
         ShipperProfile.objects.get_or_create(user=user)
     elif user.role == UserRole.DRIVER:
         DriverProfile.objects.get_or_create(user=user, defaults={"license_number": "PENDING"})
+    elif user.role == UserRole.CARRIER:
+        CarrierProfile.objects.get_or_create(user=user)
 
 
 # ── OTP Verification ──────────────────────────────────────────────
@@ -111,6 +113,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)
     shipper_profile = serializers.SerializerMethodField()
     driver_profile = serializers.SerializerMethodField()
+    carrier_profile = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -118,7 +121,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "id", "phone_number", "email", "first_name", "last_name",
             "full_name", "role", "preferred_language", "is_verified",
             "is_identity_verified", "date_joined",
-            "shipper_profile", "driver_profile",
+            "shipper_profile", "driver_profile", "carrier_profile",
         ]
         read_only_fields = ["id", "phone_number", "is_verified", "is_identity_verified", "date_joined"]
 
@@ -130,6 +133,11 @@ class UserDetailSerializer(serializers.ModelSerializer):
     def get_driver_profile(self, obj):
         if hasattr(obj, "driver_profile"):
             return DriverProfileSerializer(obj.driver_profile).data
+        return None
+
+    def get_carrier_profile(self, obj):
+        if hasattr(obj, "carrier_profile"):
+            return CarrierProfileSerializer(obj.carrier_profile).data
         return None
 
 
@@ -150,15 +158,59 @@ class ShipperProfileSerializer(serializers.ModelSerializer):
 
 
 class DriverProfileSerializer(serializers.ModelSerializer):
+    employer_id = serializers.PrimaryKeyRelatedField(
+        source="employer", queryset=CarrierProfile.objects.all(),
+        allow_null=True, required=False
+    )
+
     class Meta:
         model = DriverProfile
         fields = [
-            "license_number", "license_expiry", "license_photo",
-            "national_id", "avatar", "is_available",
-            "current_lat", "current_lng", "last_location_update",
+            "employer_id",
+            # License & identity
+            "license_number", "license_class", "license_expiry", "license_photo",
+            "license_state", "cdl_endorsements", "national_id", "avatar",
+            # Medical & compliance
+            "medical_card_expiry", "medical_card_photo", "drug_testing_status",
+            # Experience
+            "home_address", "driving_experience_years", "equipment_types", "preferred_lanes",
+            # Payment & dispatch
+            "payment_method", "bank_account_name", "bank_account_number", "bank_routing_number",
+            "dispatch_contact_name", "dispatch_contact_phone",
+            # Terms
+            "terms_accepted", "terms_accepted_at",
+            # Location
+            "is_available", "current_lat", "current_lng", "last_location_update",
+            # Stats
             "rating", "total_deliveries",
         ]
-        read_only_fields = ["rating", "total_deliveries", "last_location_update"]
+        read_only_fields = ["rating", "total_deliveries", "last_location_update", "terms_accepted_at"]
+
+
+class CarrierProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarrierProfile
+        fields = [
+            # Company
+            "legal_company_name", "dot_number", "mc_number", "operating_authority",
+            "tax_id", "w9_document", "avatar",
+            # Address & contacts
+            "company_address", "company_city", "company_country",
+            "primary_contact_name", "primary_contact_phone", "primary_contact_email",
+            "dispatch_contact_name", "dispatch_contact_phone",
+            # Insurance
+            "auto_liability_amount", "cargo_insurance_amount", "insurance_provider",
+            "insurance_policy_number", "insurance_expiry", "certificate_of_insurance",
+            # Payment
+            "payment_method", "bank_account_name", "bank_account_number", "bank_routing_number",
+            # Operational
+            "preferred_lanes", "service_area", "availability_notes", "drug_testing_status",
+            # Compliance
+            "carrier_agreement_accepted", "carrier_agreement_accepted_at",
+            # Stats
+            "rating", "total_loads",
+        ]
+        read_only_fields = ["rating", "total_loads", "carrier_agreement_accepted_at"]
 
 
 class DriverAvailabilitySerializer(serializers.Serializer):

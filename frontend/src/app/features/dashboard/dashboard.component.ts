@@ -19,8 +19,8 @@ interface StatCard { label: string; value: string | number; icon: string; color:
       <!-- ── Welcome banner ── -->
       <div class="welcome-banner" [class.welcome-banner--driver]="isDriver()" [class.welcome-banner--shipper]="isShipper()">
         <div class="welcome-text">
-          <div class="role-chip" *ngIf="isDriver()">🚚 Espace Conducteur</div>
-          <div class="role-chip role-chip--shipper" *ngIf="isShipper()">📦 Espace Expéditeur</div>
+          <div class="role-chip" *ngIf="isDriver()">{{ 'DASHBOARD.ROLE_DRIVER' | translate }}</div>
+          <div class="role-chip role-chip--shipper" *ngIf="isShipper()">{{ 'DASHBOARD.ROLE_SHIPPER' | translate }}</div>
           <h1>{{ 'DASHBOARD.GREETING' | translate: { name: firstName() } }}</h1>
           <p class="today-date">{{ today() }}</p>
         </div>
@@ -29,7 +29,7 @@ interface StatCard { label: string; value: string | number; icon: string; color:
             {{ 'DASHBOARD.NEW_ORDER' | translate }}
           </a>
           <a class="btn-primary btn-driver" routerLink="/load-board" *ngIf="isDriver()">
-            🗺️ Mes livraisons
+            🗺️ {{ 'DASHBOARD.MY_DELIVERIES' | translate }}
           </a>
         </div>
       </div>
@@ -49,46 +49,46 @@ interface StatCard { label: string; value: string | number; icon: string; color:
 
       <!-- ── Driver quick actions ── -->
       <div class="quick-actions" *ngIf="isDriver()">
-        <div class="quick-title">Actions rapides</div>
+        <div class="quick-title">{{ 'DASHBOARD.QUICK_ACTIONS' | translate }}</div>
         <div class="quick-grid">
           <a class="quick-card" routerLink="/load-board">
             <span class="quick-icon">📋</span>
-            <span>Tableau de bord missions</span>
+            <span>{{ 'DASHBOARD.DRIVER.LOAD_BOARD' | translate }}</span>
           </a>
           <a class="quick-card" routerLink="/tracking">
             <span class="quick-icon">🗺️</span>
-            <span>Suivi en temps réel</span>
+            <span>{{ 'DASHBOARD.DRIVER.TRACKING' | translate }}</span>
           </a>
           <a class="quick-card" routerLink="/messaging">
             <span class="quick-icon">💬</span>
-            <span>Messagerie</span>
+            <span>{{ 'DASHBOARD.DRIVER.MESSAGING' | translate }}</span>
           </a>
           <a class="quick-card" routerLink="/profile">
             <span class="quick-icon">👤</span>
-            <span>Mon profil</span>
+            <span>{{ 'DASHBOARD.DRIVER.PROFILE' | translate }}</span>
           </a>
         </div>
       </div>
 
       <!-- ── Shipper quick actions ── -->
       <div class="quick-actions quick-actions--shipper" *ngIf="isShipper()">
-        <div class="quick-title">Actions rapides</div>
+        <div class="quick-title">{{ 'DASHBOARD.QUICK_ACTIONS' | translate }}</div>
         <div class="quick-grid">
           <a class="quick-card" routerLink="/orders/new">
             <span class="quick-icon">➕</span>
-            <span>Nouvelle commande</span>
+            <span>{{ 'DASHBOARD.SHIPPER.NEW_ORDER' | translate }}</span>
           </a>
           <a class="quick-card" routerLink="/orders">
             <span class="quick-icon">📦</span>
-            <span>Mes commandes</span>
+            <span>{{ 'DASHBOARD.SHIPPER.MY_ORDERS' | translate }}</span>
           </a>
           <a class="quick-card" routerLink="/tracking">
             <span class="quick-icon">📍</span>
-            <span>Suivi des livraisons</span>
+            <span>{{ 'DASHBOARD.SHIPPER.TRACKING' | translate }}</span>
           </a>
           <a class="quick-card" routerLink="/messaging">
             <span class="quick-icon">💬</span>
-            <span>Messages transporteurs</span>
+            <span>{{ 'DASHBOARD.SHIPPER.MESSAGING' | translate }}</span>
           </a>
         </div>
       </div>
@@ -97,7 +97,7 @@ interface StatCard { label: string; value: string | number; icon: string; color:
       <div class="section">
         <div class="section-header">
           <h2>
-            {{ isDriver() ? '🚛 Mes livraisons récentes' : '📦 Commandes récentes' }}
+            {{ (isDriver() ? 'DASHBOARD.RECENT_DRIVER' : 'DASHBOARD.RECENT_SHIPPER') | translate }}
           </h2>
           <div class="section-header-right">
             <span class="filter-badge" *ngIf="activeFilter()" (click)="setFilter(null)">
@@ -128,10 +128,10 @@ interface StatCard { label: string; value: string | number; icon: string; color:
 
         <div class="empty-state" *ngIf="!loading() && !filteredOrders().length">
           <div class="empty-icon">{{ isDriver() ? '🚚' : '📦' }}</div>
-          <h3>{{ isDriver() ? 'Aucune mission trouvée' : 'DASHBOARD.EMPTY_TITLE' | translate }}</h3>
-          <p>{{ isDriver() ? 'Consultez le tableau de bord missions pour de nouvelles opportunités.' : ('DASHBOARD.EMPTY_SUBTITLE' | translate) }}</p>
+          <h3>{{ (isDriver() ? 'DASHBOARD.EMPTY_DRIVER_TITLE' : 'DASHBOARD.EMPTY_TITLE') | translate }}</h3>
+          <p>{{ (isDriver() ? 'DASHBOARD.EMPTY_DRIVER_SUBTITLE' : 'DASHBOARD.EMPTY_SUBTITLE') | translate }}</p>
           <a class="btn-primary mt-2" [routerLink]="isDriver() ? '/load-board' : '/orders/new'">
-            {{ isDriver() ? 'Mes livraisons' : 'Créer une commande' }}
+            {{ (isDriver() ? 'DASHBOARD.EMPTY_DRIVER_CTA' : 'DASHBOARD.EMPTY_SHIPPER_CTA') | translate }}
           </a>
         </div>
       </div>

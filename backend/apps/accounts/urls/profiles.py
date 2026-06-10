@@ -2,6 +2,9 @@
 from django.urls import path
 
 from apps.accounts.views import (
+    CarrierDriversView,
+    CarrierInviteDriverView,
+    CarrierProfileView,
     DriverAvailabilityView,
     DriverProfileView,
     MeView,
@@ -16,6 +19,9 @@ urlpatterns = [
     path("me/availability/", DriverAvailabilityView.as_view(), name="accounts-driver-availability"),
     path("me/shipper-profile/", ShipperProfileView.as_view(), name="accounts-shipper-profile"),
     path("me/driver-profile/", DriverProfileView.as_view(), name="accounts-driver-profile"),
+    path("me/carrier-profile/", CarrierProfileView.as_view(), name="accounts-carrier-profile"),
+    path("me/drivers/", CarrierDriversView.as_view(), name="accounts-carrier-drivers"),
+    path("me/drivers/invite/", CarrierInviteDriverView.as_view(), name="accounts-carrier-invite-driver"),
     # Admin
     path("users/", UserListView.as_view(), name="accounts-user-list"),
 ]

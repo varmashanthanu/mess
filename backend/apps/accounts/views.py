@@ -18,6 +18,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from core.permissions import IsAdmin, IsOwnerOrAdmin
 from .models import PhoneVerification
 from .serializers import (
+    CarrierProfileSerializer,
     CustomTokenObtainPairSerializer,
     DriverAvailabilitySerializer,
     DriverProfileSerializer,
@@ -136,7 +137,7 @@ class MeView(generics.RetrieveUpdateAPIView):
 
         # Update user-level fields (first_name, last_name, email, preferred_language)
         user_fields = {k: v for k, v in request.data.items()
-                       if k not in ("shipper_profile", "driver_profile")}
+                       if k not in ("shipper_profile", "driver_profile", "carrier_profile")}
         if user_fields:
             user_serializer = self.get_serializer(user, data=user_fields, partial=True)
             user_serializer.is_valid(raise_exception=True)
@@ -156,6 +157,13 @@ class MeView(generics.RetrieveUpdateAPIView):
             )
             dp.is_valid(raise_exception=True)
             dp.save()
+
+        if "carrier_profile" in request.data and hasattr(user, "carrier_profile"):
+            cp = CarrierProfileSerializer(
+                user.carrier_profile, data=request.data["carrier_profile"], partial=True
+            )
+            cp.is_valid(raise_exception=True)
+            cp.save()
 
         # Re-fetch to get fresh nested data in the response
         user.refresh_from_db()
@@ -212,6 +220,48 @@ class DriverProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user.driver_profile
+
+
+class CarrierProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = CarrierProfileSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+
+    def get_object(self):
+        return self.request.user.carrier_profile
+
+
+class CarrierDriversView(generics.ListAPIView):
+    """List drivers associated with the authenticated carrier."""
+    serializer_class = UserDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        carrier_profile = getattr(self.request.user, "carrier_profile", None)
+        if not carrier_profile:
+            return User.objects.none()
+        return User.objects.filter(
+            driver_profile__employer=carrier_profile
+        ).select_related("driver_profile")
+
+
+class CarrierInviteDriverView(generics.UpdateAPIView):
+    """Associate a driver with this carrier by phone number."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        from .models import DriverProfile as DP
+        carrier_profile = getattr(request.user, "carrier_profile", None)
+        if not carrier_profile:
+            return Response({"error": "Not a carrier account."}, status=status.HTTP_403_FORBIDDEN)
+        phone = request.data.get("phone_number")
+        try:
+            driver = User.objects.get(phone_number=phone, role="DRIVER")
+            dp, _ = DP.objects.get_or_create(user=driver, defaults={"license_number": "PENDING"})
+            dp.employer = carrier_profile
+            dp.save(update_fields=["employer"])
+            return Response({"message": "Driver associated."})
+        except User.DoesNotExist:
+            return Response({"error": "Driver not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
 # ── Admin views ───────────────────────────────────────────────────
