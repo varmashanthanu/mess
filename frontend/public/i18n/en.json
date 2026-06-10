@@ -129,6 +129,22 @@
   "DASHBOARD": {
     "GREETING": "Hello 👋",
     "NEW_ORDER": "+ New order",
+    "ROLE_DRIVER": "🚚 Driver Space",
+    "ROLE_SHIPPER": "📦 Shipper Space",
+    "MY_DELIVERIES": "My Deliveries",
+    "QUICK_ACTIONS": "Quick actions",
+    "DRIVER": {
+      "LOAD_BOARD": "Load Board",
+      "TRACKING": "Real-time tracking",
+      "MESSAGING": "Messaging",
+      "PROFILE": "My profile"
+    },
+    "SHIPPER": {
+      "NEW_ORDER": "New order",
+      "MY_ORDERS": "My orders",
+      "TRACKING": "Track deliveries",
+      "MESSAGING": "Carrier messages"
+    },
     "STATS": {
       "AVAILABLE": "Available Orders",
       "IN_TRANSIT": "In Transit",
@@ -136,8 +152,14 @@
       "COMPLETED": "Completed"
     },
     "RECENT_ORDERS": "Recent orders",
+    "RECENT_DRIVER": "🚛 Recent deliveries",
+    "RECENT_SHIPPER": "📦 Recent orders",
     "EMPTY_TITLE": "No orders",
-    "EMPTY_SUBTITLE": "Your orders will appear here."
+    "EMPTY_SUBTITLE": "Your orders will appear here.",
+    "EMPTY_DRIVER_TITLE": "No jobs found",
+    "EMPTY_DRIVER_SUBTITLE": "Check the load board for new opportunities.",
+    "EMPTY_DRIVER_CTA": "My Deliveries",
+    "EMPTY_SHIPPER_CTA": "Create an order"
   },
 
   "ORDERS": {
@@ -330,11 +352,124 @@
     "TRIPS": "Trips",
     "RATING": "Avg. rating",
     "REVIEWS": "Reviews",
+    "SELECT": "-- Select --",
+    "AVAILABLE": "🟢 Available",
+    "UNAVAILABLE": "🔴 Unavailable",
     "ROLES": {
       "SHIPPER": "Shipper",
       "DRIVER": "Driver",
       "CARRIER": "Carrier",
-      "ADMIN": "Administrator"
+      "ADMIN": "Administrator",
+      "SHIPPER_LABEL": "📦 Shipper",
+      "DRIVER_LABEL": "🚚 Driver",
+      "CARRIER_LABEL": "🏢 Carrier",
+      "ADMIN_LABEL": "⚙️ Admin"
+    },
+    "TABS": {
+      "INFO": "👤 Information",
+      "LICENSE": "🪪 License & Compliance",
+      "VEHICLE": "🚛 My Vehicle",
+      "COMPANY": "🏢 My Company",
+      "FLEET": "🚛 My Fleet",
+      "DRIVERS": "👷 My Drivers"
+    },
+    "SECTION": {
+      "PERSONAL": "Personal information",
+      "LICENSE": "Driver's license",
+      "MEDICAL": "Medical & Compliance",
+      "EXPERIENCE": "Experience & Operations",
+      "PAYMENT": "Payment",
+      "LEGAL": "Legal identity",
+      "ADDRESS": "Address & Contacts",
+      "INSURANCE": "Insurance",
+      "ZONES": "Areas & Payment"
+    },
+    "DRUG": {
+      "COMPLIANT": "Compliant",
+      "NOT_COMPLIANT": "Non-compliant",
+      "PENDING": "Pending"
+    },
+    "PAYMENT": {
+      "ACH": "Bank transfer (ACH)",
+      "WAVE": "Wave",
+      "ORANGE": "Orange Money"
+    },
+    "DRIVER": {
+      "LICENSE_NUMBER": "License number *",
+      "LICENSE_CLASS": "Class (A, B, C…)",
+      "LICENSE_STATE": "Country / Region of issue",
+      "LICENSE_EXPIRY": "Expiry date",
+      "CDL": "CDL Endorsements",
+      "CDL_PH": "hazmat, tanker...",
+      "NATIONAL_ID": "National ID number",
+      "MEDICAL_EXPIRY": "Medical card expiry",
+      "DRUG_STATUS": "Drug test status",
+      "HOME_ADDRESS": "Home address",
+      "EXPERIENCE": "Years of experience",
+      "EQUIPMENT": "Equipment types",
+      "EQUIPMENT_PH": "Refrigerated, flatbed...",
+      "LANES": "Preferred routes / lanes",
+      "LANES_PH": "e.g. Dakar – Thiès – Mbour",
+      "PAYMENT_METHOD": "Payment method",
+      "BANK_NAME": "Account holder",
+      "BANK_NUMBER": "Account number"
+    },
+    "VEHICLE": {
+      "PLATE": "Registration plate *",
+      "PLATE_PH": "DK-1234-AB",
+      "VIN": "VIN",
+      "VIN_PH": "17 characters",
+      "MAKE": "Make",
+      "MAKE_PH": "Mercedes",
+      "MODEL": "Model",
+      "MODEL_PH": "Actros",
+      "YEAR": "Year",
+      "TRAILER": "Trailer type",
+      "TRAILER_PH": "Flatbed, Refrigerated...",
+      "TYPE": "Vehicle type *",
+      "PAYLOAD": "Payload (kg)",
+      "GROSS": "Gross weight (kg)",
+      "REG_EXPIRY": "Registration expiry",
+      "EMPTY": "No vehicle registered.",
+      "ADD": "Add vehicle",
+      "ADDING": "Saving..."
+    },
+    "CARRIER": {
+      "COMPANY": "Company name *",
+      "DOT": "DOT number",
+      "MC": "MC / Authority number",
+      "AUTHORITY": "Operating authority",
+      "AUTHORITY_INTER": "Interstate",
+      "AUTHORITY_INTRA": "Intrastate",
+      "AUTHORITY_BOTH": "Both",
+      "TAX_ID": "Tax ID (NINEA)",
+      "ADDRESS": "Company address",
+      "CITY": "City",
+      "COUNTRY": "Country",
+      "CONTACT_NAME": "Primary contact",
+      "CONTACT_PHONE": "Contact phone",
+      "CONTACT_EMAIL": "Contact email",
+      "DISPATCH": "Dispatch contact",
+      "INSURER": "Insurer",
+      "POLICY": "Policy number",
+      "AUTO_AMOUNT": "Auto liability (XOF)",
+      "CARGO_AMOUNT": "Cargo coverage (XOF)",
+      "INS_EXPIRY": "Insurance expiry",
+      "SERVICE_AREA": "Service area",
+      "SERVICE_PH": "e.g. Dakar, Saint-Louis, Ziguinchor...",
+      "LANES": "Preferred routes",
+      "BANK_NAME": "Account holder",
+      "BANK_NUMBER": "Account number",
+      "DRUG_STATUS": "Drug testing status",
+      "FLEET_EMPTY": "No vehicles registered.",
+      "ADD_VEHICLE": "+ Add a vehicle",
+      "DRIVERS_EMPTY": "No drivers associated.",
+      "ADD_DRIVER": "+ Associate a driver",
+      "DRIVER_PHONE": "Driver's phone number",
+      "ASSOCIATE": "Associate",
+      "ASSOCIATING": "Associating...",
+      "ASSOCIATED": "Driver associated successfully!",
+      "LICENSE": "License:"
     }
   }
 }
