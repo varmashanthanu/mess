@@ -523,15 +523,15 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
   `,
   styles: [`
     .profile-page { max-width: 900px; }
-    h1 { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: var(--text-primary, #1A1A1A); }
-    h3 { font-size: 16px; font-weight: 700; margin-bottom: 18px; color: var(--text-primary, #1A1A1A); }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: var(--text-primary); }
+    h3 { font-size: 16px; font-weight: 700; margin-bottom: 18px; color: var(--text-primary); }
 
     /* Header card */
     .header-card {
       display: flex; align-items: center; gap: 18px;
-      background: white; border-radius: 14px; padding: 20px 24px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px;
-      border: 1px solid var(--border, #E5E2DA);
+      background: var(--surface); border-radius: 14px; padding: 20px 24px;
+      box-shadow: var(--shadow); margin-bottom: 16px;
+      border: 1px solid var(--border);
     }
     .avatar {
       width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
@@ -540,33 +540,33 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       font-size: 22px; font-weight: 800;
     }
     .header-info { flex: 1; }
-    .header-info h2 { font-size: 18px; font-weight: 700; margin: 0 0 4px; }
-    .phone-line { font-size: 13px; color: #757575; margin-top: 4px; }
+    .header-info h2 { font-size: 18px; font-weight: 700; margin: 0 0 4px; color: var(--text-primary); }
+    .phone-line { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
     .role-chip {
       display: inline-block; padding: 3px 10px; border-radius: 12px;
       font-size: 11px; font-weight: 700; text-transform: uppercase;
-      background: rgba(201,162,39,0.15); color: #A8861F;
+      background: rgba(201,162,39,0.15); color: #C9A227;
     }
-    .role-chip--driver { background: rgba(67,160,71,0.15); color: #2E7D32; }
-    .role-chip--carrier { background: rgba(33,150,243,0.15); color: #0277BD; }
-    .role-chip--shipper { background: rgba(201,162,39,0.15); color: #A8861F; }
-    .verify-badge { font-size: 12px; font-weight: 600; color: #E53935; white-space: nowrap; }
-    .verify-badge.verified { color: #43A047; }
+    .role-chip--driver { background: rgba(102,187,106,0.15); color: #66BB6A; }
+    .role-chip--carrier { background: rgba(33,150,243,0.15); color: #42A5F5; }
+    .role-chip--shipper { background: rgba(201,162,39,0.15); color: #C9A227; }
+    .verify-badge { font-size: 12px; font-weight: 600; color: #EF5350; white-space: nowrap; }
+    .verify-badge.verified { color: #66BB6A; }
 
     /* Tabs */
     .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
     .tab {
-      padding: 8px 16px; border-radius: 20px; border: 1.5px solid #E5E2DA;
-      background: white; font-size: 13px; font-weight: 600; color: #555;
+      padding: 8px 16px; border-radius: 20px; border: 1.5px solid var(--border);
+      background: var(--surface); font-size: 13px; font-weight: 600; color: var(--text-secondary);
       cursor: pointer; transition: all .15s;
     }
-    .tab:hover { border-color: #C9A227; color: #A8861F; }
-    .tab.active { background: #C9A227; color: #111; border-color: #C9A227; }
+    .tab:hover { border-color: var(--gold); color: var(--gold); }
+    .tab.active { background: var(--gold); color: #111; border-color: var(--gold); }
 
     /* Cards */
     .card {
-      background: white; border-radius: 14px; padding: 24px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid var(--border, #E5E2DA);
+      background: var(--surface); border-radius: 14px; padding: 24px;
+      box-shadow: var(--shadow); border: 1px solid var(--border);
     }
     .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
     .card-header h3 { margin: 0; }
@@ -574,7 +574,7 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
     /* Section title */
     .section-title {
       font-size: 12px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.8px; color: #C9A227; margin: 20px 0 12px;
+      letter-spacing: 0.8px; color: var(--gold); margin: 20px 0 12px;
       padding-bottom: 6px; border-bottom: 1px solid rgba(201,162,39,0.2);
     }
     .section-title:first-child { margin-top: 0; }
@@ -582,14 +582,14 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
     /* Form */
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .form-group { margin-bottom: 14px; }
-    label { display: block; font-size: 13px; font-weight: 600; color: #424242; margin-bottom: 5px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
     input, select, textarea {
-      width: 100%; padding: 10px 12px; border: 1.5px solid #E0E0E0;
+      width: 100%; padding: 10px 12px; border: 1.5px solid var(--border);
       border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box;
-      background: #FAFAF8; color: #1A1A1A; font-family: inherit;
+      background: var(--surface-raised); color: var(--text-primary); font-family: inherit;
     }
     textarea { resize: vertical; }
-    input:focus, select:focus, textarea:focus { border-color: #C9A227; }
+    input:focus, select:focus, textarea:focus { border-color: var(--gold); }
     .btn-primary {
       padding: 11px 24px; background: linear-gradient(135deg, #C9A227, #A8861F);
       color: #111; border: none; border-radius: 8px; font-size: 14px;
@@ -597,30 +597,30 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
     }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-outline {
-      padding: 8px 16px; border: 1.5px solid #C9A227; background: white;
-      color: #A8861F; border-radius: 8px; font-size: 13px; font-weight: 600;
+      padding: 8px 16px; border: 1.5px solid var(--gold); background: transparent;
+      color: var(--gold); border-radius: 8px; font-size: 13px; font-weight: 600;
       cursor: pointer; transition: all .15s;
     }
-    .btn-outline:hover { background: rgba(201,162,39,0.08); }
-    .add-form { background: #FAFAF8; border-radius: 10px; padding: 18px; margin-bottom: 20px; }
-    .alert-success { background: #E8F5E9; color: #2E7D32; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; }
-    .alert-error { background: #FFEBEE; color: #C62828; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; }
+    .btn-outline:hover { background: rgba(201,162,39,0.1); }
+    .add-form { background: var(--surface-raised); border-radius: 10px; padding: 18px; margin-bottom: 20px; border: 1px solid var(--border); }
+    .alert-success { background: rgba(102,187,106,0.12); color: #66BB6A; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; }
+    .alert-error { background: rgba(239,83,80,0.12); color: #EF5350; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; }
 
     /* Vehicle list */
     .vehicle-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
     .vehicle-card {
       display: flex; align-items: center; gap: 14px; padding: 14px 16px;
-      border: 1.5px solid #E5E2DA; border-radius: 10px; background: #FAFAF8;
+      border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface-raised);
     }
-    .vehicle-plate { font-size: 15px; font-weight: 800; color: #111; min-width: 120px; }
-    .vehicle-details { flex: 1; font-size: 13px; }
+    .vehicle-plate { font-size: 15px; font-weight: 800; color: var(--text-primary); min-width: 120px; }
+    .vehicle-details { flex: 1; font-size: 13px; color: var(--text-primary); }
     .vehicle-meta { font-size: 12px; }
 
     /* Driver list */
     .driver-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
     .driver-card {
       display: flex; align-items: center; gap: 14px; padding: 14px 16px;
-      border: 1.5px solid #E5E2DA; border-radius: 10px; background: #FAFAF8;
+      border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface-raised);
     }
     .driver-avatar {
       width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
@@ -629,16 +629,16 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       font-size: 14px; font-weight: 800;
     }
     .driver-info { flex: 1; }
-    .driver-name { font-size: 14px; font-weight: 700; }
+    .driver-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
     .driver-phone { font-size: 12px; }
     .driver-license { font-size: 12px; }
     .driver-status { font-size: 12px; font-weight: 600; white-space: nowrap; }
 
     /* Empty state */
-    .empty-state { text-align: center; padding: 40px 20px; color: #9E9E9E; }
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
     .empty-icon { font-size: 48px; margin-bottom: 12px; }
 
-    .text-muted { color: #9E9E9E; }
+    .text-muted { color: var(--text-secondary); }
     @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .tabs { gap: 6px; } }
   `]
 })
