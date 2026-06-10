@@ -21,7 +21,7 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
         <div class="header-info">
           <h2>{{ auth.user()?.full_name }}</h2>
           <div class="role-chip role-chip--{{ auth.role()?.toLowerCase() }}">
-            {{ roleLabel() }}
+            {{ roleLabel() | translate }}
           </div>
           <div class="phone-line">{{ auth.user()?.phone_number }}</div>
         </div>
@@ -33,28 +33,28 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       <!-- Tabs -->
       <div class="tabs">
         <button class="tab" [class.active]="tab() === 'info'" (click)="tab.set('info')">
-          👤 Informations
+          {{ 'PROFILE.TABS.INFO' | translate }}
         </button>
         <button class="tab" [class.active]="tab() === 'role'" (click)="tab.set('role')" *ngIf="auth.role() === 'DRIVER'">
-          🪪 Permis & Conformité
+          {{ 'PROFILE.TABS.LICENSE' | translate }}
         </button>
         <button class="tab" [class.active]="tab() === 'vehicle'" (click)="tab.set('vehicle')" *ngIf="auth.role() === 'DRIVER'">
-          🚛 Mon Véhicule
+          {{ 'PROFILE.TABS.VEHICLE' | translate }}
         </button>
         <button class="tab" [class.active]="tab() === 'role'" (click)="tab.set('role')" *ngIf="auth.role() === 'CARRIER'">
-          🏢 Ma Société
+          {{ 'PROFILE.TABS.COMPANY' | translate }}
         </button>
         <button class="tab" [class.active]="tab() === 'fleet'" (click)="loadFleet(); tab.set('fleet')" *ngIf="auth.role() === 'CARRIER'">
-          🚛 Ma Flotte
+          {{ 'PROFILE.TABS.FLEET' | translate }}
         </button>
         <button class="tab" [class.active]="tab() === 'drivers'" (click)="loadDrivers(); tab.set('drivers')" *ngIf="auth.role() === 'CARRIER'">
-          👷 Mes Chauffeurs
+          {{ 'PROFILE.TABS.DRIVERS' | translate }}
         </button>
       </div>
 
       <!-- ── TAB: Personal info ── -->
       <div class="card" *ngIf="tab() === 'info'">
-        <h3>Informations personnelles</h3>
+        <h3>{{ 'PROFILE.SECTION.PERSONAL' | translate }}</h3>
         <div class="alert-success" *ngIf="saved()">{{ 'PROFILE.SAVED' | translate }}</div>
         <div class="alert-error" *ngIf="error()">{{ error() }}</div>
         <form [formGroup]="infoForm" (ngSubmit)="saveInfo()">
@@ -80,94 +80,94 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
 
       <!-- ── TAB: Driver – License & Compliance ── -->
       <div class="card" *ngIf="tab() === 'role' && auth.role() === 'DRIVER'">
-        <h3>🪪 Permis & Conformité</h3>
+        <h3>{{ 'PROFILE.TABS.LICENSE' | translate }}</h3>
         <div class="alert-success" *ngIf="saved()">{{ 'PROFILE.SAVED' | translate }}</div>
         <div class="alert-error" *ngIf="error()">{{ error() }}</div>
         <form [formGroup]="driverForm" (ngSubmit)="saveDriver()">
-          <div class="section-title">Permis de conduire</div>
+          <div class="section-title">{{ 'PROFILE.SECTION.LICENSE' | translate }}</div>
           <div class="form-row">
             <div class="form-group">
-              <label>Numéro de permis *</label>
+              <label>{{ 'PROFILE.DRIVER.LICENSE_NUMBER' | translate }}</label>
               <input type="text" formControlName="license_number" />
             </div>
             <div class="form-group">
-              <label>Classe (A, B, C…)</label>
+              <label>{{ 'PROFILE.DRIVER.LICENSE_CLASS' | translate }}</label>
               <input type="text" formControlName="license_class" />
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Pays / Région de délivrance</label>
+              <label>{{ 'PROFILE.DRIVER.LICENSE_STATE' | translate }}</label>
               <input type="text" formControlName="license_state" />
             </div>
             <div class="form-group">
-              <label>Date d'expiration</label>
+              <label>{{ 'PROFILE.DRIVER.LICENSE_EXPIRY' | translate }}</label>
               <input type="date" formControlName="license_expiry" />
             </div>
           </div>
           <div class="form-group">
-            <label>Endorsements CDL (ex: hazmat, tanker, doubles)</label>
-            <input type="text" formControlName="cdl_endorsements" placeholder="hazmat, tanker..." />
+            <label>{{ 'PROFILE.DRIVER.CDL' | translate }}</label>
+            <input type="text" formControlName="cdl_endorsements" [placeholder]="'PROFILE.DRIVER.CDL_PH' | translate" />
           </div>
           <div class="form-group">
-            <label>Numéro ID national</label>
+            <label>{{ 'PROFILE.DRIVER.NATIONAL_ID' | translate }}</label>
             <input type="text" formControlName="national_id" />
           </div>
 
-          <div class="section-title">Médical & Conformité</div>
+          <div class="section-title">{{ 'PROFILE.SECTION.MEDICAL' | translate }}</div>
           <div class="form-row">
             <div class="form-group">
-              <label>Expiration carte médicale</label>
+              <label>{{ 'PROFILE.DRIVER.MEDICAL_EXPIRY' | translate }}</label>
               <input type="date" formControlName="medical_card_expiry" />
             </div>
             <div class="form-group">
-              <label>Statut test drogue</label>
+              <label>{{ 'PROFILE.DRIVER.DRUG_STATUS' | translate }}</label>
               <select formControlName="drug_testing_status">
-                <option value="">-- Sélectionner --</option>
-                <option value="COMPLIANT">Conforme</option>
-                <option value="NOT_COMPLIANT">Non conforme</option>
-                <option value="PENDING">En attente</option>
+                <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
+                <option value="COMPLIANT">{{ 'PROFILE.DRUG.COMPLIANT' | translate }}</option>
+                <option value="NOT_COMPLIANT">{{ 'PROFILE.DRUG.NOT_COMPLIANT' | translate }}</option>
+                <option value="PENDING">{{ 'PROFILE.DRUG.PENDING' | translate }}</option>
               </select>
             </div>
           </div>
 
-          <div class="section-title">Expérience & Opérationnel</div>
+          <div class="section-title">{{ 'PROFILE.SECTION.EXPERIENCE' | translate }}</div>
           <div class="form-group">
-            <label>Adresse domicile</label>
+            <label>{{ 'PROFILE.DRIVER.HOME_ADDRESS' | translate }}</label>
             <input type="text" formControlName="home_address" />
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Années d'expérience</label>
+              <label>{{ 'PROFILE.DRIVER.EXPERIENCE' | translate }}</label>
               <input type="number" formControlName="driving_experience_years" min="0" />
             </div>
             <div class="form-group">
-              <label>Types d'équipement</label>
-              <input type="text" formControlName="equipment_types" placeholder="Frigorifique, plateau..." />
+              <label>{{ 'PROFILE.DRIVER.EQUIPMENT' | translate }}</label>
+              <input type="text" formControlName="equipment_types" [placeholder]="'PROFILE.DRIVER.EQUIPMENT_PH' | translate" />
             </div>
           </div>
           <div class="form-group">
-            <label>Zones / Trajets préférés</label>
-            <textarea formControlName="preferred_lanes" rows="2" placeholder="Ex: Dakar – Thiès – Mbour"></textarea>
+            <label>{{ 'PROFILE.DRIVER.LANES' | translate }}</label>
+            <textarea formControlName="preferred_lanes" rows="2" [placeholder]="'PROFILE.DRIVER.LANES_PH' | translate"></textarea>
           </div>
 
-          <div class="section-title">Paiement</div>
+          <div class="section-title">{{ 'PROFILE.SECTION.PAYMENT' | translate }}</div>
           <div class="form-group">
-            <label>Mode de paiement</label>
+            <label>{{ 'PROFILE.DRIVER.PAYMENT_METHOD' | translate }}</label>
             <select formControlName="payment_method">
-              <option value="">-- Sélectionner --</option>
-              <option value="ACH">Virement bancaire (ACH)</option>
-              <option value="WAVE">Wave</option>
-              <option value="ORANGE_MONEY">Orange Money</option>
+              <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
+              <option value="ACH">{{ 'PROFILE.PAYMENT.ACH' | translate }}</option>
+              <option value="WAVE">{{ 'PROFILE.PAYMENT.WAVE' | translate }}</option>
+              <option value="ORANGE_MONEY">{{ 'PROFILE.PAYMENT.ORANGE' | translate }}</option>
             </select>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Nom du titulaire</label>
+              <label>{{ 'PROFILE.DRIVER.BANK_NAME' | translate }}</label>
               <input type="text" formControlName="bank_account_name" />
             </div>
             <div class="form-group">
-              <label>Numéro de compte</label>
+              <label>{{ 'PROFILE.DRIVER.BANK_NUMBER' | translate }}</label>
               <input type="text" formControlName="bank_account_number" />
             </div>
           </div>
@@ -180,60 +180,60 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
 
       <!-- ── TAB: Driver – Vehicle ── -->
       <div class="card" *ngIf="tab() === 'vehicle' && auth.role() === 'DRIVER'">
-        <h3>🚛 Mon Véhicule</h3>
+        <h3>{{ 'PROFILE.TABS.VEHICLE' | translate }}</h3>
         <div class="alert-success" *ngIf="saved()">{{ 'PROFILE.SAVED' | translate }}</div>
         <div class="alert-error" *ngIf="error()">{{ error() }}</div>
         <form [formGroup]="vehicleForm" (ngSubmit)="saveVehicle()">
           <div class="form-row">
             <div class="form-group">
-              <label>Immatriculation *</label>
-              <input type="text" formControlName="registration_number" placeholder="DK-1234-AB" />
+              <label>{{ 'PROFILE.VEHICLE.PLATE' | translate }}</label>
+              <input type="text" formControlName="registration_number" [placeholder]="'PROFILE.VEHICLE.PLATE_PH' | translate" />
             </div>
             <div class="form-group">
-              <label>VIN</label>
-              <input type="text" formControlName="vin" placeholder="17 caractères" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Marque</label>
-              <input type="text" formControlName="make" placeholder="Mercedes" />
-            </div>
-            <div class="form-group">
-              <label>Modèle</label>
-              <input type="text" formControlName="model" placeholder="Actros" />
+              <label>{{ 'PROFILE.VEHICLE.VIN' | translate }}</label>
+              <input type="text" formControlName="vin" [placeholder]="'PROFILE.VEHICLE.VIN_PH' | translate" />
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Année</label>
-              <input type="number" formControlName="year" placeholder="2020" />
+              <label>{{ 'PROFILE.VEHICLE.MAKE' | translate }}</label>
+              <input type="text" formControlName="make" [placeholder]="'PROFILE.VEHICLE.MAKE_PH' | translate" />
             </div>
             <div class="form-group">
-              <label>Type de remorque</label>
-              <input type="text" formControlName="trailer_type" placeholder="Plateau, Frigorifique..." />
+              <label>{{ 'PROFILE.VEHICLE.MODEL' | translate }}</label>
+              <input type="text" formControlName="model" [placeholder]="'PROFILE.VEHICLE.MODEL_PH' | translate" />
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Type de véhicule *</label>
+              <label>{{ 'PROFILE.VEHICLE.YEAR' | translate }}</label>
+              <input type="number" formControlName="year" />
+            </div>
+            <div class="form-group">
+              <label>{{ 'PROFILE.VEHICLE.TRAILER' | translate }}</label>
+              <input type="text" formControlName="trailer_type" [placeholder]="'PROFILE.VEHICLE.TRAILER_PH' | translate" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'PROFILE.VEHICLE.TYPE' | translate }}</label>
               <select formControlName="vehicle_type">
-                <option value="">-- Sélectionner --</option>
+                <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
                 <option *ngFor="let vt of vehicleTypes()" [value]="vt.id">{{ vt.name }}</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Capacité (kg)</label>
+              <label>{{ 'PROFILE.VEHICLE.PAYLOAD' | translate }}</label>
               <input type="number" formControlName="payload_kg" />
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Poids brut (kg)</label>
+              <label>{{ 'PROFILE.VEHICLE.GROSS' | translate }}</label>
               <input type="number" formControlName="gross_weight_kg" />
             </div>
             <div class="form-group">
-              <label>Expiration immatriculation</label>
+              <label>{{ 'PROFILE.VEHICLE.REG_EXPIRY' | translate }}</label>
               <input type="date" formControlName="registration_expiry" />
             </div>
           </div>
@@ -245,138 +245,138 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
 
       <!-- ── TAB: Carrier – Company info ── -->
       <div class="card" *ngIf="tab() === 'role' && auth.role() === 'CARRIER'">
-        <h3>🏢 Informations Société</h3>
+        <h3>{{ 'PROFILE.TABS.COMPANY' | translate }}</h3>
         <div class="alert-success" *ngIf="saved()">{{ 'PROFILE.SAVED' | translate }}</div>
         <div class="alert-error" *ngIf="error()">{{ error() }}</div>
         <form [formGroup]="carrierForm" (ngSubmit)="saveCarrier()">
-          <div class="section-title">Identité juridique</div>
+          <div class="section-title">{{ 'PROFILE.SECTION.LEGAL' | translate }}</div>
           <div class="form-group">
-            <label>Raison sociale *</label>
+            <label>{{ 'PROFILE.CARRIER.COMPANY' | translate }}</label>
             <input type="text" formControlName="legal_company_name" />
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Numéro DOT</label>
+              <label>{{ 'PROFILE.CARRIER.DOT' | translate }}</label>
               <input type="text" formControlName="dot_number" />
             </div>
             <div class="form-group">
-              <label>Numéro MC / Autorité</label>
+              <label>{{ 'PROFILE.CARRIER.MC' | translate }}</label>
               <input type="text" formControlName="mc_number" />
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Autorité d'exploitation</label>
+              <label>{{ 'PROFILE.CARRIER.AUTHORITY' | translate }}</label>
               <select formControlName="operating_authority">
-                <option value="">-- Sélectionner --</option>
-                <option value="INTERSTATE">Interurbain</option>
-                <option value="INTRASTATE">Local</option>
-                <option value="BOTH">Les deux</option>
+                <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
+                <option value="INTERSTATE">{{ 'PROFILE.CARRIER.AUTHORITY_INTER' | translate }}</option>
+                <option value="INTRASTATE">{{ 'PROFILE.CARRIER.AUTHORITY_INTRA' | translate }}</option>
+                <option value="BOTH">{{ 'PROFILE.CARRIER.AUTHORITY_BOTH' | translate }}</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Identifiant fiscal (NINEA / Tax ID)</label>
+              <label>{{ 'PROFILE.CARRIER.TAX_ID' | translate }}</label>
               <input type="text" formControlName="tax_id" />
             </div>
           </div>
 
-          <div class="section-title">Adresse & Contacts</div>
+          <div class="section-title">{{ 'PROFILE.SECTION.ADDRESS' | translate }}</div>
           <div class="form-group">
-            <label>Adresse société</label>
+            <label>{{ 'PROFILE.CARRIER.ADDRESS' | translate }}</label>
             <input type="text" formControlName="company_address" />
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Ville</label>
+              <label>{{ 'PROFILE.CARRIER.CITY' | translate }}</label>
               <input type="text" formControlName="company_city" />
             </div>
             <div class="form-group">
-              <label>Pays</label>
+              <label>{{ 'PROFILE.CARRIER.COUNTRY' | translate }}</label>
               <input type="text" formControlName="company_country" />
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Contact principal</label>
+              <label>{{ 'PROFILE.CARRIER.CONTACT_NAME' | translate }}</label>
               <input type="text" formControlName="primary_contact_name" />
             </div>
             <div class="form-group">
-              <label>Téléphone contact</label>
+              <label>{{ 'PROFILE.CARRIER.CONTACT_PHONE' | translate }}</label>
               <input type="text" formControlName="primary_contact_phone" />
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Email contact</label>
+              <label>{{ 'PROFILE.CARRIER.CONTACT_EMAIL' | translate }}</label>
               <input type="email" formControlName="primary_contact_email" />
             </div>
             <div class="form-group">
-              <label>Contact dispatch</label>
+              <label>{{ 'PROFILE.CARRIER.DISPATCH' | translate }}</label>
               <input type="text" formControlName="dispatch_contact_name" />
             </div>
           </div>
 
-          <div class="section-title">Assurance</div>
+          <div class="section-title">{{ 'PROFILE.SECTION.INSURANCE' | translate }}</div>
           <div class="form-row">
             <div class="form-group">
-              <label>Assureur</label>
+              <label>{{ 'PROFILE.CARRIER.INSURER' | translate }}</label>
               <input type="text" formControlName="insurance_provider" />
             </div>
             <div class="form-group">
-              <label>N° Police</label>
+              <label>{{ 'PROFILE.CARRIER.POLICY' | translate }}</label>
               <input type="text" formControlName="insurance_policy_number" />
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Couverture RC Auto (XOF)</label>
+              <label>{{ 'PROFILE.CARRIER.AUTO_AMOUNT' | translate }}</label>
               <input type="number" formControlName="auto_liability_amount" />
             </div>
             <div class="form-group">
-              <label>Couverture Cargo (XOF)</label>
+              <label>{{ 'PROFILE.CARRIER.CARGO_AMOUNT' | translate }}</label>
               <input type="number" formControlName="cargo_insurance_amount" />
             </div>
           </div>
           <div class="form-group">
-            <label>Expiration assurance</label>
+            <label>{{ 'PROFILE.CARRIER.INS_EXPIRY' | translate }}</label>
             <input type="date" formControlName="insurance_expiry" />
           </div>
 
-          <div class="section-title">Zones & Paiement</div>
+          <div class="section-title">{{ 'PROFILE.SECTION.ZONES' | translate }}</div>
           <div class="form-group">
-            <label>Zones de service</label>
-            <textarea formControlName="service_area" rows="2" placeholder="Ex: Dakar, Saint-Louis, Ziguinchor..."></textarea>
+            <label>{{ 'PROFILE.CARRIER.SERVICE_AREA' | translate }}</label>
+            <textarea formControlName="service_area" rows="2" [placeholder]="'PROFILE.CARRIER.SERVICE_PH' | translate"></textarea>
           </div>
           <div class="form-group">
-            <label>Trajets préférés</label>
+            <label>{{ 'PROFILE.CARRIER.LANES' | translate }}</label>
             <textarea formControlName="preferred_lanes" rows="2"></textarea>
           </div>
           <div class="form-group">
-            <label>Mode de paiement</label>
+            <label>{{ 'PROFILE.SECTION.PAYMENT' | translate }}</label>
             <select formControlName="payment_method">
-              <option value="">-- Sélectionner --</option>
-              <option value="ACH">Virement bancaire (ACH)</option>
-              <option value="WAVE">Wave</option>
-              <option value="ORANGE_MONEY">Orange Money</option>
+              <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
+              <option value="ACH">{{ 'PROFILE.PAYMENT.ACH' | translate }}</option>
+              <option value="WAVE">{{ 'PROFILE.PAYMENT.WAVE' | translate }}</option>
+              <option value="ORANGE_MONEY">{{ 'PROFILE.PAYMENT.ORANGE' | translate }}</option>
             </select>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Titulaire compte</label>
+              <label>{{ 'PROFILE.CARRIER.BANK_NAME' | translate }}</label>
               <input type="text" formControlName="bank_account_name" />
             </div>
             <div class="form-group">
-              <label>N° de compte</label>
+              <label>{{ 'PROFILE.CARRIER.BANK_NUMBER' | translate }}</label>
               <input type="text" formControlName="bank_account_number" />
             </div>
           </div>
           <div class="form-group">
-            <label>Statut programme anti-drogue</label>
+            <label>{{ 'PROFILE.CARRIER.DRUG_STATUS' | translate }}</label>
             <select formControlName="drug_testing_status">
-              <option value="">-- Sélectionner --</option>
-              <option value="COMPLIANT">Conforme</option>
-              <option value="NOT_COMPLIANT">Non conforme</option>
-              <option value="PENDING">En attente</option>
+              <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
+              <option value="COMPLIANT">{{ 'PROFILE.DRUG.COMPLIANT' | translate }}</option>
+              <option value="NOT_COMPLIANT">{{ 'PROFILE.DRUG.NOT_COMPLIANT' | translate }}</option>
+              <option value="PENDING">{{ 'PROFILE.DRUG.PENDING' | translate }}</option>
             </select>
           </div>
 
@@ -389,9 +389,9 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       <!-- ── TAB: Carrier – Fleet ── -->
       <div class="card" *ngIf="tab() === 'fleet' && auth.role() === 'CARRIER'">
         <div class="card-header">
-          <h3>🚛 Ma Flotte</h3>
+          <h3>{{ 'PROFILE.TABS.FLEET' | translate }}</h3>
           <button class="btn-outline" (click)="showAddVehicle.set(!showAddVehicle())">
-            {{ showAddVehicle() ? '✕ Annuler' : '+ Ajouter un véhicule' }}
+            {{ (showAddVehicle() ? 'COMMON.CANCEL' : 'PROFILE.CARRIER.ADD_VEHICLE') | translate }}
           </button>
         </div>
 
@@ -402,59 +402,59 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
           <form [formGroup]="vehicleForm" (ngSubmit)="saveVehicle()">
             <div class="form-row">
               <div class="form-group">
-                <label>Immatriculation *</label>
-                <input type="text" formControlName="registration_number" placeholder="DK-1234-AB" />
+                <label>{{ 'PROFILE.VEHICLE.PLATE' | translate }}</label>
+                <input type="text" formControlName="registration_number" [placeholder]="'PROFILE.VEHICLE.PLATE_PH' | translate" />
               </div>
               <div class="form-group">
-                <label>VIN</label>
+                <label>{{ 'PROFILE.VEHICLE.VIN' | translate }}</label>
                 <input type="text" formControlName="vin" />
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label>Marque</label>
-                <input type="text" formControlName="make" placeholder="Mercedes" />
+                <label>{{ 'PROFILE.VEHICLE.MAKE' | translate }}</label>
+                <input type="text" formControlName="make" [placeholder]="'PROFILE.VEHICLE.MAKE_PH' | translate" />
               </div>
               <div class="form-group">
-                <label>Modèle</label>
-                <input type="text" formControlName="model" placeholder="Actros" />
+                <label>{{ 'PROFILE.VEHICLE.MODEL' | translate }}</label>
+                <input type="text" formControlName="model" [placeholder]="'PROFILE.VEHICLE.MODEL_PH' | translate" />
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label>Année</label>
+                <label>{{ 'PROFILE.VEHICLE.YEAR' | translate }}</label>
                 <input type="number" formControlName="year" />
               </div>
               <div class="form-group">
-                <label>Type remorque</label>
-                <input type="text" formControlName="trailer_type" placeholder="Plateau, Frigo..." />
+                <label>{{ 'PROFILE.VEHICLE.TRAILER' | translate }}</label>
+                <input type="text" formControlName="trailer_type" [placeholder]="'PROFILE.VEHICLE.TRAILER_PH' | translate" />
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label>Type véhicule *</label>
+                <label>{{ 'PROFILE.VEHICLE.TYPE' | translate }}</label>
                 <select formControlName="vehicle_type">
-                  <option value="">-- Sélectionner --</option>
+                  <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
                   <option *ngFor="let vt of vehicleTypes()" [value]="vt.id">{{ vt.name }}</option>
                 </select>
               </div>
               <div class="form-group">
-                <label>Capacité (kg)</label>
+                <label>{{ 'PROFILE.VEHICLE.PAYLOAD' | translate }}</label>
                 <input type="number" formControlName="payload_kg" />
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label>Exp. immatriculation</label>
+                <label>{{ 'PROFILE.VEHICLE.REG_EXPIRY' | translate }}</label>
                 <input type="date" formControlName="registration_expiry" />
               </div>
               <div class="form-group">
-                <label>Poids brut (kg)</label>
+                <label>{{ 'PROFILE.VEHICLE.GROSS' | translate }}</label>
                 <input type="number" formControlName="gross_weight_kg" />
               </div>
             </div>
             <button type="submit" class="btn-primary" [disabled]="saving()">
-              {{ saving() ? 'Enregistrement...' : 'Ajouter le véhicule' }}
+              {{ (saving() ? 'PROFILE.VEHICLE.ADDING' : 'PROFILE.VEHICLE.ADD') | translate }}
             </button>
           </form>
         </div>
@@ -462,7 +462,7 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
         <!-- Vehicle list -->
         <div class="empty-state" *ngIf="!myVehicles().length && !loadingVehicles()">
           <div class="empty-icon">🚛</div>
-          <p>Aucun véhicule enregistré.</p>
+          <p>{{ 'PROFILE.CARRIER.FLEET_EMPTY' | translate }}</p>
         </div>
         <div class="vehicle-list">
           <div class="vehicle-card" *ngFor="let v of myVehicles()">
@@ -479,29 +479,29 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       <!-- ── TAB: Carrier – Drivers ── -->
       <div class="card" *ngIf="tab() === 'drivers' && auth.role() === 'CARRIER'">
         <div class="card-header">
-          <h3>👷 Mes Chauffeurs</h3>
+          <h3>{{ 'PROFILE.TABS.DRIVERS' | translate }}</h3>
           <button class="btn-outline" (click)="showInvite.set(!showInvite())">
-            {{ showInvite() ? '✕ Annuler' : '+ Associer un chauffeur' }}
+            {{ (showInvite() ? 'COMMON.CANCEL' : 'PROFILE.CARRIER.ADD_DRIVER') | translate }}
           </button>
         </div>
 
         <!-- Invite form -->
         <div class="add-form" *ngIf="showInvite()">
-          <div class="alert-success" *ngIf="inviteSaved()">Chauffeur associé avec succès !</div>
+          <div class="alert-success" *ngIf="inviteSaved()">{{ 'PROFILE.CARRIER.ASSOCIATED' | translate }}</div>
           <div class="alert-error" *ngIf="inviteError()">{{ inviteError() }}</div>
           <div class="form-group">
-            <label>Numéro de téléphone du chauffeur</label>
+            <label>{{ 'PROFILE.CARRIER.DRIVER_PHONE' | translate }}</label>
             <input type="tel" [(ngModel)]="invitePhone" [ngModelOptions]="{standalone: true}" placeholder="+221 77 000 00 00" />
           </div>
           <button class="btn-primary" (click)="inviteDriver()" [disabled]="inviting()">
-            {{ inviting() ? 'Association...' : 'Associer' }}
+            {{ (inviting() ? 'PROFILE.CARRIER.ASSOCIATING' : 'PROFILE.CARRIER.ASSOCIATE') | translate }}
           </button>
         </div>
 
         <!-- Driver list -->
         <div class="empty-state" *ngIf="!myDrivers().length && !loadingDrivers()">
           <div class="empty-icon">👷</div>
-          <p>Aucun chauffeur associé.</p>
+          <p>{{ 'PROFILE.CARRIER.DRIVERS_EMPTY' | translate }}</p>
         </div>
         <div class="driver-list">
           <div class="driver-card" *ngFor="let d of myDrivers()">
@@ -510,11 +510,11 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
               <div class="driver-name">{{ d.full_name }}</div>
               <div class="driver-phone text-muted">{{ d.phone_number }}</div>
               <div class="driver-license text-muted" *ngIf="d.driver_profile">
-                Permis : {{ $any(d.driver_profile)?.license_number }}
+                {{ 'PROFILE.CARRIER.LICENSE' | translate }} {{ $any(d.driver_profile)?.license_number }}
               </div>
             </div>
             <div class="driver-status" [class.available]="$any(d.driver_profile)?.is_available">
-              {{ $any(d.driver_profile)?.is_available ? '🟢 Disponible' : '🔴 Indisponible' }}
+              {{ ($any(d.driver_profile)?.is_available ? 'PROFILE.AVAILABLE' : 'PROFILE.UNAVAILABLE') | translate }}
             </div>
           </div>
         </div>
@@ -757,7 +757,12 @@ export class ProfileComponent implements OnInit {
   }
 
   roleLabel(): string {
-    const map: Record<string, string> = { SHIPPER: '📦 Expéditeur', DRIVER: '🚚 Chauffeur', CARRIER: '🏢 Transporteur', ADMIN: '⚙️ Admin' };
+    const map: Record<string, string> = {
+      SHIPPER: 'PROFILE.ROLES.SHIPPER_LABEL',
+      DRIVER: 'PROFILE.ROLES.DRIVER_LABEL',
+      CARRIER: 'PROFILE.ROLES.CARRIER_LABEL',
+      ADMIN: 'PROFILE.ROLES.ADMIN_LABEL',
+    };
     return map[this.auth.role() ?? ''] ?? '';
   }
 
