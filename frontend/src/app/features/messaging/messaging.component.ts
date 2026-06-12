@@ -90,40 +90,39 @@ import { Conversation, Message, WsMessage } from '../../core/models/messaging.mo
   styles: [`
     .messaging-page { display: flex; flex-direction: column; height: calc(100vh - var(--topbar-height) - 48px); }
     .page-header { margin-bottom: 16px; flex-shrink: 0; }
-    h1 { font-size: 24px; font-weight: 700; }
+    h1 { font-size: 24px; font-weight: 700; color: var(--text-primary); }
     .messaging-layout { display: grid; grid-template-columns: 320px 1fr; gap: 16px; flex: 1; min-height: 0; }
-    .conv-panel { background: white; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    .conv-search { padding: 12px; border-bottom: 1px solid #F0F0F0; }
-    .conv-search input { width: 100%; padding: 8px 12px; border: 1.5px solid #E0E0E0; border-radius: 8px; font-size: 13px; outline: none; }
+    .conv-panel { background: var(--surface); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .conv-search { padding: 12px; border-bottom: 1px solid var(--border); }
+    .conv-search input { width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; background: var(--surface-raised); color: var(--text-primary); font-family: inherit; }
+    .conv-search input:focus { border-color: var(--gold); }
     .conv-list { flex: 1; overflow-y: auto; }
-    .conv-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; transition: background .15s; border-bottom: 1px solid #F8F8F8; }
-    .conv-item:hover, .conv-item.active { background: #FFF3F0; }
+    .conv-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; transition: background .15s; border-bottom: 1px solid var(--border); color: var(--text-primary); }
+    .conv-item:hover, .conv-item.active { background: rgba(201,162,39,0.08); }
     .conv-icon { font-size: 24px; flex-shrink: 0; }
     .conv-body { flex: 1; min-width: 0; }
-    .conv-ref { font-weight: 700; font-size: 14px; }
-    .conv-last { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .conv-ref { font-weight: 700; font-size: 14px; color: var(--text-primary); }
+    .conv-last { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-secondary); }
     .conv-badge { background: #FF6B35; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; flex-shrink: 0; }
-    .chat-panel { background: white; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    .chat-header { padding: 16px 20px; border-bottom: 1px solid #F0F0F0; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .chat-panel { background: var(--surface); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .chat-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; color: var(--text-primary); }
     .messages-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
     .message { display: flex; }
     .message.own { justify-content: flex-end; }
     .message-bubble { max-width: 70%; }
-    .message.own .message-bubble { }
     .message-sender { font-size: 11px; font-weight: 700; color: #FF6B35; margin-bottom: 3px; }
-    .message-content { background: #F0F0F0; border-radius: 12px 12px 12px 2px; padding: 10px 14px; font-size: 14px; line-height: 1.4; }
-    .message.own .message-content { background: #FF6B35; color: white; border-radius: 12px 12px 2px 12px; }
-    .message-time { color: #9E9E9E; text-align: right; margin-top: 3px; }
-    .message.own .message-time { color: #9E9E9E; }
-    .chat-input { display: flex; gap: 10px; padding: 12px 16px; border-top: 1px solid #F0F0F0; flex-shrink: 0; }
-    .chat-input input { flex: 1; padding: 10px 14px; border: 1.5px solid #E0E0E0; border-radius: 24px; font-size: 14px; outline: none; }
+    .message-content { background: var(--surface-raised); color: var(--text-primary); border-radius: 12px 12px 12px 2px; padding: 10px 14px; font-size: 14px; line-height: 1.4; border: 1px solid var(--border); }
+    .message.own .message-content { background: #FF6B35; color: white; border-radius: 12px 12px 2px 12px; border-color: transparent; }
+    .message-time { color: var(--text-secondary); text-align: right; margin-top: 3px; }
+    .chat-input { display: flex; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--border); flex-shrink: 0; }
+    .chat-input input { flex: 1; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 24px; font-size: 14px; outline: none; background: var(--surface-raised); color: var(--text-primary); font-family: inherit; }
     .chat-input input:focus { border-color: #FF6B35; }
     .send-btn { width: 40px; height: 40px; border-radius: 50%; background: #FF6B35; color: white; border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .no-conv-placeholder { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #757575; }
-    .empty-state { padding: 32px; text-align: center; color: #757575; }
+    .no-conv-placeholder { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-secondary); }
+    .empty-state { padding: 32px; text-align: center; color: var(--text-secondary); }
     .empty-icon { font-size: 32px; margin-bottom: 8px; }
-    .text-sm { font-size: 12px; } .text-muted { color: #757575; }
+    .text-sm { font-size: 12px; } .text-muted { color: var(--text-secondary); }
     .loading-overlay { text-align: center; padding: 20px; }
     @media (max-width: 768px) { .messaging-layout { grid-template-columns: 1fr; } }
   `]

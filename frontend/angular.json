@@ -109,5 +109,11 @@
         }
       }
     }
+  },
+  "cli": {
+    "cache": {
+      "path": "/tmp/ng-cache-yoolo",
+      "enabled": true
+    }
   }
 }

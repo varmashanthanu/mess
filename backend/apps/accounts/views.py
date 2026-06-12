@@ -245,7 +245,7 @@ class CarrierDriversView(generics.ListAPIView):
 
 
 class CarrierInviteDriverView(generics.UpdateAPIView):
-    """Associate a driver with this carrier by phone number."""
+    """Associate an existing driver with this carrier by phone number."""
     permission_classes = [permissions.IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
@@ -262,6 +262,54 @@ class CarrierInviteDriverView(generics.UpdateAPIView):
             return Response({"message": "Driver associated."})
         except User.DoesNotExist:
             return Response({"error": "Driver not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class CarrierCreateDriverView(generics.CreateAPIView):
+    """Create a new driver account and automatically link it to the carrier."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        from .models import DriverProfile as DP
+        carrier_profile = getattr(request.user, "carrier_profile", None)
+        if not carrier_profile:
+            return Response({"error": "Not a carrier account."}, status=status.HTTP_403_FORBIDDEN)
+
+        first_name = request.data.get("first_name", "").strip()
+        last_name = request.data.get("last_name", "").strip()
+        phone = request.data.get("phone_number", "").strip()
+        password = request.data.get("password", "").strip()
+        city = request.data.get("city", "Dakar").strip()
+
+        if not first_name or not phone or not password:
+            return Response(
+                {"error": "Prénom, téléphone et mot de passe sont requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if len(password) < 6:
+            return Response(
+                {"error": "Le mot de passe doit avoir au moins 6 caractères."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if User.objects.filter(phone_number=phone).exists():
+            return Response(
+                {"error": "Ce numéro de téléphone est déjà utilisé."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = User.objects.create_user(
+            phone_number=phone,
+            first_name=first_name,
+            last_name=last_name,
+            role="DRIVER",
+            city=city,
+            password=password,
+            is_verified=True,
+        )
+        dp, _ = DP.objects.get_or_create(user=user, defaults={"license_number": "PENDING"})
+        dp.employer = carrier_profile
+        dp.save(update_fields=["employer"])
+
+        return Response(UserDetailSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
 # ── Admin views ───────────────────────────────────────────────────
