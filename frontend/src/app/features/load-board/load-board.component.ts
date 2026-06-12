@@ -49,7 +49,7 @@ import { FreightOrder } from '../../core/models/order.model';
               <td><strong>{{ o.reference }}</strong></td>
               <td>
                 <div style="font-size:13px">{{ o.pickup_city }} → {{ o.delivery_city }}</div>
-                <div style="font-size:11px;color:#757575">{{ o.pickup_address | slice:0:40 }}...</div>
+                <div class="route-sub">{{ o.pickup_address | slice:0:40 }}...</div>
               </td>
               <td>{{ o.weight_kg }} kg</td>
               <td>{{ o.pickup_scheduled_at | date:'dd/MM/yy' }}</td>
@@ -71,25 +71,27 @@ import { FreightOrder } from '../../core/models/order.model';
   styles: [`
     .load-board-page { max-width: 1100px; }
     .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-    h1 { font-size: 24px; font-weight: 700; margin-bottom: 2px; }
-    .subtitle { font-size: 13px; color: #757575; }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 2px; color: var(--text-primary); }
+    .subtitle { font-size: 13px; color: var(--text-secondary); }
     .filters { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; padding: 16px; }
-    input { flex: 1; padding: 9px 12px; border: 1.5px solid #E0E0E0; border-radius: 8px; font-size: 14px; outline: none; }
+    input { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; background: var(--surface-raised); color: var(--text-primary); font-family: inherit; }
+    input:focus { border-color: var(--gold); }
     .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .mess-table { width: 100%; border-collapse: collapse; min-width: 550px; }
-    .mess-table th { text-align: left; padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #757575; border-bottom: 2px solid #F0F0F0; background: #FAFAFA; }
-    .mess-table td { padding: 14px 16px; border-bottom: 1px solid #F0F0F0; }
-    .mess-table tr:hover td { background: #FAFAFA; }
+    .mess-table th { text-align: left; padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); border-bottom: 2px solid var(--border); background: var(--surface-raised); }
+    .mess-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--text-primary); }
+    .mess-table tr:hover td { background: var(--surface-raised); }
+    .route-sub { font-size: 11px; color: var(--text-secondary); }
     .btn-sm { padding: 5px 12px; background: #FF6B35; color: white; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; }
-    .pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-top: 1px solid #F0F0F0; font-size: 13px; color: #757575; gap: 8px; flex-wrap: wrap; }
-    .pagination button { padding: 8px 14px; border: 1px solid #E0E0E0; background: white; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-secondary); gap: 8px; flex-wrap: wrap; }
+    .pagination button { padding: 8px 14px; border: 1px solid var(--border); background: var(--surface-raised); color: var(--text-primary); border-radius: 6px; cursor: pointer; font-size: 13px; }
     .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
     .mb-2 { margin-bottom: 16px; }
-    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    .empty-state { padding: 48px; text-align: center; color: #757575; }
+    .card { background: var(--surface); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .empty-state { padding: 48px; text-align: center; color: var(--text-secondary); }
     .empty-icon { font-size: 40px; margin-bottom: 12px; }
-    h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-    .loading-overlay { text-align: center; padding: 40px; color: #757575; }
+    h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+    .loading-overlay { text-align: center; padding: 40px; color: var(--text-secondary); }
     @media (max-width: 600px) {
       h1 { font-size: 20px; }
       .filters { padding: 12px; }

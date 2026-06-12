@@ -72,6 +72,10 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
             <label>{{ 'PROFILE.EMAIL' | translate }}</label>
             <input type="email" formControlName="email" />
           </div>
+          <div class="form-group">
+            <label>{{ 'PROFILE.CITY' | translate }}</label>
+            <input type="text" formControlName="city" [placeholder]="'PROFILE.CITY_PH' | translate" />
+          </div>
           <button type="submit" class="btn-primary" [disabled]="saving()">
             {{ (saving() ? 'PROFILE.SAVING' : 'PROFILE.SAVE') | translate }}
           </button>
@@ -92,7 +96,16 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
             </div>
             <div class="form-group">
               <label>{{ 'PROFILE.DRIVER.LICENSE_CLASS' | translate }}</label>
-              <input type="text" formControlName="license_class" />
+              <select formControlName="license_class">
+                <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="CE">CE</option>
+                <option value="D">D</option>
+                <option value="BE">BE</option>
+                <option value="DE">DE</option>
+              </select>
             </div>
           </div>
           <div class="form-row">
@@ -106,29 +119,8 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
             </div>
           </div>
           <div class="form-group">
-            <label>{{ 'PROFILE.DRIVER.CDL' | translate }}</label>
-            <input type="text" formControlName="cdl_endorsements" [placeholder]="'PROFILE.DRIVER.CDL_PH' | translate" />
-          </div>
-          <div class="form-group">
             <label>{{ 'PROFILE.DRIVER.NATIONAL_ID' | translate }}</label>
             <input type="text" formControlName="national_id" />
-          </div>
-
-          <div class="section-title">{{ 'PROFILE.SECTION.MEDICAL' | translate }}</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>{{ 'PROFILE.DRIVER.MEDICAL_EXPIRY' | translate }}</label>
-              <input type="date" formControlName="medical_card_expiry" />
-            </div>
-            <div class="form-group">
-              <label>{{ 'PROFILE.DRIVER.DRUG_STATUS' | translate }}</label>
-              <select formControlName="drug_testing_status">
-                <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
-                <option value="COMPLIANT">{{ 'PROFILE.DRUG.COMPLIANT' | translate }}</option>
-                <option value="NOT_COMPLIANT">{{ 'PROFILE.DRUG.NOT_COMPLIANT' | translate }}</option>
-                <option value="PENDING">{{ 'PROFILE.DRUG.PENDING' | translate }}</option>
-              </select>
-            </div>
           </div>
 
           <div class="section-title">{{ 'PROFILE.SECTION.EXPERIENCE' | translate }}</div>
@@ -256,16 +248,6 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>{{ 'PROFILE.CARRIER.DOT' | translate }}</label>
-              <input type="text" formControlName="dot_number" />
-            </div>
-            <div class="form-group">
-              <label>{{ 'PROFILE.CARRIER.MC' | translate }}</label>
-              <input type="text" formControlName="mc_number" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
               <label>{{ 'PROFILE.CARRIER.AUTHORITY' | translate }}</label>
               <select formControlName="operating_authority">
                 <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
@@ -370,16 +352,6 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
               <input type="text" formControlName="bank_account_number" />
             </div>
           </div>
-          <div class="form-group">
-            <label>{{ 'PROFILE.CARRIER.DRUG_STATUS' | translate }}</label>
-            <select formControlName="drug_testing_status">
-              <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
-              <option value="COMPLIANT">{{ 'PROFILE.DRUG.COMPLIANT' | translate }}</option>
-              <option value="NOT_COMPLIANT">{{ 'PROFILE.DRUG.NOT_COMPLIANT' | translate }}</option>
-              <option value="PENDING">{{ 'PROFILE.DRUG.PENDING' | translate }}</option>
-            </select>
-          </div>
-
           <button type="submit" class="btn-primary" [disabled]="saving()">
             {{ (saving() ? 'PROFILE.SAVING' : 'PROFILE.SAVE') | translate }}
           </button>
@@ -400,15 +372,9 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
           <div class="alert-success" *ngIf="saved()">{{ 'PROFILE.SAVED' | translate }}</div>
           <div class="alert-error" *ngIf="error()">{{ error() }}</div>
           <form [formGroup]="vehicleForm" (ngSubmit)="saveVehicle()">
-            <div class="form-row">
-              <div class="form-group">
-                <label>{{ 'PROFILE.VEHICLE.PLATE' | translate }}</label>
-                <input type="text" formControlName="registration_number" [placeholder]="'PROFILE.VEHICLE.PLATE_PH' | translate" />
-              </div>
-              <div class="form-group">
-                <label>{{ 'PROFILE.VEHICLE.VIN' | translate }}</label>
-                <input type="text" formControlName="vin" />
-              </div>
+            <div class="form-group">
+              <label>{{ 'PROFILE.VEHICLE.PLATE' | translate }}</label>
+              <input type="text" formControlName="registration_number" [placeholder]="'PROFILE.VEHICLE.PLATE_PH' | translate" />
             </div>
             <div class="form-row">
               <div class="form-group">
@@ -480,13 +446,55 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       <div class="card" *ngIf="tab() === 'drivers' && auth.role() === 'CARRIER'">
         <div class="card-header">
           <h3>{{ 'PROFILE.TABS.DRIVERS' | translate }}</h3>
-          <button class="btn-outline" (click)="showInvite.set(!showInvite())">
-            {{ (showInvite() ? 'COMMON.CANCEL' : 'PROFILE.CARRIER.ADD_DRIVER') | translate }}
-          </button>
+          <div class="header-actions">
+            <button class="btn-primary btn-sm-action" (click)="toggleCreate()">
+              {{ (showCreate() ? 'COMMON.CANCEL' : 'PROFILE.CARRIER.CREATE_DRIVER') | translate }}
+            </button>
+            <button class="btn-outline" (click)="showInvite.set(!showInvite()); showCreate.set(false)">
+              {{ (showInvite() ? 'COMMON.CANCEL' : 'PROFILE.CARRIER.ADD_DRIVER') | translate }}
+            </button>
+          </div>
         </div>
 
-        <!-- Invite form -->
+        <!-- Create driver form -->
+        <div class="add-form" *ngIf="showCreate()">
+          <div class="section-title" style="margin-top:0">{{ 'PROFILE.CARRIER.CREATE_DRIVER' | translate }}</div>
+          <div class="alert-success" *ngIf="createSaved()">{{ 'PROFILE.CARRIER.CREATED' | translate }}</div>
+          <div class="alert-error" *ngIf="createError()">{{ createError() }}</div>
+          <form [formGroup]="createDriverForm" (ngSubmit)="createDriver()">
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ 'PROFILE.FIRST_NAME' | translate }} *</label>
+                <input type="text" formControlName="first_name" />
+              </div>
+              <div class="form-group">
+                <label>{{ 'PROFILE.LAST_NAME' | translate }}</label>
+                <input type="text" formControlName="last_name" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ 'PROFILE.CARRIER.DRIVER_PHONE' | translate }} *</label>
+                <input type="tel" formControlName="phone_number" placeholder="+221 77 000 00 00" />
+              </div>
+              <div class="form-group">
+                <label>{{ 'PROFILE.CITY' | translate }}</label>
+                <input type="text" formControlName="city" [placeholder]="'PROFILE.CITY_PH' | translate" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>{{ 'PROFILE.CARRIER.DRIVER_PASSWORD' | translate }} *</label>
+              <input type="password" formControlName="password" [placeholder]="'PROFILE.CARRIER.PASSWORD_PH' | translate" />
+            </div>
+            <button type="submit" class="btn-primary" [disabled]="creatingDriver() || createDriverForm.invalid">
+              {{ (creatingDriver() ? 'PROFILE.CARRIER.CREATING' : 'PROFILE.CARRIER.CREATE_BTN') | translate }}
+            </button>
+          </form>
+        </div>
+
+        <!-- Invite (associate existing) form -->
         <div class="add-form" *ngIf="showInvite()">
+          <div class="section-title" style="margin-top:0">{{ 'PROFILE.CARRIER.ADD_DRIVER' | translate }}</div>
           <div class="alert-success" *ngIf="inviteSaved()">{{ 'PROFILE.CARRIER.ASSOCIATED' | translate }}</div>
           <div class="alert-error" *ngIf="inviteError()">{{ inviteError() }}</div>
           <div class="form-group">
@@ -570,6 +578,8 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
     }
     .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
     .card-header h3 { margin: 0; }
+    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-sm-action { padding: 8px 14px; font-size: 13px; }
 
     /* Section title */
     .section-title {
@@ -653,10 +663,14 @@ export class ProfileComponent implements OnInit {
   error = signal('');
   showAddVehicle = signal(false);
   showInvite = signal(false);
+  showCreate = signal(false);
   invitePhone = '';
   inviting = signal(false);
   inviteSaved = signal(false);
   inviteError = signal('');
+  creatingDriver = signal(false);
+  createSaved = signal(false);
+  createError = signal('');
   loadingVehicles = signal(false);
   loadingDrivers = signal(false);
   myVehicles = signal<Vehicle[]>([]);
@@ -669,6 +683,7 @@ export class ProfileComponent implements OnInit {
     first_name: ['', Validators.required],
     last_name:  [''],
     email:      [''],
+    city:       [''],
   });
 
   driverForm = this.fb.group({
@@ -700,6 +715,14 @@ export class ProfileComponent implements OnInit {
     payload_kg:          [null as number | null],
     gross_weight_kg:     [null as number | null],
     registration_expiry: [''],
+  });
+
+  createDriverForm = this.fb.group({
+    first_name:   ['', Validators.required],
+    last_name:    [''],
+    phone_number: ['', Validators.required],
+    city:         [''],
+    password:     ['', [Validators.required, Validators.minLength(6)]],
   });
 
   carrierForm = this.fb.group({
@@ -734,7 +757,7 @@ export class ProfileComponent implements OnInit {
     if (!u) return;
 
     const [first, ...rest] = (u.full_name ?? '').split(' ');
-    this.infoForm.patchValue({ first_name: first ?? '', last_name: rest.join(' '), email: (u as any).email ?? '' });
+    this.infoForm.patchValue({ first_name: first ?? '', last_name: rest.join(' '), email: (u as any).email ?? '', city: (u as any).city ?? '' });
 
     const dp = (u as any).driver_profile;
     if (dp) this.driverForm.patchValue({ ...dp });
@@ -839,6 +862,31 @@ export class ProfileComponent implements OnInit {
     this.api.updateMe({ carrier_profile: this.carrierForm.value } as any).subscribe({
       next: (u) => { this.auth.updateProfile(u); this.saved.set(true); this.saving.set(false); },
       error: (err) => { this.error.set(err?.error?.error?.message || 'Erreur de mise à jour.'); this.saving.set(false); },
+    });
+  }
+
+  toggleCreate(): void {
+    this.showCreate.update(v => !v);
+    this.showInvite.set(false);
+    this.createSaved.set(false);
+    this.createError.set('');
+    this.createDriverForm.reset();
+  }
+
+  createDriver(): void {
+    if (this.createDriverForm.invalid) return;
+    this.creatingDriver.set(true); this.createSaved.set(false); this.createError.set('');
+    this.api.createDriver(this.createDriverForm.value as any).subscribe({
+      next: () => {
+        this.createSaved.set(true);
+        this.creatingDriver.set(false);
+        this.createDriverForm.reset();
+        this.loadDrivers();
+      },
+      error: (err) => {
+        this.createError.set(err?.error?.error || 'Erreur lors de la création.');
+        this.creatingDriver.set(false);
+      },
     });
   }
 
