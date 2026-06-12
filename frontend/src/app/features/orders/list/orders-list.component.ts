@@ -53,7 +53,7 @@ import { FreightOrder } from '../../../core/models/order.model';
               <td><strong>{{ o.reference }}</strong></td>
               <td>
                 <div style="font-size:13px">{{ o.pickup_city }} → {{ o.delivery_city }}</div>
-                <div style="font-size:11px;color:#757575">{{ o.pickup_address | slice:0:40 }}...</div>
+                <div class="route-sub">{{ o.pickup_address | slice:0:40 }}...</div>
               </td>
               <td><span class="badge badge--{{ o.status.toLowerCase() }}">{{ 'ORDERS.STATUS.' + o.status | translate }}</span></td>
               <td>{{ o.weight_kg }} kg</td>
@@ -76,33 +76,35 @@ import { FreightOrder } from '../../../core/models/order.model';
   styles: [`
     .orders-page { max-width: 1100px; }
     .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
-    h1 { font-size: 24px; font-weight: 700; }
-    .btn-primary { padding: 10px 18px; background: #FF6B35; color: white; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; white-space: nowrap; }
+    h1 { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+    .btn-primary { padding: 10px 18px; background: var(--gold); color: #111; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; white-space: nowrap; }
     .filters { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; padding: 16px; flex-wrap: wrap; }
-    select, input { padding: 9px 12px; border: 1.5px solid #E0E0E0; border-radius: 8px; font-size: 14px; outline: none; }
+    select, input {
+      padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 14px; outline: none; background: var(--surface); color: var(--text-primary);
+    }
+    select:focus, input:focus { border-color: var(--gold); }
     input { flex: 1; min-width: 120px; }
     .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .mess-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-    .mess-table th { text-align: left; padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #757575; border-bottom: 2px solid #F0F0F0; background: #FAFAFA; }
-    .mess-table td { padding: 14px 16px; border-bottom: 1px solid #F0F0F0; }
-    .mess-table tr:hover td { background: #FAFAFA; }
+    .mess-table th { text-align: left; padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); border-bottom: 2px solid var(--border); background: var(--surface-raised); }
+    .mess-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--text-primary); }
+    .mess-table tr:hover td { background: var(--surface-raised); }
+    .route-sub { font-size: 11px; color: var(--text-secondary); }
     .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-    .badge--draft{background:#E0E0E0;color:#616161}.badge--posted{background:#E3F2FD;color:#1565C0}.badge--assigned{background:#F3E5F5;color:#6A1B9A}.badge--in_transit{background:#E8F5E9;color:#2E7D32}.badge--delivered{background:#E0F2F1;color:#00695C}.badge--completed{background:#C8E6C9;color:#1B5E20}.badge--cancelled{background:#FFEBEE;color:#B71C1C}.badge--disputed{background:#FCE4EC;color:#880E4F}.badge--pickup_pending{background:#FFF8E1;color:#F57F17}.badge--picked_up{background:#E8EAF6;color:#283593}
-    .btn-sm { padding: 5px 12px; background: #F5F5F5; color: #424242; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; }
-    .pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-top: 1px solid #F0F0F0; font-size: 13px; color: #757575; gap: 8px; }
-    .pagination button { padding: 8px 14px; border: 1px solid #E0E0E0; background: white; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .badge--draft{background:rgba(158,158,158,0.15);color:#9E9E9E}.badge--posted{background:rgba(21,101,192,0.15);color:#64B5F6}.badge--assigned{background:rgba(106,27,154,0.15);color:#CE93D8}.badge--in_transit{background:rgba(46,125,50,0.15);color:#81C784}.badge--delivered{background:rgba(0,105,92,0.15);color:#4DB6AC}.badge--completed{background:rgba(27,94,32,0.15);color:#A5D6A7}.badge--cancelled{background:rgba(183,28,28,0.15);color:#EF9A9A}.badge--disputed{background:rgba(136,14,79,0.15);color:#F48FB1}.badge--pickup_pending{background:rgba(245,127,23,0.15);color:#FFD54F}.badge--picked_up{background:rgba(40,53,147,0.15);color:#9FA8DA}
+    .btn-sm { padding: 5px 12px; background: var(--surface-raised); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; }
+    .pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-secondary); gap: 8px; }
+    .pagination button { padding: 8px 14px; border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); border-radius: 6px; cursor: pointer; font-size: 13px; }
     .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
     .mb-2 { margin-bottom: 16px; }
-    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    .empty-state { padding: 48px; text-align: center; color: #757575; }
+    .empty-state { padding: 48px; text-align: center; color: var(--text-secondary); }
     .empty-icon { font-size: 40px; margin-bottom: 12px; }
-    h3 { font-size: 16px; font-weight: 600; }
-    .loading-overlay { text-align: center; padding: 40px; color: #757575; }
+    h3 { font-size: 16px; font-weight: 600; color: var(--text-primary); }
     @media (max-width: 600px) {
       h1 { font-size: 20px; }
       .filters { padding: 12px; }
       select { width: 100%; }
-      .card { padding: 12px; }
       .mess-table th, .mess-table td { padding: 10px 12px; }
       .pagination { flex-wrap: wrap; justify-content: center; }
     }

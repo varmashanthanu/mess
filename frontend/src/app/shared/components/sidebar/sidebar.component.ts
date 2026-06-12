@@ -36,7 +36,7 @@ interface NavItem {
           [class.role-pill--driver]="auth.role() === 'DRIVER'"
           [class.role-pill--shipper]="auth.role() === 'SHIPPER'"
           [class.role-pill--carrier]="auth.role() === 'CARRIER'">
-          {{ auth.role() === 'DRIVER' ? '🚚 Chauffeur' : auth.role() === 'SHIPPER' ? '📦 Expéditeur' : auth.role() === 'CARRIER' ? '🏢 Transporteur' : '⚙️ Admin' }}
+          {{ rolePillKey() | translate }}
         </span>
       </div>
 
@@ -191,6 +191,16 @@ export class SidebarComponent {
       DRIVER: 'PROFILE.ROLES.DRIVER',
       CARRIER: 'PROFILE.ROLES.CARRIER',
       ADMIN: 'PROFILE.ROLES.ADMIN',
+    };
+    return roleMap[this.auth.user()?.role ?? ''] ?? '';
+  });
+
+  rolePillKey = computed(() => {
+    const roleMap: Record<string, string> = {
+      SHIPPER: 'PROFILE.ROLES.SHIPPER_LABEL',
+      DRIVER: 'PROFILE.ROLES.DRIVER_LABEL',
+      CARRIER: 'PROFILE.ROLES.CARRIER_LABEL',
+      ADMIN: 'PROFILE.ROLES.ADMIN_LABEL',
     };
     return roleMap[this.auth.user()?.role ?? ''] ?? '';
   });

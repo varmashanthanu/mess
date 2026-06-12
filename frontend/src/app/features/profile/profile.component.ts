@@ -72,6 +72,10 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
             <label>{{ 'PROFILE.EMAIL' | translate }}</label>
             <input type="email" formControlName="email" />
           </div>
+          <div class="form-group">
+            <label>{{ 'PROFILE.CITY' | translate }}</label>
+            <input type="text" formControlName="city" [placeholder]="'PROFILE.CITY_PH' | translate" />
+          </div>
           <button type="submit" class="btn-primary" [disabled]="saving()">
             {{ (saving() ? 'PROFILE.SAVING' : 'PROFILE.SAVE') | translate }}
           </button>
@@ -92,7 +96,16 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
             </div>
             <div class="form-group">
               <label>{{ 'PROFILE.DRIVER.LICENSE_CLASS' | translate }}</label>
-              <input type="text" formControlName="license_class" />
+              <select formControlName="license_class">
+                <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="CE">CE</option>
+                <option value="D">D</option>
+                <option value="BE">BE</option>
+                <option value="DE">DE</option>
+              </select>
             </div>
           </div>
           <div class="form-row">
@@ -106,29 +119,8 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
             </div>
           </div>
           <div class="form-group">
-            <label>{{ 'PROFILE.DRIVER.CDL' | translate }}</label>
-            <input type="text" formControlName="cdl_endorsements" [placeholder]="'PROFILE.DRIVER.CDL_PH' | translate" />
-          </div>
-          <div class="form-group">
             <label>{{ 'PROFILE.DRIVER.NATIONAL_ID' | translate }}</label>
             <input type="text" formControlName="national_id" />
-          </div>
-
-          <div class="section-title">{{ 'PROFILE.SECTION.MEDICAL' | translate }}</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>{{ 'PROFILE.DRIVER.MEDICAL_EXPIRY' | translate }}</label>
-              <input type="date" formControlName="medical_card_expiry" />
-            </div>
-            <div class="form-group">
-              <label>{{ 'PROFILE.DRIVER.DRUG_STATUS' | translate }}</label>
-              <select formControlName="drug_testing_status">
-                <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
-                <option value="COMPLIANT">{{ 'PROFILE.DRUG.COMPLIANT' | translate }}</option>
-                <option value="NOT_COMPLIANT">{{ 'PROFILE.DRUG.NOT_COMPLIANT' | translate }}</option>
-                <option value="PENDING">{{ 'PROFILE.DRUG.PENDING' | translate }}</option>
-              </select>
-            </div>
           </div>
 
           <div class="section-title">{{ 'PROFILE.SECTION.EXPERIENCE' | translate }}</div>
@@ -256,16 +248,6 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>{{ 'PROFILE.CARRIER.DOT' | translate }}</label>
-              <input type="text" formControlName="dot_number" />
-            </div>
-            <div class="form-group">
-              <label>{{ 'PROFILE.CARRIER.MC' | translate }}</label>
-              <input type="text" formControlName="mc_number" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
               <label>{{ 'PROFILE.CARRIER.AUTHORITY' | translate }}</label>
               <select formControlName="operating_authority">
                 <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
@@ -370,16 +352,6 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
               <input type="text" formControlName="bank_account_number" />
             </div>
           </div>
-          <div class="form-group">
-            <label>{{ 'PROFILE.CARRIER.DRUG_STATUS' | translate }}</label>
-            <select formControlName="drug_testing_status">
-              <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
-              <option value="COMPLIANT">{{ 'PROFILE.DRUG.COMPLIANT' | translate }}</option>
-              <option value="NOT_COMPLIANT">{{ 'PROFILE.DRUG.NOT_COMPLIANT' | translate }}</option>
-              <option value="PENDING">{{ 'PROFILE.DRUG.PENDING' | translate }}</option>
-            </select>
-          </div>
-
           <button type="submit" class="btn-primary" [disabled]="saving()">
             {{ (saving() ? 'PROFILE.SAVING' : 'PROFILE.SAVE') | translate }}
           </button>
@@ -400,15 +372,9 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
           <div class="alert-success" *ngIf="saved()">{{ 'PROFILE.SAVED' | translate }}</div>
           <div class="alert-error" *ngIf="error()">{{ error() }}</div>
           <form [formGroup]="vehicleForm" (ngSubmit)="saveVehicle()">
-            <div class="form-row">
-              <div class="form-group">
-                <label>{{ 'PROFILE.VEHICLE.PLATE' | translate }}</label>
-                <input type="text" formControlName="registration_number" [placeholder]="'PROFILE.VEHICLE.PLATE_PH' | translate" />
-              </div>
-              <div class="form-group">
-                <label>{{ 'PROFILE.VEHICLE.VIN' | translate }}</label>
-                <input type="text" formControlName="vin" />
-              </div>
+            <div class="form-group">
+              <label>{{ 'PROFILE.VEHICLE.PLATE' | translate }}</label>
+              <input type="text" formControlName="registration_number" [placeholder]="'PROFILE.VEHICLE.PLATE_PH' | translate" />
             </div>
             <div class="form-row">
               <div class="form-group">
@@ -480,13 +446,55 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       <div class="card" *ngIf="tab() === 'drivers' && auth.role() === 'CARRIER'">
         <div class="card-header">
           <h3>{{ 'PROFILE.TABS.DRIVERS' | translate }}</h3>
-          <button class="btn-outline" (click)="showInvite.set(!showInvite())">
-            {{ (showInvite() ? 'COMMON.CANCEL' : 'PROFILE.CARRIER.ADD_DRIVER') | translate }}
-          </button>
+          <div class="header-actions">
+            <button class="btn-primary btn-sm-action" (click)="toggleCreate()">
+              {{ (showCreate() ? 'COMMON.CANCEL' : 'PROFILE.CARRIER.CREATE_DRIVER') | translate }}
+            </button>
+            <button class="btn-outline" (click)="showInvite.set(!showInvite()); showCreate.set(false)">
+              {{ (showInvite() ? 'COMMON.CANCEL' : 'PROFILE.CARRIER.ADD_DRIVER') | translate }}
+            </button>
+          </div>
         </div>
 
-        <!-- Invite form -->
+        <!-- Create driver form -->
+        <div class="add-form" *ngIf="showCreate()">
+          <div class="section-title" style="margin-top:0">{{ 'PROFILE.CARRIER.CREATE_DRIVER' | translate }}</div>
+          <div class="alert-success" *ngIf="createSaved()">{{ 'PROFILE.CARRIER.CREATED' | translate }}</div>
+          <div class="alert-error" *ngIf="createError()">{{ createError() }}</div>
+          <form [formGroup]="createDriverForm" (ngSubmit)="createDriver()">
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ 'PROFILE.FIRST_NAME' | translate }} *</label>
+                <input type="text" formControlName="first_name" />
+              </div>
+              <div class="form-group">
+                <label>{{ 'PROFILE.LAST_NAME' | translate }}</label>
+                <input type="text" formControlName="last_name" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ 'PROFILE.CARRIER.DRIVER_PHONE' | translate }} *</label>
+                <input type="tel" formControlName="phone_number" placeholder="+221 77 000 00 00" />
+              </div>
+              <div class="form-group">
+                <label>{{ 'PROFILE.CITY' | translate }}</label>
+                <input type="text" formControlName="city" [placeholder]="'PROFILE.CITY_PH' | translate" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>{{ 'PROFILE.CARRIER.DRIVER_PASSWORD' | translate }} *</label>
+              <input type="password" formControlName="password" [placeholder]="'PROFILE.CARRIER.PASSWORD_PH' | translate" />
+            </div>
+            <button type="submit" class="btn-primary" [disabled]="creatingDriver() || createDriverForm.invalid">
+              {{ (creatingDriver() ? 'PROFILE.CARRIER.CREATING' : 'PROFILE.CARRIER.CREATE_BTN') | translate }}
+            </button>
+          </form>
+        </div>
+
+        <!-- Invite (associate existing) form -->
         <div class="add-form" *ngIf="showInvite()">
+          <div class="section-title" style="margin-top:0">{{ 'PROFILE.CARRIER.ADD_DRIVER' | translate }}</div>
           <div class="alert-success" *ngIf="inviteSaved()">{{ 'PROFILE.CARRIER.ASSOCIATED' | translate }}</div>
           <div class="alert-error" *ngIf="inviteError()">{{ inviteError() }}</div>
           <div class="form-group">
@@ -523,15 +531,15 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
   `,
   styles: [`
     .profile-page { max-width: 900px; }
-    h1 { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: var(--text-primary, #1A1A1A); }
-    h3 { font-size: 16px; font-weight: 700; margin-bottom: 18px; color: var(--text-primary, #1A1A1A); }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: var(--text-primary); }
+    h3 { font-size: 16px; font-weight: 700; margin-bottom: 18px; color: var(--text-primary); }
 
     /* Header card */
     .header-card {
       display: flex; align-items: center; gap: 18px;
-      background: white; border-radius: 14px; padding: 20px 24px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px;
-      border: 1px solid var(--border, #E5E2DA);
+      background: var(--surface); border-radius: 14px; padding: 20px 24px;
+      box-shadow: var(--shadow); margin-bottom: 16px;
+      border: 1px solid var(--border);
     }
     .avatar {
       width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
@@ -540,41 +548,43 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       font-size: 22px; font-weight: 800;
     }
     .header-info { flex: 1; }
-    .header-info h2 { font-size: 18px; font-weight: 700; margin: 0 0 4px; }
-    .phone-line { font-size: 13px; color: #757575; margin-top: 4px; }
+    .header-info h2 { font-size: 18px; font-weight: 700; margin: 0 0 4px; color: var(--text-primary); }
+    .phone-line { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
     .role-chip {
       display: inline-block; padding: 3px 10px; border-radius: 12px;
       font-size: 11px; font-weight: 700; text-transform: uppercase;
-      background: rgba(201,162,39,0.15); color: #A8861F;
+      background: rgba(201,162,39,0.15); color: #C9A227;
     }
-    .role-chip--driver { background: rgba(67,160,71,0.15); color: #2E7D32; }
-    .role-chip--carrier { background: rgba(33,150,243,0.15); color: #0277BD; }
-    .role-chip--shipper { background: rgba(201,162,39,0.15); color: #A8861F; }
-    .verify-badge { font-size: 12px; font-weight: 600; color: #E53935; white-space: nowrap; }
-    .verify-badge.verified { color: #43A047; }
+    .role-chip--driver { background: rgba(102,187,106,0.15); color: #66BB6A; }
+    .role-chip--carrier { background: rgba(33,150,243,0.15); color: #42A5F5; }
+    .role-chip--shipper { background: rgba(201,162,39,0.15); color: #C9A227; }
+    .verify-badge { font-size: 12px; font-weight: 600; color: #EF5350; white-space: nowrap; }
+    .verify-badge.verified { color: #66BB6A; }
 
     /* Tabs */
     .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
     .tab {
-      padding: 8px 16px; border-radius: 20px; border: 1.5px solid #E5E2DA;
-      background: white; font-size: 13px; font-weight: 600; color: #555;
+      padding: 8px 16px; border-radius: 20px; border: 1.5px solid var(--border);
+      background: var(--surface); font-size: 13px; font-weight: 600; color: var(--text-secondary);
       cursor: pointer; transition: all .15s;
     }
-    .tab:hover { border-color: #C9A227; color: #A8861F; }
-    .tab.active { background: #C9A227; color: #111; border-color: #C9A227; }
+    .tab:hover { border-color: var(--gold); color: var(--gold); }
+    .tab.active { background: var(--gold); color: #111; border-color: var(--gold); }
 
     /* Cards */
     .card {
-      background: white; border-radius: 14px; padding: 24px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid var(--border, #E5E2DA);
+      background: var(--surface); border-radius: 14px; padding: 24px;
+      box-shadow: var(--shadow); border: 1px solid var(--border);
     }
     .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
     .card-header h3 { margin: 0; }
+    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-sm-action { padding: 8px 14px; font-size: 13px; }
 
     /* Section title */
     .section-title {
       font-size: 12px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.8px; color: #C9A227; margin: 20px 0 12px;
+      letter-spacing: 0.8px; color: var(--gold); margin: 20px 0 12px;
       padding-bottom: 6px; border-bottom: 1px solid rgba(201,162,39,0.2);
     }
     .section-title:first-child { margin-top: 0; }
@@ -582,14 +592,14 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
     /* Form */
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .form-group { margin-bottom: 14px; }
-    label { display: block; font-size: 13px; font-weight: 600; color: #424242; margin-bottom: 5px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
     input, select, textarea {
-      width: 100%; padding: 10px 12px; border: 1.5px solid #E0E0E0;
+      width: 100%; padding: 10px 12px; border: 1.5px solid var(--border);
       border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box;
-      background: #FAFAF8; color: #1A1A1A; font-family: inherit;
+      background: var(--surface-raised); color: var(--text-primary); font-family: inherit;
     }
     textarea { resize: vertical; }
-    input:focus, select:focus, textarea:focus { border-color: #C9A227; }
+    input:focus, select:focus, textarea:focus { border-color: var(--gold); }
     .btn-primary {
       padding: 11px 24px; background: linear-gradient(135deg, #C9A227, #A8861F);
       color: #111; border: none; border-radius: 8px; font-size: 14px;
@@ -597,30 +607,30 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
     }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-outline {
-      padding: 8px 16px; border: 1.5px solid #C9A227; background: white;
-      color: #A8861F; border-radius: 8px; font-size: 13px; font-weight: 600;
+      padding: 8px 16px; border: 1.5px solid var(--gold); background: transparent;
+      color: var(--gold); border-radius: 8px; font-size: 13px; font-weight: 600;
       cursor: pointer; transition: all .15s;
     }
-    .btn-outline:hover { background: rgba(201,162,39,0.08); }
-    .add-form { background: #FAFAF8; border-radius: 10px; padding: 18px; margin-bottom: 20px; }
-    .alert-success { background: #E8F5E9; color: #2E7D32; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; }
-    .alert-error { background: #FFEBEE; color: #C62828; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; }
+    .btn-outline:hover { background: rgba(201,162,39,0.1); }
+    .add-form { background: var(--surface-raised); border-radius: 10px; padding: 18px; margin-bottom: 20px; border: 1px solid var(--border); }
+    .alert-success { background: rgba(102,187,106,0.12); color: #66BB6A; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; }
+    .alert-error { background: rgba(239,83,80,0.12); color: #EF5350; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; }
 
     /* Vehicle list */
     .vehicle-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
     .vehicle-card {
       display: flex; align-items: center; gap: 14px; padding: 14px 16px;
-      border: 1.5px solid #E5E2DA; border-radius: 10px; background: #FAFAF8;
+      border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface-raised);
     }
-    .vehicle-plate { font-size: 15px; font-weight: 800; color: #111; min-width: 120px; }
-    .vehicle-details { flex: 1; font-size: 13px; }
+    .vehicle-plate { font-size: 15px; font-weight: 800; color: var(--text-primary); min-width: 120px; }
+    .vehicle-details { flex: 1; font-size: 13px; color: var(--text-primary); }
     .vehicle-meta { font-size: 12px; }
 
     /* Driver list */
     .driver-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
     .driver-card {
       display: flex; align-items: center; gap: 14px; padding: 14px 16px;
-      border: 1.5px solid #E5E2DA; border-radius: 10px; background: #FAFAF8;
+      border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface-raised);
     }
     .driver-avatar {
       width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
@@ -629,16 +639,16 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       font-size: 14px; font-weight: 800;
     }
     .driver-info { flex: 1; }
-    .driver-name { font-size: 14px; font-weight: 700; }
+    .driver-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
     .driver-phone { font-size: 12px; }
     .driver-license { font-size: 12px; }
     .driver-status { font-size: 12px; font-weight: 600; white-space: nowrap; }
 
     /* Empty state */
-    .empty-state { text-align: center; padding: 40px 20px; color: #9E9E9E; }
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
     .empty-icon { font-size: 48px; margin-bottom: 12px; }
 
-    .text-muted { color: #9E9E9E; }
+    .text-muted { color: var(--text-secondary); }
     @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .tabs { gap: 6px; } }
   `]
 })
@@ -653,10 +663,14 @@ export class ProfileComponent implements OnInit {
   error = signal('');
   showAddVehicle = signal(false);
   showInvite = signal(false);
+  showCreate = signal(false);
   invitePhone = '';
   inviting = signal(false);
   inviteSaved = signal(false);
   inviteError = signal('');
+  creatingDriver = signal(false);
+  createSaved = signal(false);
+  createError = signal('');
   loadingVehicles = signal(false);
   loadingDrivers = signal(false);
   myVehicles = signal<Vehicle[]>([]);
@@ -669,6 +683,7 @@ export class ProfileComponent implements OnInit {
     first_name: ['', Validators.required],
     last_name:  [''],
     email:      [''],
+    city:       [''],
   });
 
   driverForm = this.fb.group({
@@ -700,6 +715,14 @@ export class ProfileComponent implements OnInit {
     payload_kg:          [null as number | null],
     gross_weight_kg:     [null as number | null],
     registration_expiry: [''],
+  });
+
+  createDriverForm = this.fb.group({
+    first_name:   ['', Validators.required],
+    last_name:    [''],
+    phone_number: ['', Validators.required],
+    city:         [''],
+    password:     ['', [Validators.required, Validators.minLength(6)]],
   });
 
   carrierForm = this.fb.group({
@@ -734,7 +757,7 @@ export class ProfileComponent implements OnInit {
     if (!u) return;
 
     const [first, ...rest] = (u.full_name ?? '').split(' ');
-    this.infoForm.patchValue({ first_name: first ?? '', last_name: rest.join(' '), email: (u as any).email ?? '' });
+    this.infoForm.patchValue({ first_name: first ?? '', last_name: rest.join(' '), email: (u as any).email ?? '', city: (u as any).city ?? '' });
 
     const dp = (u as any).driver_profile;
     if (dp) this.driverForm.patchValue({ ...dp });
@@ -839,6 +862,31 @@ export class ProfileComponent implements OnInit {
     this.api.updateMe({ carrier_profile: this.carrierForm.value } as any).subscribe({
       next: (u) => { this.auth.updateProfile(u); this.saved.set(true); this.saving.set(false); },
       error: (err) => { this.error.set(err?.error?.error?.message || 'Erreur de mise à jour.'); this.saving.set(false); },
+    });
+  }
+
+  toggleCreate(): void {
+    this.showCreate.update(v => !v);
+    this.showInvite.set(false);
+    this.createSaved.set(false);
+    this.createError.set('');
+    this.createDriverForm.reset();
+  }
+
+  createDriver(): void {
+    if (this.createDriverForm.invalid) return;
+    this.creatingDriver.set(true); this.createSaved.set(false); this.createError.set('');
+    this.api.createDriver(this.createDriverForm.value as any).subscribe({
+      next: () => {
+        this.createSaved.set(true);
+        this.creatingDriver.set(false);
+        this.createDriverForm.reset();
+        this.loadDrivers();
+      },
+      error: (err) => {
+        this.createError.set(err?.error?.error || 'Erreur lors de la création.');
+        this.creatingDriver.set(false);
+      },
     });
   }
 

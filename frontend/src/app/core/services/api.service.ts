@@ -164,6 +164,10 @@ export class ApiService {
     return this.http.put(`${this.base}/accounts/me/drivers/invite/`, { phone_number });
   }
 
+  createDriver(data: { first_name: string; last_name: string; phone_number: string; password: string; city?: string }): Observable<User> {
+    return this.http.post<User>(`${this.base}/accounts/me/drivers/create/`, data);
+  }
+
   deleteVehicle(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/fleet/vehicles/${id}/`);
   }
