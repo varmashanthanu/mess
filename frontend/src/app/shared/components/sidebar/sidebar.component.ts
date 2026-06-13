@@ -21,25 +21,19 @@ interface NavItem {
   template: `
     <aside class="sidebar" [class.collapsed]="collapsed()" [class.mobile-open]="mobileOpen()">
 
-      <!-- Brand -->
+      <!-- Brand + Contact -->
       <div class="sidebar-brand">
         <div class="brand-mark" *ngIf="!collapsed()">
           <img src="yoolo-logo.png" class="brand-logo" alt="Yoolo" />
+          <button class="contact-inline-btn" (click)="showContact.set(true)" [title]="'CONTACT.TITLE' | translate">
+            {{ 'CONTACT.TITLE' | translate }}
+          </button>
         </div>
         <div class="brand-icon" *ngIf="collapsed()">
           <img src="yoolo-logo.png" class="brand-logo-mini" alt="Yoolo" />
         </div>
-        <button class="sidebar-close" (click)="onClose()" aria-label="Close sidebar">✕</button>
-      </div>
-
-      <!-- Contact us button -->
-      <div class="contact-row" *ngIf="!collapsed()">
-        <button class="contact-btn" (click)="showContact.set(true)">
-          ✉️ {{ 'CONTACT.TITLE' | translate }}
-        </button>
-      </div>
-      <div class="contact-row contact-row--collapsed" *ngIf="collapsed()">
-        <button class="contact-btn-icon" (click)="showContact.set(true)" [title]="'CONTACT.TITLE' | translate">✉️</button>
+        <button class="contact-btn-icon" *ngIf="collapsed()" (click)="showContact.set(true)" [title]="'CONTACT.TITLE' | translate">☎</button>
+        <button class="sidebar-close" *ngIf="!collapsed()" (click)="onClose()" aria-label="Close sidebar">✕</button>
       </div>
 
       <!-- Role badge -->
@@ -138,13 +132,21 @@ interface NavItem {
     .sidebar-brand {
       display: flex; align-items: center; justify-content: space-between;
       padding: 10px 14px; border-bottom: 1px solid rgba(201,162,39,0.2);
-      min-height: 80px;
+      min-height: 80px; gap: 8px;
     }
-    .brand-mark { display: flex; align-items: center; flex: 1; min-width: 0; }
+    .brand-mark { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
     .brand-logo {
-      width: 140px; height: 56px; object-fit: contain;
+      width: 90px; height: 50px; object-fit: contain;
       border-radius: 8px; flex-shrink: 0;
     }
+    .contact-inline-btn {
+      flex: 1; padding: 6px 10px; background: rgba(201,162,39,0.12);
+      color: #E8C84A; border: 1px solid rgba(201,162,39,0.3); border-radius: 8px;
+      font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis; transition: background .15s;
+      text-align: center;
+    }
+    .contact-inline-btn:hover { background: rgba(201,162,39,0.22); }
     .brand-icon { display: flex; align-items: center; justify-content: center; flex: 1; }
     .brand-logo-mini {
       width: 42px; height: 42px; object-fit: cover; object-position: center;
@@ -170,7 +172,7 @@ interface NavItem {
       display: flex; align-items: center; gap: 12px; padding: 12px 16px;
       border-radius: 10px; color: white; text-decoration: none;
       font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-      margin-bottom: 8px; white-space: nowrap; position: relative;
+      margin-bottom: 8px; position: relative;
       background: var(--item-color);
       box-shadow: 0 4px 0 color-mix(in srgb, var(--item-color) 60%, black);
       transition: transform .1s ease, box-shadow .1s ease; user-select: none;
@@ -179,7 +181,7 @@ interface NavItem {
     .nav-item:active { transform: translateY(3px); box-shadow: 0 1px 0 color-mix(in srgb, var(--item-color) 60%, black); }
     .nav-item.active { filter: brightness(1.1); }
     .nav-icon { font-size: 18px; flex-shrink: 0; width: 20px; text-align: center; }
-    .nav-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .nav-label { flex: 1; white-space: normal; line-height: 1.25; word-break: break-word; }
 
     /* Footer */
     .sidebar-footer { padding: 10px 10px; border-top: 1px solid rgba(201,162,39,0.15); }
@@ -204,22 +206,12 @@ interface NavItem {
     }
     .logout-btn:hover { background: rgba(229,57,53,0.12); color: #EF5350; }
 
-    /* Mobile */
-    /* Contact button */
-    .contact-row { padding: 6px 10px 2px; }
-    .contact-btn {
-      width: 100%; padding: 8px 12px; background: rgba(201,162,39,0.12);
-      color: #E8C84A; border: 1px solid rgba(201,162,39,0.3); border-radius: 8px;
-      font-size: 12px; font-weight: 700; cursor: pointer; text-align: left;
-      transition: background .15s; white-space: nowrap; overflow: hidden;
-    }
-    .contact-btn:hover { background: rgba(201,162,39,0.22); }
-    .contact-row--collapsed { padding: 6px 10px 2px; display: flex; justify-content: center; }
+    /* Contact icon (collapsed mode) */
     .contact-btn-icon {
-      width: 40px; height: 40px; background: rgba(201,162,39,0.12);
+      width: 34px; height: 34px; background: rgba(201,162,39,0.12);
       color: #E8C84A; border: 1px solid rgba(201,162,39,0.3); border-radius: 8px;
-      font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: background .15s;
+      font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .15s; flex-shrink: 0;
     }
     .contact-btn-icon:hover { background: rgba(201,162,39,0.22); }
 
@@ -323,7 +315,7 @@ export class SidebarComponent {
 
   private driverItems: NavItem[] = [
     { labelKey: 'NAV.DASHBOARD_DRIVER',  icon: '🏠', route: '/dashboard',  color: '#2196F3' },
-    { labelKey: 'NAV.LOAD_BOARD_DRIVER', icon: '🔍', route: '/load-board', color: '#F5A623' },
+    { labelKey: 'NAV.LOAD_BOARD_DRIVER', icon: '🚛', route: '/load-board', color: '#F5A623' },
     { labelKey: 'NAV.MY_TRIPS',          icon: '📦', route: '/orders',     color: '#9C27B0' },
     { labelKey: 'NAV.TRACKING_DRIVER',   icon: '🧭', route: '/tracking',   color: '#E53935' },
     { labelKey: 'NAV.MESSAGES',          icon: '💬', route: '/messaging',  color: '#43A047' },

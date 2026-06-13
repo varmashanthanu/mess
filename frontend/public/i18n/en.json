@@ -119,7 +119,24 @@
   "LOAD_BOARD": {
     "SUBTITLE": "Available loads you can pick up",
     "EMPTY_TITLE": "No available loads",
-    "EMPTY_SUBTITLE": "Check back soon for new loads."
+    "EMPTY_SUBTITLE": "Check back soon for new loads.",
+    "FILTERS": "Filters",
+    "PICKUP_CITY": "Pickup city",
+    "PICKUP_CITY_PH": "e.g. Dakar",
+    "DELIVERY_CITY": "Destination city",
+    "DELIVERY_CITY_PH": "e.g. Thiès",
+    "CARGO_TYPE": "Cargo type",
+    "MAX_PRICE": "Max budget (XOF)",
+    "MAX_PRICE_PH": "e.g. 500000",
+    "SORT": "Sort by",
+    "SORT_DATE": "Pickup date",
+    "SORT_PRICE_ASC": "Price low-high",
+    "SORT_PRICE_DESC": "Price high-low",
+    "SORT_WEIGHT": "Weight",
+    "RESET": "Reset",
+    "RESULTS": "{{count}} load(s) found",
+    "COL_TYPE": "Type",
+    "COL_DISTANCE": "Route"
   },
   "TOPBAR": {
     "AVAILABLE": "Available",
@@ -399,6 +416,7 @@
       "LICENSE": "🪪 License & Compliance",
       "VEHICLE": "🚛 My Vehicle",
       "COMPANY": "🏢 My Company",
+      "COMPANY_SHIPPER": "🏢 My Company",
       "FLEET": "🚛 My Fleet",
       "DRIVERS": "👷 My Drivers"
     },
@@ -409,8 +427,11 @@
       "EXPERIENCE": "Experience & Operations",
       "PAYMENT": "Payment",
       "LEGAL": "Legal identity",
+      "LEGAL_ID": "Legal identification",
       "ADDRESS": "Address & Contacts",
+      "CONTACT_PRO": "Professional contact",
       "INSURANCE": "Insurance",
+      "DRIVER_INSURANCE": "Personal insurance",
       "ZONES": "Areas & Payment"
     },
     "DRUG": {
@@ -441,7 +462,30 @@
       "LANES_PH": "e.g. Dakar – Thiès – Mbour",
       "PAYMENT_METHOD": "Payment method",
       "BANK_NAME": "Account holder",
-      "BANK_NUMBER": "Account number"
+      "BANK_NUMBER": "Account number",
+      "INS_PROVIDER": "Insurer",
+      "INS_POLICY": "Insurance policy number",
+      "INS_START": "Start date",
+      "INS_EXPIRY": "Insurance expiry date"
+    },
+    "SHIPPER": {
+      "COMPANY": "Company name",
+      "NINEA": "NINEA",
+      "NINEA_PH": "7 digits + 1 letter",
+      "RCCM": "RCCM",
+      "RCCM_PH": "SN-DKR-XXXX-XXXX",
+      "LEGAL_FORM": "Legal form",
+      "LEGAL_FORM_SA": "Société Anonyme (SA)",
+      "LEGAL_FORM_SARL": "SARL",
+      "LEGAL_FORM_GIE": "GIE",
+      "LEGAL_FORM_SNC": "SNC",
+      "LEGAL_FORM_IND": "Sole proprietorship",
+      "ADDRESS": "Registered office address",
+      "CITY": "City",
+      "REGION": "Region",
+      "PRO_PHONE": "Professional phone",
+      "PRO_EMAIL": "Professional email",
+      "COMPANY_REG": "Company registration number"
     },
     "VEHICLE": {
       "PLATE": "Registration plate *",

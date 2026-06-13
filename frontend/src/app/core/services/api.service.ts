@@ -178,6 +178,14 @@ export class ApiService {
     return this.http.get<PaginatedResponse<User>>(`${this.base}/accounts/users/`, { params: p });
   }
 
+  updateShipperProfile(data: Record<string, any>): Observable<any> {
+    return this.http.patch<any>(`${this.base}/accounts/me/shipper-profile/`, data);
+  }
+
+  updateDriverProfile(data: Record<string, any>): Observable<any> {
+    return this.http.patch<any>(`${this.base}/accounts/me/driver-profile/`, data);
+  }
+
   updateDriverAvailability(available: boolean): Observable<any> {
     return this.http.patch<any>(`${this.base}/accounts/me/availability/`, {
       is_available: available
