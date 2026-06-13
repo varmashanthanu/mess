@@ -119,7 +119,24 @@
   "LOAD_BOARD": {
     "SUBTITLE": "Chargements disponibles que vous pouvez accepter",
     "EMPTY_TITLE": "Aucun chargement disponible",
-    "EMPTY_SUBTITLE": "Revenez bientôt pour de nouveaux chargements."
+    "EMPTY_SUBTITLE": "Revenez bientôt pour de nouveaux chargements.",
+    "FILTERS": "Filtres",
+    "PICKUP_CITY": "Ville de départ",
+    "PICKUP_CITY_PH": "Ex: Dakar",
+    "DELIVERY_CITY": "Ville d'arrivée",
+    "DELIVERY_CITY_PH": "Ex: Thiès",
+    "CARGO_TYPE": "Type de cargo",
+    "MAX_PRICE": "Budget max (XOF)",
+    "MAX_PRICE_PH": "Ex: 500000",
+    "SORT": "Trier par",
+    "SORT_DATE": "Date de collecte",
+    "SORT_PRICE_ASC": "Prix croissant",
+    "SORT_PRICE_DESC": "Prix décroissant",
+    "SORT_WEIGHT": "Poids",
+    "RESET": "Réinitialiser",
+    "RESULTS": "{{count}} chargement(s) trouvé(s)",
+    "COL_TYPE": "Type",
+    "COL_DISTANCE": "Trajet"
   },
   "TOPBAR": {
     "AVAILABLE": "Disponible",
