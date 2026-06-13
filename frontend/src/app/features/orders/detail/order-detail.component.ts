@@ -277,16 +277,16 @@ import { FreightOrder } from '../../../core/models/order.model';
   `,
   styles: [`
     .detail-page { max-width: 1100px; }
-    .back-link { display: inline-block; color: #757575; font-size: 13px; margin-bottom: 16px; text-decoration: none; }
+    .back-link { display: inline-block; color: var(--text-secondary); font-size: 13px; margin-bottom: 16px; text-decoration: none; }
     .back-link:hover { color: #FF6B35; }
     .detail-layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
     .detail-main { display: flex; flex-direction: column; gap: 16px; }
     .detail-sidebar { display: flex; flex-direction: column; gap: 16px; }
-    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .card { background: var(--surface); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); }
     .header-top { display: flex; align-items: flex-start; justify-content: space-between; }
-    h1 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
-    h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
-    h4 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+    h1 { font-size: 22px; font-weight: 800; margin-bottom: 8px; color: var(--text-primary); }
+    h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary); }
+    h4 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary); }
     .header-actions { display: flex; gap: 8px; }
     .btn-action { padding: 9px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; text-align: center; }
     .btn-orange { background: #FF6B35; color: white; }
@@ -295,44 +295,44 @@ import { FreightOrder } from '../../../core/models/order.model';
     .btn-blue { background: #2196F3; color: white; width: 100%; }
     .btn-sm { padding: 5px 10px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
     .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-    .badge--draft { background:#E0E0E0;color:#616161 }
-    .badge--posted { background:#E3F2FD;color:#1565C0 }
-    .badge--assigned { background:#F3E5F5;color:#6A1B9A }
-    .badge--in_transit { background:#E8F5E9;color:#2E7D32 }
-    .badge--delivered { background:#E0F2F1;color:#00695C }
-    .badge--completed { background:#C8E6C9;color:#1B5E20 }
-    .badge--cancelled { background:#FFEBEE;color:#B71C1C }
+    .badge--draft { background:rgba(158,158,158,0.2);color:#9E9E9E }
+    .badge--posted { background:rgba(33,150,243,0.15);color:#64B5F6 }
+    .badge--assigned { background:rgba(156,39,176,0.15);color:#CE93D8 }
+    .badge--in_transit { background:rgba(67,160,71,0.15);color:#81C784 }
+    .badge--delivered { background:rgba(0,150,136,0.15);color:#4DB6AC }
+    .badge--completed { background:rgba(76,175,80,0.2);color:#A5D6A7 }
+    .badge--cancelled { background:rgba(244,67,54,0.15);color:#EF9A9A }
     .route-display { display: flex; flex-direction: column; gap: 0; }
     .route-point { display: flex; gap: 16px; align-items: flex-start; padding: 12px 0; }
     .route-dot { font-size: 20px; margin-top: 2px; }
-    .route-city { font-size: 16px; font-weight: 700; }
-    .route-address { font-size: 13px; color: #757575; margin-top: 2px; }
+    .route-city { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+    .route-address { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
     .route-date { font-size: 12px; color: #FF6B35; margin-top: 4px; font-weight: 600; }
-    .route-line { width: 2px; height: 24px; background: #E0E0E0; margin-left: 10px; }
+    .route-line { width: 2px; height: 24px; background: var(--border); margin-left: 10px; }
     .info-grid, .info-list { display: flex; flex-direction: column; gap: 10px; }
-    .info-item { display: flex; gap: 12px; font-size: 14px; }
-    .info-key { color: #757575; min-width: 100px; font-size: 13px; }
+    .info-item { display: flex; gap: 12px; font-size: 14px; color: var(--text-primary); }
+    .info-key { color: var(--text-secondary); min-width: 100px; font-size: 13px; }
     .form-group { margin-bottom: 12px; }
-    label { display: block; font-size: 12px; font-weight: 600; color: #424242; margin-bottom: 5px; }
-    input, textarea { width: 100%; padding: 9px 12px; border: 1.5px solid #E0E0E0; border-radius: 6px; font-size: 14px; outline: none; }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; }
+    input, textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; background: var(--surface-raised); color: var(--text-primary); font-family: inherit; }
     input:focus, textarea:focus { border-color: #FF6B35; }
-    textarea { resize: vertical; font-family: inherit; }
+    textarea { resize: vertical; }
     .driver-card { display: flex; gap: 14px; align-items: center; }
     .driver-avatar { font-size: 32px; }
     .mt-1 { margin-top: 8px; } .mt-2 { margin-top: 12px; }
-    .font-bold { font-weight: 600; } .text-muted { color: #757575; } .text-sm { font-size: 12px; }
-    .empty-state { text-align: center; padding: 20px; color: #757575; }
-    .loading-overlay { text-align: center; padding: 48px; color: #757575; font-size: 16px; }
-    .alert-error { background: #FFEBEE; color: #C62828; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; }
+    .font-bold { font-weight: 600; color: var(--text-primary); } .text-muted { color: var(--text-secondary); } .text-sm { font-size: 12px; }
+    .empty-state { text-align: center; padding: 20px; color: var(--text-secondary); }
+    .loading-overlay { text-align: center; padding: 48px; color: var(--text-secondary); font-size: 16px; }
+    .alert-error { background: rgba(198,40,40,0.12); color: #EF9A9A; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; border: 1px solid rgba(244,67,54,0.3); }
     .proof-card { border: 2px dashed #FF6B35; }
-    .proof-hint { font-size: 13px; color: #757575; margin-bottom: 16px; }
+    .proof-hint { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
     .file-input-row { display: flex; align-items: center; gap: 12px; }
-    .file-btn { display: inline-block; padding: 8px 14px; background: #FFF3E0; color: #E65100; border: 1.5px solid #FF6B35; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .file-btn { display: inline-block; padding: 8px 14px; background: rgba(255,107,53,0.12); color: #FF6B35; border: 1.5px solid #FF6B35; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
     .file-name { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .proof-actions { display: flex; gap: 8px; margin-top: 4px; }
-    .btn-ghost { background: transparent; color: #757575; border: 1.5px solid #E0E0E0; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-ghost { background: transparent; color: var(--text-secondary); border: 1.5px solid var(--border); padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
     .proof-img { width: 100%; border-radius: 8px; margin: 8px 0; cursor: pointer; }
-    .proof-label { font-size: 12px; font-weight: 700; color: #757575; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .proof-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
     .lightbox-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.78); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     .lightbox-content { position: relative; max-width: 90vw; max-height: 90vh; }
     .lightbox-close { position: absolute; top: -40px; right: 0; background: none; border: none; color: white; font-size: 26px; cursor: pointer; line-height: 1; padding: 4px 8px; }
