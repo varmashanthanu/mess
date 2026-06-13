@@ -126,6 +126,14 @@ class ShipperProfile(BaseModel):
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
     total_orders = models.PositiveIntegerField(default=0)
 
+    # Senegal legal identifiers
+    ninea = models.CharField(max_length=50, blank=True, help_text="Numéro d'Identification National des Entreprises et Associations")
+    rccm = models.CharField(max_length=100, blank=True, help_text="Registre du Commerce et du Crédit Mobilier")
+    legal_form = models.CharField(max_length=50, blank=True, help_text="SA, SARL, GIE, SNC, Individuelle…")
+    region = models.CharField(max_length=100, blank=True, help_text="Région administrative au Sénégal")
+    professional_phone = models.CharField(max_length=30, blank=True)
+    professional_email = models.EmailField(blank=True)
+
     def __str__(self):
         return f"Shipper: {self.user.full_name}"
 
@@ -172,6 +180,12 @@ class DriverProfile(BaseModel):
     bank_routing_number = models.CharField(max_length=100, blank=True)
     dispatch_contact_name = models.CharField(max_length=255, blank=True)
     dispatch_contact_phone = models.CharField(max_length=30, blank=True)
+
+    # Personal insurance (responsabilité civile)
+    insurance_provider = models.CharField(max_length=255, blank=True)
+    insurance_policy_number = models.CharField(max_length=100, blank=True)
+    insurance_start_date = models.DateField(null=True, blank=True)
+    insurance_expiry = models.DateField(null=True, blank=True)
 
     # Terms
     terms_accepted = models.BooleanField(default=False)

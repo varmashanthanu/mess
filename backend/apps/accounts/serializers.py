@@ -153,6 +153,9 @@ class ShipperProfileSerializer(serializers.ModelSerializer):
         fields = [
             "company_name", "company_registration", "address",
             "city", "country", "avatar", "rating", "total_orders",
+            # Senegal legal
+            "ninea", "rccm", "legal_form", "region",
+            "professional_phone", "professional_email",
         ]
         read_only_fields = ["rating", "total_orders"]
 
@@ -181,6 +184,9 @@ class DriverProfileSerializer(serializers.ModelSerializer):
             "terms_accepted", "terms_accepted_at",
             # Location
             "is_available", "current_lat", "current_lng", "last_location_update",
+            # Insurance
+            "insurance_provider", "insurance_policy_number",
+            "insurance_start_date", "insurance_expiry",
             # Stats
             "rating", "total_deliveries",
         ]
