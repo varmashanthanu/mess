@@ -119,7 +119,24 @@
   "LOAD_BOARD": {
     "SUBTITLE": "Available loads you can pick up",
     "EMPTY_TITLE": "No available loads",
-    "EMPTY_SUBTITLE": "Check back soon for new loads."
+    "EMPTY_SUBTITLE": "Check back soon for new loads.",
+    "FILTERS": "Filters",
+    "PICKUP_CITY": "Pickup city",
+    "PICKUP_CITY_PH": "e.g. Dakar",
+    "DELIVERY_CITY": "Destination city",
+    "DELIVERY_CITY_PH": "e.g. Thiès",
+    "CARGO_TYPE": "Cargo type",
+    "MAX_PRICE": "Max budget (XOF)",
+    "MAX_PRICE_PH": "e.g. 500000",
+    "SORT": "Sort by",
+    "SORT_DATE": "Pickup date",
+    "SORT_PRICE_ASC": "Price low-high",
+    "SORT_PRICE_DESC": "Price high-low",
+    "SORT_WEIGHT": "Weight",
+    "RESET": "Reset",
+    "RESULTS": "{{count}} load(s) found",
+    "COL_TYPE": "Type",
+    "COL_DISTANCE": "Route"
   },
   "TOPBAR": {
     "AVAILABLE": "Available",

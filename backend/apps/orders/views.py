@@ -39,8 +39,22 @@ class FreightOrderListCreateView(generics.ListCreateAPIView):
     """
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ["status", "cargo_type", "pickup_city", "delivery_city"]
-    search_fields = ["reference", "cargo_description", "pickup_address", "delivery_address"]
-    ordering_fields = ["created_at", "pickup_scheduled_at", "proposed_price"]
+    search_fields = ["reference", "cargo_description", "pickup_address", "delivery_address", "pickup_city", "delivery_city"]
+    ordering_fields = ["created_at", "pickup_scheduled_at", "proposed_price", "weight_kg"]
+
+    def filter_queryset(self, queryset):
+        qs = super().filter_queryset(queryset)
+        params = self.request.query_params
+        min_price = params.get("min_price")
+        max_price = params.get("max_price")
+        max_weight = params.get("max_weight")
+        if min_price:
+            qs = qs.filter(proposed_price__gte=min_price)
+        if max_price:
+            qs = qs.filter(proposed_price__lte=max_price)
+        if max_weight:
+            qs = qs.filter(weight_kg__lte=max_weight)
+        return qs
 
     def get_serializer_class(self):
         if self.request.method == "POST":
