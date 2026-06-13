@@ -172,7 +172,7 @@ interface NavItem {
       display: flex; align-items: center; gap: 12px; padding: 12px 16px;
       border-radius: 10px; color: white; text-decoration: none;
       font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-      margin-bottom: 8px; white-space: nowrap; position: relative;
+      margin-bottom: 8px; position: relative;
       background: var(--item-color);
       box-shadow: 0 4px 0 color-mix(in srgb, var(--item-color) 60%, black);
       transition: transform .1s ease, box-shadow .1s ease; user-select: none;
@@ -181,7 +181,7 @@ interface NavItem {
     .nav-item:active { transform: translateY(3px); box-shadow: 0 1px 0 color-mix(in srgb, var(--item-color) 60%, black); }
     .nav-item.active { filter: brightness(1.1); }
     .nav-icon { font-size: 18px; flex-shrink: 0; width: 20px; text-align: center; }
-    .nav-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .nav-label { flex: 1; white-space: normal; line-height: 1.25; word-break: break-word; }
 
     /* Footer */
     .sidebar-footer { padding: 10px 10px; border-top: 1px solid rgba(201,162,39,0.15); }
@@ -315,7 +315,7 @@ export class SidebarComponent {
 
   private driverItems: NavItem[] = [
     { labelKey: 'NAV.DASHBOARD_DRIVER',  icon: '🏠', route: '/dashboard',  color: '#2196F3' },
-    { labelKey: 'NAV.LOAD_BOARD_DRIVER', icon: '🔍', route: '/load-board', color: '#F5A623' },
+    { labelKey: 'NAV.LOAD_BOARD_DRIVER', icon: '🚛', route: '/load-board', color: '#F5A623' },
     { labelKey: 'NAV.MY_TRIPS',          icon: '📦', route: '/orders',     color: '#9C27B0' },
     { labelKey: 'NAV.TRACKING_DRIVER',   icon: '🧭', route: '/tracking',   color: '#E53935' },
     { labelKey: 'NAV.MESSAGES',          icon: '💬', route: '/messaging',  color: '#43A047' },
