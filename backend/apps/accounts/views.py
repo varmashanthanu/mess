@@ -357,19 +357,19 @@ def _get_tokens(user):
 
 
 class ContactMessageView(APIView):
-    POST /api/v1/contact/ — save a contact form submission.
+    """POST /api/v1/contact/ - save a contact form submission."""
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         data = request.data
-        if not data.get(first_name) or not data.get(subject) or not data.get(message):
-            return Response({error: first_name, subject and message are required.}, status=status.HTTP_400_BAD_REQUEST)
+        if not data.get("first_name") or not data.get("subject") or not data.get("message"):
+            return Response({"error": "first_name, subject and message are required."}, status=status.HTTP_400_BAD_REQUEST)
         ContactMessage.objects.create(
-            first_name=data.get(first_name, ),
-            last_name=data.get(last_name, ),
-            address=data.get(address, ),
-            subject=data.get(subject, ),
-            message=data.get(message, ),
+            first_name=data.get("first_name", ""),
+            last_name=data.get("last_name", ""),
+            address=data.get("address", ""),
+            subject=data.get("subject", ""),
+            message=data.get("message", ""),
             user=request.user,
         )
-        return Response({detail: Message sent.}, status=status.HTTP_201_CREATED)
+        return Response({"detail": "Message sent."}, status=status.HTTP_201_CREATED)
