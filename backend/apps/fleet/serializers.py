@@ -25,9 +25,11 @@ class VehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
         fields = [
-            "id", "registration_number", "vehicle_type", "vehicle_type_detail",
-            "make", "model", "year", "fuel_type", "color",
-            "payload_kg", "volume_m3", "effective_payload_kg",
+            "id", "registration_number", "vin", "vehicle_type", "vehicle_type_detail",
+            "make", "model", "year", "fuel_type", "color", "trailer_type",
+            "payload_kg", "gross_weight_kg", "volume_m3", "effective_payload_kg",
+            "registration_expiry",
+            "insurance_provider", "insurance_start_date", "insurance_expiry",
             "is_active", "is_verified", "photo", "documents",
         ]
         read_only_fields = ["is_verified"]

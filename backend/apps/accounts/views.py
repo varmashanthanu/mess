@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from core.permissions import IsAdmin, IsOwnerOrAdmin
-# from .models import PhoneVerification
+from .models import PhoneVerification, ContactMessage
 from .serializers import (
     CarrierProfileSerializer,
     CustomTokenObtainPairSerializer,
@@ -350,19 +350,26 @@ def _get_tokens(user):
 # SMS verification disabled — no SMS provider configured
 # Uncomment when SMS service is available
 # def _send_otp(user):
-#     """Create an OTP record and dispatch SMS (async via Celery)."""
 #     from core.utils import generate_otp
 #     otp = generate_otp()
-#     PhoneVerification.objects.create(
-#         user=user,
-#         otp=otp,
-#         phone_number=user.phone_number,
-#         expires_at=timezone.now() + timedelta(minutes=OTP_EXPIRY_MINUTES),
-#     )
-#     # Dispatch async SMS
-#     from apps.notifications.tasks import send_sms_task
-#     send_sms_task.delay(
-#         phone=str(user.phone_number),
-#         message=f"Your MESS verification code is: {otp}. Valid for {OTP_EXPIRY_MINUTES} minutes.",
-#     )
-#     logger.info(f"OTP sent to {user.phone_number}")
+#     PhoneVerification.objects.create(...)
+#     send_sms_task.delay(...)
+
+
+class ContactMessageView(APIView):
+    POST /api/v1/contact/ — save a contact form submission.
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        if not data.get(first_name) or not data.get(subject) or not data.get(message):
+            return Response({error: first_name, subject and message are required.}, status=status.HTTP_400_BAD_REQUEST)
+        ContactMessage.objects.create(
+            first_name=data.get(first_name, ),
+            last_name=data.get(last_name, ),
+            address=data.get(address, ),
+            subject=data.get(subject, ),
+            message=data.get(message, ),
+            user=request.user,
+        )
+        return Response({detail: Message sent.}, status=status.HTTP_201_CREATED)

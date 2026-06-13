@@ -55,6 +55,11 @@ class Vehicle(BaseModel):
     axle_count = models.PositiveSmallIntegerField(null=True, blank=True)
     gross_weight_kg = models.PositiveIntegerField(null=True, blank=True, help_text="Gross vehicle weight in kg")
 
+    # Insurance
+    insurance_provider = models.CharField(max_length=255, blank=True)
+    insurance_start_date = models.DateField(null=True, blank=True)
+    insurance_expiry = models.DateField(null=True, blank=True)
+
     # Capacity (may differ from VehicleType defaults for this specific vehicle)
     payload_kg = models.PositiveIntegerField(null=True, blank=True)
     volume_m3 = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
