@@ -205,10 +205,25 @@ export class SidebarComponent {
     return roleMap[this.auth.user()?.role ?? ''] ?? '';
   });
 
+  private driverItems: NavItem[] = [
+    { labelKey: 'NAV.DASHBOARD_DRIVER',  icon: '🏠', route: '/dashboard',  color: '#2196F3' },
+    { labelKey: 'NAV.LOAD_BOARD_DRIVER', icon: '🔍', route: '/load-board', color: '#F5A623' },
+    { labelKey: 'NAV.MY_TRIPS',          icon: '📦', route: '/orders',     color: '#9C27B0' },
+    { labelKey: 'NAV.TRACKING_DRIVER',   icon: '🧭', route: '/tracking',   color: '#E53935' },
+    { labelKey: 'NAV.MESSAGES',          icon: '💬', route: '/messaging',  color: '#43A047' },
+    { labelKey: 'NAV.PROFILE',           icon: '👤', route: '/profile',    color: '#757575' },
+  ];
+
+  private shipperItems: NavItem[] = [
+    { labelKey: 'NAV.MY_DASHBOARD',     icon: '📊', route: '/dashboard',  color: '#2196F3' },
+    { labelKey: 'NAV.SHIPPER_LOADS',    icon: '📦', route: '/orders',     color: '#9C27B0' },
+    { labelKey: 'NAV.SHIPPER_TRACKING', icon: '📍', route: '/tracking',   color: '#E53935' },
+    { labelKey: 'NAV.MESSAGES',         icon: '💬', route: '/messaging',  color: '#43A047' },
+    { labelKey: 'NAV.SHIPPER_ACCOUNT',  icon: '👤', route: '/profile',    color: '#757575' },
+  ];
+
   private allItems: NavItem[] = [
-    { labelKey: 'NAV.LOAD_BOARD',   icon: '📋', route: '/load-board', color: '#F5A623', roles: ['DRIVER'] },
     { labelKey: 'NAV.MY_DASHBOARD', icon: '📊', route: '/dashboard',  color: '#2196F3' },
-    { labelKey: 'NAV.ORDERS',       icon: '📦', route: '/orders',     color: '#9C27B0', roles: ['SHIPPER', 'ADMIN'] },
     { labelKey: 'NAV.FLEET',        icon: '🚛', route: '/fleet',      color: '#0288D1', roles: ['CARRIER'] },
     { labelKey: 'NAV.TRACKING',     icon: '🗺️', route: '/tracking',  color: '#E53935' },
     { labelKey: 'NAV.MESSAGES',     icon: '💬', route: '/messaging',  color: '#43A047' },
@@ -218,6 +233,8 @@ export class SidebarComponent {
 
   visibleItems = computed(() => {
     const role = this.auth.role();
+    if (role === 'DRIVER') return this.driverItems;
+    if (role === 'SHIPPER') return this.shipperItems;
     return this.allItems.filter(item => !item.roles || (role && item.roles.includes(role)));
   });
 

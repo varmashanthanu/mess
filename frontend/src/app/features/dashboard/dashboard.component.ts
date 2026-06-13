@@ -6,7 +6,7 @@ import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { FreightOrder } from '../../core/models/order.model';
 
-type StatFilter = 'available' | 'in_transit' | 'delivered' | 'completed' | null;
+type StatFilter = 'open' | 'assigned' | 'in_transit' | 'delivered' | 'completed' | null;
 interface StatCard { label: string; value: string | number; icon: string; color: string; filter: StatFilter; }
 
 @Component({
@@ -16,25 +16,114 @@ interface StatCard { label: string; value: string | number; icon: string; color:
   template: `
     <div class="dashboard">
 
-      <!-- ── Welcome banner ── -->
-      <div class="welcome-banner" [class.welcome-banner--driver]="isDriver()" [class.welcome-banner--shipper]="isShipper()">
-        <div class="welcome-text">
-          <div class="role-chip" *ngIf="isDriver()">{{ 'DASHBOARD.ROLE_DRIVER' | translate }}</div>
-          <div class="role-chip role-chip--shipper" *ngIf="isShipper()">{{ 'DASHBOARD.ROLE_SHIPPER' | translate }}</div>
-          <h1>{{ 'DASHBOARD.GREETING' | translate: { name: firstName() } }}</h1>
-          <p class="today-date">{{ today() }}</p>
+      <!-- ════════════════ DRIVER ════════════════ -->
+
+      <!-- Driver: header statut + gains du jour -->
+      <div class="driver-header" *ngIf="isDriver()">
+        <div class="driver-header-left">
+          <div class="greeting-text">{{ 'DASHBOARD.GREETING' | translate: { name: firstName() } }}</div>
+          <div class="availability-pill" [class.available]="driverAvailable()">
+            {{ driverAvailable() ? ('TOPBAR.AVAILABLE' | translate) : ('TOPBAR.UNAVAILABLE' | translate) }}
+          </div>
         </div>
-        <div class="banner-actions">
-          <a class="btn-primary" routerLink="/orders/new" *ngIf="isShipper()">
-            {{ 'DASHBOARD.NEW_ORDER' | translate }}
+        <div class="driver-header-right">
+          <div class="today-stat">
+            <span class="today-stat-value">{{ todayTrips() }}</span>
+            <span class="today-stat-label">{{ 'DASHBOARD.DRIVER.TODAY_TRIPS' | translate }}</span>
+          </div>
+          <span class="today-sep">·</span>
+          <div class="today-stat">
+            <span class="today-stat-value">{{ todayEarnings() | number:'1.0-0' }} XOF</span>
+            <span class="today-stat-label">{{ 'DASHBOARD.DRIVER.TODAY_EARNINGS' | translate }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Driver: CTA contextuel -->
+      <div class="cta-banner" *ngIf="isDriver()">
+        <ng-container *ngIf="activeTrip(); else noTrip">
+          <div class="cta-info">
+            <span class="cta-icon">🚛</span>
+            <div>
+              <div class="cta-title">{{ activeTrip()!.pickup_city }} → {{ activeTrip()!.delivery_city }}</div>
+              <div class="cta-sub">
+                <span class="badge badge--{{ activeTrip()!.status.toLowerCase() }}">{{ 'ORDERS.STATUS.' + activeTrip()!.status | translate }}</span>
+              </div>
+            </div>
+          </div>
+          <a class="cta-btn cta-btn--active" [routerLink]="['/orders', activeTrip()!.id]">
+            {{ 'DASHBOARD.DRIVER.CONTINUE_DELIVERY' | translate }} →
           </a>
-          <a class="btn-primary btn-driver" routerLink="/load-board" *ngIf="isDriver()">
-            🗺️ {{ 'DASHBOARD.MY_DELIVERIES' | translate }}
+        </ng-container>
+        <ng-template #noTrip>
+          <div class="cta-info">
+            <span class="cta-icon">🔍</span>
+            <div>
+              <div class="cta-title">{{ 'DASHBOARD.DRIVER.FIND_LOADS_TITLE' | translate }}</div>
+              <div class="cta-sub">{{ availableLoads() }} {{ 'DASHBOARD.DRIVER.LOADS_AVAILABLE' | translate }}</div>
+            </div>
+          </div>
+          <a class="cta-btn cta-btn--available" routerLink="/load-board">
+            {{ 'DASHBOARD.DRIVER.FIND_LOADS_BTN' | translate }} →
+          </a>
+        </ng-template>
+      </div>
+
+      <!-- Driver: résumé du jour -->
+      <div class="summary-row" *ngIf="isDriver()">
+        <div class="summary-card">
+          <div class="summary-value">{{ todayTrips() }}</div>
+          <div class="summary-label">{{ 'DASHBOARD.DRIVER.VOYAGES' | translate }}</div>
+        </div>
+        <div class="summary-card summary-card--gold">
+          <div class="summary-value">{{ todayEarnings() | number:'1.0-0' }}</div>
+          <div class="summary-label">{{ 'DASHBOARD.DRIVER.GAINS' | translate }} (XOF)</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-value">{{ todayDistance() }}</div>
+          <div class="summary-label">{{ 'DASHBOARD.DRIVER.DISTANCE' | translate }} (km)</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-value">{{ driverRating() }}</div>
+          <div class="summary-label">{{ 'DASHBOARD.DRIVER.RATING' | translate }}</div>
+        </div>
+      </div>
+
+      <!-- ════════════════ SHIPPER ════════════════ -->
+
+      <!-- Shipper: centre de commande -->
+      <div class="shipper-header" *ngIf="isShipper()">
+        <div class="shipper-header-left">
+          <div class="sh-greeting">{{ 'DASHBOARD.GREETING' | translate: { name: firstName() } }}</div>
+          <div class="sh-stats-row">
+            <div class="sh-kpi" [class.sh-kpi--alert]="delayedCount() > 0">
+              <span class="sh-kpi-value">{{ activeShipments() }}</span>
+              <span class="sh-kpi-label">{{ 'DASHBOARD.SHIPPER.ACTIVE_LOADS' | translate }}</span>
+            </div>
+            <div class="sh-kpi-sep">·</div>
+            <div class="sh-kpi" [class.sh-kpi--warn]="delayedCount() > 0">
+              <span class="sh-kpi-value">{{ delayedCount() }}</span>
+              <span class="sh-kpi-label">{{ 'DASHBOARD.SHIPPER.DELAYED' | translate }}</span>
+            </div>
+            <div class="sh-kpi-sep">·</div>
+            <div class="sh-kpi">
+              <span class="sh-kpi-value">{{ pendingAssignment() }}</span>
+              <span class="sh-kpi-label">{{ 'DASHBOARD.SHIPPER.PENDING_ASSIGN' | translate }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="shipper-header-right">
+          <div class="sh-spend">
+            <div class="sh-spend-value">{{ todaySpend() | number:'1.0-0' }} XOF</div>
+            <div class="sh-spend-label">{{ 'DASHBOARD.SHIPPER.TODAY_SPEND' | translate }}</div>
+          </div>
+          <a class="btn-create-load" routerLink="/orders/new">
+            ＋ {{ 'DASHBOARD.SHIPPER.CREATE_LOAD' | translate }}
           </a>
         </div>
       </div>
 
-      <!-- ── Stats grid ── -->
+      <!-- ════════════════ STATS (partagé) ════════════════ -->
       <div class="stats-grid">
         <div class="stat-card" *ngFor="let s of stats()"
              [class.stat-card--active]="activeFilter() === s.filter"
@@ -47,61 +136,61 @@ interface StatCard { label: string; value: string | number; icon: string; color:
         </div>
       </div>
 
-      <!-- ── Driver quick actions ── -->
+      <!-- ════════════════ QUICK ACTIONS ════════════════ -->
+
+      <!-- Driver -->
       <div class="quick-actions" *ngIf="isDriver()">
         <div class="quick-title">{{ 'DASHBOARD.QUICK_ACTIONS' | translate }}</div>
         <div class="quick-grid">
           <a class="quick-card" routerLink="/load-board">
-            <span class="quick-icon">📋</span>
-            <span>{{ 'DASHBOARD.DRIVER.LOAD_BOARD' | translate }}</span>
-          </a>
-          <a class="quick-card" routerLink="/tracking">
-            <span class="quick-icon">🗺️</span>
-            <span>{{ 'DASHBOARD.DRIVER.TRACKING' | translate }}</span>
-          </a>
-          <a class="quick-card" routerLink="/messaging">
-            <span class="quick-icon">💬</span>
-            <span>{{ 'DASHBOARD.DRIVER.MESSAGING' | translate }}</span>
-          </a>
-          <a class="quick-card" routerLink="/profile">
-            <span class="quick-icon">👤</span>
-            <span>{{ 'DASHBOARD.DRIVER.PROFILE' | translate }}</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- ── Shipper quick actions ── -->
-      <div class="quick-actions quick-actions--shipper" *ngIf="isShipper()">
-        <div class="quick-title">{{ 'DASHBOARD.QUICK_ACTIONS' | translate }}</div>
-        <div class="quick-grid">
-          <a class="quick-card" routerLink="/orders/new">
-            <span class="quick-icon">➕</span>
-            <span>{{ 'DASHBOARD.SHIPPER.NEW_ORDER' | translate }}</span>
+            <span class="quick-icon">🔍</span>
+            <span>{{ 'DASHBOARD.DRIVER.QA_LOADS' | translate }}</span>
           </a>
           <a class="quick-card" routerLink="/orders">
             <span class="quick-icon">📦</span>
-            <span>{{ 'DASHBOARD.SHIPPER.MY_ORDERS' | translate }}</span>
-          </a>
-          <a class="quick-card" routerLink="/tracking">
-            <span class="quick-icon">📍</span>
-            <span>{{ 'DASHBOARD.SHIPPER.TRACKING' | translate }}</span>
+            <span>{{ 'DASHBOARD.DRIVER.QA_TRIPS' | translate }}</span>
           </a>
           <a class="quick-card" routerLink="/messaging">
             <span class="quick-icon">💬</span>
-            <span>{{ 'DASHBOARD.SHIPPER.MESSAGING' | translate }}</span>
+            <span>{{ 'DASHBOARD.DRIVER.QA_DISPATCHER' | translate }}</span>
+          </a>
+          <a class="quick-card" routerLink="/messaging">
+            <span class="quick-icon">⚠️</span>
+            <span>{{ 'DASHBOARD.DRIVER.QA_REPORT' | translate }}</span>
           </a>
         </div>
       </div>
 
-      <!-- ── Recent orders section ── -->
+      <!-- Shipper -->
+      <div class="quick-actions" *ngIf="isShipper()">
+        <div class="quick-title">{{ 'DASHBOARD.QUICK_ACTIONS' | translate }}</div>
+        <div class="quick-grid">
+          <a class="quick-card quick-card--primary" routerLink="/orders/new">
+            <span class="quick-icon">➕</span>
+            <span>{{ 'DASHBOARD.SHIPPER.QA_CREATE' | translate }}</span>
+          </a>
+          <a class="quick-card" routerLink="/tracking">
+            <span class="quick-icon">📍</span>
+            <span>{{ 'DASHBOARD.SHIPPER.QA_TRACK' | translate }}</span>
+          </a>
+          <a class="quick-card" routerLink="/orders">
+            <span class="quick-icon">📦</span>
+            <span>{{ 'DASHBOARD.SHIPPER.QA_LOADS' | translate }}</span>
+          </a>
+          <a class="quick-card" routerLink="/messaging">
+            <span class="quick-icon">💬</span>
+            <span>{{ 'DASHBOARD.SHIPPER.QA_MESSAGES' | translate }}</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- ════════════════ SECTION LIVRAISONS ════════════════ -->
       <div class="section">
         <div class="section-header">
-          <h2>
-            {{ (isDriver() ? 'DASHBOARD.RECENT_DRIVER' : 'DASHBOARD.RECENT_SHIPPER') | translate }}
-          </h2>
+          <h2>{{ (isDriver() ? 'DASHBOARD.RECENT_DRIVER' : 'DASHBOARD.RECENT_SHIPPER') | translate }}</h2>
           <div class="section-header-right">
             <span class="filter-badge" *ngIf="activeFilter()" (click)="setFilter(null)">
-              {{ 'DASHBOARD.STATS.' + activeFilter()!.toUpperCase() | translate }} ✕
+              ✕ {{ activeFilter() }}
             </span>
             <a routerLink="/orders" class="see-all">{{ 'COMMON.SEE_ALL' | translate }}</a>
           </div>
@@ -109,7 +198,8 @@ interface StatCard { label: string; value: string | number; icon: string; color:
 
         <div class="loading-overlay" *ngIf="loading()">⏳ {{ 'COMMON.LOADING' | translate }}</div>
 
-        <div class="orders-list" *ngIf="!loading() && filteredOrders().length">
+        <!-- Driver rows (compact) -->
+        <div class="orders-list" *ngIf="!loading() && filteredOrders().length && isDriver()">
           <div class="order-row" *ngFor="let o of filteredOrders()" [routerLink]="['/orders', o.id]">
             <div class="order-ref">
               <strong>{{ o.reference }}</strong>
@@ -120,17 +210,49 @@ interface StatCard { label: string; value: string | number; icon: string; color:
               <span class="route-arrow">→</span>
               <span>🏁 {{ o.delivery_city }}</span>
             </div>
-            <div class="order-meta text-muted text-sm">
+            <div class="order-price" *ngIf="o.final_price || o.proposed_price">
+              {{ (o.final_price || o.proposed_price) | number:'1.0-0' }} XOF
+            </div>
+            <div class="order-meta text-muted text-sm" *ngIf="!(o.final_price || o.proposed_price)">
               {{ o.weight_kg }} kg · {{ formatDate(o.pickup_scheduled_at) }}
             </div>
           </div>
         </div>
 
+        <!-- Shipper: cartes opérationnelles -->
+        <div class="op-cards" *ngIf="!loading() && filteredOrders().length && isShipper()">
+          <div class="op-card" *ngFor="let o of filteredOrders()" [routerLink]="['/orders', o.id]"
+               [class.op-card--delayed]="isDelayed(o)">
+            <div class="op-card-top">
+              <span class="op-ref">{{ o.reference }}</span>
+              <span class="badge badge--{{ o.status.toLowerCase() }}">{{ 'ORDERS.STATUS.' + o.status | translate }}</span>
+              <span class="op-delay-badge" *ngIf="isDelayed(o)">⚠️ {{ 'DASHBOARD.SHIPPER.LATE' | translate }}</span>
+            </div>
+            <div class="op-route">
+              <span class="op-city">📍 {{ o.pickup_city }}</span>
+              <span class="op-arrow">———›</span>
+              <span class="op-city">🏁 {{ o.delivery_city }}</span>
+              <span class="op-weight text-muted">· {{ o.weight_kg }} kg</span>
+            </div>
+            <div class="op-card-bottom">
+              <span class="op-driver" *ngIf="o.assignment?.driver_detail">
+                🚛 {{ o.assignment!.driver_detail.full_name }}
+              </span>
+              <span class="op-driver text-muted" *ngIf="!o.assignment">
+                {{ 'DASHBOARD.SHIPPER.NO_DRIVER' | translate }}
+              </span>
+              <span class="op-price" *ngIf="o.final_price || o.proposed_price">
+                {{ (o.final_price || o.proposed_price) | number:'1.0-0' }} XOF
+              </span>
+            </div>
+          </div>
+        </div>
+
         <div class="empty-state" *ngIf="!loading() && !filteredOrders().length">
-          <div class="empty-icon">{{ isDriver() ? '🚚' : '📦' }}</div>
+          <div class="empty-icon">{{ isDriver() ? '🚚' : '📤' }}</div>
           <h3>{{ (isDriver() ? 'DASHBOARD.EMPTY_DRIVER_TITLE' : 'DASHBOARD.EMPTY_TITLE') | translate }}</h3>
           <p>{{ (isDriver() ? 'DASHBOARD.EMPTY_DRIVER_SUBTITLE' : 'DASHBOARD.EMPTY_SUBTITLE') | translate }}</p>
-          <a class="btn-primary mt-2" [routerLink]="isDriver() ? '/load-board' : '/orders/new'">
+          <a class="btn-create-load mt-2" [routerLink]="isDriver() ? '/load-board' : '/orders/new'">
             {{ (isDriver() ? 'DASHBOARD.EMPTY_DRIVER_CTA' : 'DASHBOARD.EMPTY_SHIPPER_CTA') | translate }}
           </a>
         </div>
@@ -140,39 +262,91 @@ interface StatCard { label: string; value: string | number; icon: string; color:
   styles: [`
     .dashboard { max-width: 1100px; }
 
-    /* Welcome banner */
-    .welcome-banner {
+    /* ── Driver header ── */
+    .driver-header {
       display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
-      padding: 24px 28px; border-radius: 16px;
-      background: linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%);
-      border-left: 5px solid #C9A227;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      padding: 22px 28px; border-radius: 16px; margin-bottom: 14px; gap: 16px; flex-wrap: wrap;
+      background: linear-gradient(135deg, #0D1B0F, #1A2A1A);
+      border-left: 5px solid #66BB6A; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
-    .welcome-banner--driver { border-left-color: #66BB6A; background: linear-gradient(135deg, #0D1B0F 0%, #1A2A1A 100%); }
-    .welcome-banner--shipper { border-left-color: #C9A227; }
-    .role-chip {
-      display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 11px;
-      font-weight: 700; letter-spacing: 0.5px; margin-bottom: 8px;
-      background: rgba(201,162,39,0.2); color: #C9A227; border: 1px solid rgba(201,162,39,0.4);
+    .driver-header-left { display: flex; flex-direction: column; gap: 10px; }
+    .greeting-text { font-size: 22px; font-weight: 800; color: #F0EDE6; }
+    .availability-pill {
+      display: inline-block; padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 700;
+      background: rgba(239,83,80,0.2); color: #EF5350; border: 1px solid rgba(239,83,80,0.4);
     }
-    .role-chip--shipper { background: rgba(201,162,39,0.2); color: #C9A227; border-color: rgba(201,162,39,0.4); }
-    .welcome-banner--driver .role-chip { background: rgba(102,187,106,0.2); color: #66BB6A; border-color: rgba(102,187,106,0.4); }
-    h1 { font-size: 26px; font-weight: 800; margin-bottom: 4px; color: #F0EDE6; }
-    .today-date { color: rgba(240,237,230,0.55); font-size: 13px; }
-    .banner-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-    .btn-primary {
-      padding: 10px 22px; background: linear-gradient(135deg, #C9A227, #A8861F);
-      color: #111; border: none; border-radius: 10px; font-size: 14px; font-weight: 700;
-      cursor: pointer; text-decoration: none; transition: all .2s; white-space: nowrap;
-      box-shadow: 0 3px 10px rgba(201,162,39,0.35);
-    }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(201,162,39,0.45); text-decoration: none; color: #111; }
-    .btn-driver { background: linear-gradient(135deg, #43A047, #2E7D32); color: white; box-shadow: 0 3px 10px rgba(67,160,71,0.35); }
-    .btn-driver:hover { box-shadow: 0 5px 16px rgba(67,160,71,0.45); color: white; }
+    .availability-pill::before { content: '🔴 '; }
+    .availability-pill.available { background: rgba(102,187,106,0.2); color: #66BB6A; border-color: rgba(102,187,106,0.4); }
+    .availability-pill.available::before { content: '🟢 '; }
+    .driver-header-right { display: flex; align-items: center; gap: 16px; }
+    .today-stat { display: flex; flex-direction: column; align-items: flex-end; }
+    .today-stat-value { font-size: 18px; font-weight: 800; color: #F0EDE6; }
+    .today-stat-label { font-size: 11px; color: rgba(240,237,230,0.5); margin-top: 2px; }
+    .today-sep { color: rgba(240,237,230,0.25); font-size: 22px; line-height: 1; }
 
-    /* Stats grid */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    /* ── Driver CTA ── */
+    .cta-banner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px; border-radius: 14px; margin-bottom: 14px; gap: 16px; flex-wrap: wrap;
+      background: var(--surface); border: 1.5px solid var(--border); box-shadow: var(--shadow);
+    }
+    .cta-info { display: flex; align-items: center; gap: 18px; }
+    .cta-icon { font-size: 40px; line-height: 1; }
+    .cta-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+    .cta-sub { font-size: 13px; color: var(--text-secondary); }
+    .cta-btn {
+      padding: 14px 28px; border-radius: 12px; font-size: 15px; font-weight: 800;
+      text-decoration: none; transition: all .2s; white-space: nowrap; flex-shrink: 0;
+    }
+    .cta-btn--available { background: linear-gradient(135deg, #43A047, #2E7D32); color: white; box-shadow: 0 4px 14px rgba(67,160,71,0.3); }
+    .cta-btn--available:hover { box-shadow: 0 6px 20px rgba(67,160,71,0.4); transform: translateY(-2px); color: white; text-decoration: none; }
+    .cta-btn--active { background: linear-gradient(135deg, #FF6B35, #E53935); color: white; box-shadow: 0 4px 14px rgba(255,107,53,0.3); }
+    .cta-btn--active:hover { box-shadow: 0 6px 20px rgba(255,107,53,0.4); transform: translateY(-2px); color: white; text-decoration: none; }
+
+    /* ── Driver summary ── */
+    .summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .summary-card {
+      background: var(--surface); border-radius: 12px; padding: 16px 12px;
+      text-align: center; border: 1px solid var(--border); box-shadow: var(--shadow);
+    }
+    .summary-card--gold { border-color: rgba(201,162,39,0.4); background: rgba(201,162,39,0.06); }
+    .summary-value { font-size: 20px; font-weight: 900; color: var(--text-primary); margin-bottom: 4px; line-height: 1.1; }
+    .summary-card--gold .summary-value { color: #C9A227; }
+    .summary-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.6px; }
+
+    /* ── Shipper header ── */
+    .shipper-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 24px 28px; border-radius: 16px; margin-bottom: 16px; gap: 20px; flex-wrap: wrap;
+      background: linear-gradient(135deg, #1A1208, #2A2010);
+      border-left: 5px solid #C9A227; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .shipper-header-left { display: flex; flex-direction: column; gap: 14px; }
+    .sh-greeting { font-size: 22px; font-weight: 800; color: #F0EDE6; }
+    .sh-stats-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .sh-kpi { display: flex; flex-direction: column; }
+    .sh-kpi-value { font-size: 20px; font-weight: 900; color: #F0EDE6; line-height: 1; }
+    .sh-kpi-label { font-size: 10px; color: rgba(240,237,230,0.5); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 3px; }
+    .sh-kpi--warn .sh-kpi-value { color: #FFB300; }
+    .sh-kpi--alert .sh-kpi-value { color: #EF5350; }
+    .sh-kpi-sep { color: rgba(240,237,230,0.2); font-size: 22px; line-height: 1; }
+    .shipper-header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; }
+    .sh-spend { text-align: right; }
+    .sh-spend-value { font-size: 22px; font-weight: 900; color: #C9A227; }
+    .sh-spend-label { font-size: 10px; color: rgba(240,237,230,0.5); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+
+    /* ── Shared CTA button ── */
+    .btn-create-load {
+      display: inline-block; padding: 12px 24px;
+      background: linear-gradient(135deg, #C9A227, #A8861F);
+      color: #111; border: none; border-radius: 10px; font-size: 14px; font-weight: 800;
+      cursor: pointer; text-decoration: none; transition: all .2s; white-space: nowrap;
+      box-shadow: 0 3px 12px rgba(201,162,39,0.4);
+    }
+    .btn-create-load:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(201,162,39,0.5); text-decoration: none; color: #111; }
+
+    /* ── Stats grid ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-bottom: 20px; }
     .stat-card {
       background: var(--surface); border-radius: 14px; padding: 20px;
       display: flex; align-items: center; gap: 14px;
@@ -180,48 +354,69 @@ interface StatCard { label: string; value: string | number; icon: string; color:
       cursor: pointer; border: 1.5px solid var(--border);
     }
     .stat-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
-    .stat-card--active { border-color: #C9A227; box-shadow: 0 0 0 2px rgba(201,162,39,0.3), var(--shadow); }
+    .stat-card--active { border-color: #C9A227; box-shadow: 0 0 0 2px rgba(201,162,39,0.3); }
     .stat-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
     .stat-value { font-size: 26px; font-weight: 900; line-height: 1; margin-bottom: 3px; }
     .stat-label { font-size: 12px; color: var(--text-secondary); }
 
-    /* Quick actions */
-    .quick-actions { margin-bottom: 24px; }
+    /* ── Quick actions ── */
+    .quick-actions { margin-bottom: 20px; }
     .quick-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
-    .quick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+    .quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
     .quick-card {
       display: flex; flex-direction: column; align-items: center; gap: 8px;
       padding: 16px 12px; background: var(--surface); border-radius: 12px;
       border: 1.5px solid var(--border); text-decoration: none; color: var(--text-primary);
       font-size: 12px; font-weight: 600; text-align: center; transition: all .15s;
     }
-    .quick-card:hover { border-color: #C9A227; background: rgba(201,162,39,0.06); color: #C9A227; text-decoration: none; transform: translateY(-2px); box-shadow: var(--shadow); }
-    .quick-actions--shipper .quick-card:hover { border-color: #C9A227; color: #C9A227; }
-    .quick-icon { font-size: 24px; }
+    .quick-card:hover { border-color: var(--gold); background: rgba(201,162,39,0.06); color: var(--gold); text-decoration: none; transform: translateY(-2px); box-shadow: var(--shadow); }
+    .quick-card--primary { border-color: rgba(201,162,39,0.4); background: rgba(201,162,39,0.06); color: var(--gold); }
+    .quick-icon { font-size: 26px; }
 
-    /* Section */
+    /* ── Section ── */
     .section { background: var(--surface); border-radius: 14px; padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); }
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 8px; flex-wrap: wrap; }
     .section-header-right { display: flex; align-items: center; gap: 12px; }
-    .filter-badge { background: rgba(201,162,39,0.12); color: #C9A227; border: 1px solid rgba(201,162,39,0.4); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .filter-badge { background: rgba(201,162,39,0.12); color: var(--gold); border: 1px solid rgba(201,162,39,0.4); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
     h2 { font-size: 17px; font-weight: 700; color: var(--text-primary); }
-    .see-all { color: #C9A227; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; }
-    .see-all:hover { text-decoration: none; opacity: 0.8; }
+    .see-all { color: var(--gold); font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; }
 
-    /* Order rows */
+    /* ── Driver order rows ── */
     .order-row { display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 6px; flex-wrap: wrap; transition: background .1s; }
     .order-row:last-child { border-bottom: none; }
     .order-row:hover { background: var(--surface-raised); }
     .order-ref { display: flex; align-items: center; gap: 10px; min-width: 160px; flex: 1; font-weight: 600; color: var(--text-primary); }
     .order-route { display: flex; align-items: center; gap: 8px; flex: 1; font-size: 13px; min-width: 140px; color: var(--text-primary); }
-    .route-arrow { color: #C9A227; font-weight: 700; }
-    .order-meta { margin-left: auto; white-space: nowrap; color: var(--text-secondary); }
+    .route-arrow { color: var(--gold); font-weight: 700; }
+    .order-meta { margin-left: auto; white-space: nowrap; }
+    .order-price { margin-left: auto; font-weight: 700; color: #66BB6A; font-size: 14px; white-space: nowrap; }
 
-    /* Badges */
+    /* ── Shipper operational cards ── */
+    .op-cards { display: flex; flex-direction: column; gap: 10px; }
+    .op-card {
+      display: flex; flex-direction: column; gap: 8px;
+      padding: 14px 16px; border-radius: 10px; cursor: pointer;
+      border: 1.5px solid var(--border); background: var(--surface-raised);
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .op-card:hover { border-color: var(--gold); box-shadow: var(--shadow); }
+    .op-card--delayed { border-color: rgba(255,179,0,0.5); background: rgba(255,179,0,0.04); }
+    .op-card-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .op-ref { font-size: 13px; font-weight: 800; color: var(--text-primary); }
+    .op-delay-badge { font-size: 11px; font-weight: 700; color: #FFB300; margin-left: auto; }
+    .op-route { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-primary); flex-wrap: wrap; }
+    .op-city { font-weight: 600; }
+    .op-arrow { color: var(--gold); font-weight: 700; letter-spacing: 1px; }
+    .op-weight { font-size: 12px; }
+    .op-card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .op-driver { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+    .op-price { font-size: 14px; font-weight: 800; color: var(--gold); white-space: nowrap; }
+
+    /* ── Badges ── */
     .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-    .badge--draft{background:#E0E0E0;color:#616161}.badge--posted{background:#FFF8E1;color:#F57F17}.badge--assigned{background:#E8EAF6;color:#3949AB}.badge--in_transit{background:#E8F5E9;color:#2E7D32}.badge--delivered{background:#E0F2F1;color:#00695C}.badge--completed{background:rgba(201,162,39,0.15);color:#A8861F}.badge--cancelled{background:#FFEBEE;color:#B71C1C}.badge--disputed{background:#FCE4EC;color:#880E4F}.badge--pickup_pending{background:#FFF3E0;color:#E65100}.badge--picked_up{background:#EDE7F6;color:#4527A0}
+    .badge--draft{background:rgba(97,97,97,0.15);color:#9E9E9E}.badge--posted{background:rgba(201,162,39,0.15);color:#C9A227}.badge--assigned{background:rgba(33,150,243,0.15);color:#42A5F5}.badge--in_transit{background:rgba(67,160,71,0.15);color:#66BB6A}.badge--pickup_pending{background:rgba(230,81,0,0.15);color:#FF6B35}.badge--picked_up{background:rgba(69,39,160,0.15);color:#9C27B0}.badge--delivered{background:rgba(0,137,123,0.15);color:#26A69A}.badge--completed{background:rgba(168,134,31,0.15);color:#A8861F}.badge--cancelled{background:rgba(183,28,28,0.15);color:#EF5350}.badge--disputed{background:rgba(136,14,79,0.15);color:#E91E63}
 
-    /* States */
+    /* ── Utils ── */
     .text-sm { font-size: 12px; }
     .text-muted { color: var(--text-secondary); }
     .loading-overlay { text-align: center; padding: 40px; color: var(--text-secondary); }
@@ -230,15 +425,19 @@ interface StatCard { label: string; value: string | number; icon: string; color:
     h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
     .mt-2 { margin-top: 16px; display: inline-block; }
 
-    @media (max-width: 600px) {
-      h1 { font-size: 20px; }
-      .welcome-banner { padding: 18px 16px; }
+    @media (max-width: 768px) {
+      .driver-header, .shipper-header { padding: 16px; }
+      .greeting-text, .sh-greeting { font-size: 18px; }
+      .cta-banner { padding: 16px; }
+      .cta-btn { padding: 12px 18px; font-size: 13px; }
+      .summary-row { grid-template-columns: repeat(2, 1fr); }
       .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
       .stat-card { padding: 14px; gap: 10px; }
       .stat-value { font-size: 22px; }
-      .section { padding: 16px; }
-      .order-meta { display: none; }
       .quick-grid { grid-template-columns: repeat(2, 1fr); }
+      .section { padding: 16px; }
+      .order-meta, .op-weight { display: none; }
+      .shipper-header-right { align-items: flex-start; }
     }
   `]
 })
@@ -254,23 +453,96 @@ export class DashboardComponent implements OnInit {
   isDriver = computed(() => this.auth.role() === 'DRIVER');
   isShipper = computed(() => this.auth.role() === 'SHIPPER' || this.auth.role() === 'ADMIN');
 
-  private inTransitStatuses = ['ASSIGNED', 'PICKUP_PENDING', 'PICKED_UP', 'IN_TRANSIT'];
+  private transitStatuses = ['PICKUP_PENDING', 'PICKED_UP', 'IN_TRANSIT'];
+  private allActiveStatuses = ['ASSIGNED', 'PICKUP_PENDING', 'PICKED_UP', 'IN_TRANSIT'];
 
+  // ── Driver computed ──────────────────────────────────────────────
+  activeTrip = computed<FreightOrder | null>(() => {
+    if (!this.isDriver()) return null;
+    return this.recentOrders().find(o => this.allActiveStatuses.includes(o.status)) ?? null;
+  });
+
+  availableLoads = computed(() =>
+    this.recentOrders().filter(o => o.status === 'POSTED').length
+  );
+
+  driverAvailable = computed(() =>
+    (this.auth.user() as any)?.driver_profile?.is_available ?? false
+  );
+
+  driverRating = computed(() => {
+    const r = (this.auth.user() as any)?.rating_avg;
+    return r ? Number(r).toFixed(1) + ' ⭐' : '— ⭐';
+  });
+
+  todayTrips = computed(() => {
+    const today = new Date().toDateString();
+    return this.recentOrders().filter(o =>
+      ['COMPLETED', 'DELIVERED'].includes(o.status) &&
+      new Date(o.pickup_scheduled_at).toDateString() === today
+    ).length;
+  });
+
+  todayEarnings = computed(() =>
+    this.recentOrders()
+      .filter(o => o.status === 'COMPLETED')
+      .reduce((sum, o) => sum + (o.final_price || o.proposed_price || 0), 0)
+  );
+
+  todayDistance = computed(() => {
+    const dist = this.recentOrders()
+      .filter(o => ['COMPLETED', 'DELIVERED'].includes(o.status))
+      .reduce((sum, o) => sum + ((o as any).estimated_distance_km || 0), 0);
+    return Math.round(dist);
+  });
+
+  // ── Shipper computed ─────────────────────────────────────────────
+  activeShipments = computed(() =>
+    this.recentOrders().filter(o => this.allActiveStatuses.includes(o.status)).length
+  );
+
+  pendingAssignment = computed(() =>
+    this.recentOrders().filter(o => o.status === 'POSTED').length
+  );
+
+  delayedCount = computed(() => {
+    const now = new Date();
+    return this.recentOrders().filter(o =>
+      o.delivery_deadline &&
+      new Date(o.delivery_deadline) < now &&
+      !['DELIVERED', 'COMPLETED', 'CANCELLED'].includes(o.status)
+    ).length;
+  });
+
+  todaySpend = computed(() =>
+    this.recentOrders()
+      .filter(o => !['DRAFT', 'CANCELLED'].includes(o.status))
+      .reduce((sum, o) => sum + (o.final_price || o.proposed_price || 0), 0)
+  );
+
+  isDelayed(o: FreightOrder): boolean {
+    return !!(o.delivery_deadline &&
+      new Date(o.delivery_deadline) < new Date() &&
+      !['DELIVERED', 'COMPLETED', 'CANCELLED'].includes(o.status));
+  }
+
+  // ── Stats ─────────────────────────────────────────────────────────
   stats = computed<StatCard[]>(() => {
     const orders = this.recentOrders();
     if (this.isDriver()) {
       return [
-        { label: 'DASHBOARD.STATS.AVAILABLE',  value: orders.filter(o => o.status === 'POSTED').length,                         icon: '📋', color: '#C9A227', filter: 'available' },
-        { label: 'DASHBOARD.STATS.IN_TRANSIT', value: orders.filter(o => this.inTransitStatuses.includes(o.status)).length,     icon: '🚛', color: '#66BB6A', filter: 'in_transit' },
-        { label: 'DASHBOARD.STATS.DELIVERED',  value: orders.filter(o => o.status === 'DELIVERED').length,                      icon: '📬', color: '#42A5F5', filter: 'delivered' },
-        { label: 'DASHBOARD.STATS.COMPLETED',  value: orders.filter(o => o.status === 'COMPLETED').length,                      icon: '✅', color: '#A8861F', filter: 'completed' },
+        { label: 'DASHBOARD.STATS.DRIVER_AVAILABLE', value: orders.filter(o => o.status === 'POSTED').length,                      icon: '🔍', color: '#C9A227', filter: 'open' },
+        { label: 'DASHBOARD.STATS.DRIVER_ACTIVE',    value: orders.filter(o => this.allActiveStatuses.includes(o.status)).length,  icon: '🚛', color: '#66BB6A', filter: 'in_transit' },
+        { label: 'DASHBOARD.STATS.DRIVER_PENDING',   value: orders.filter(o => o.status === 'DELIVERED').length,                   icon: '📬', color: '#42A5F5', filter: 'delivered' },
+        { label: 'DASHBOARD.STATS.COMPLETED',        value: orders.filter(o => o.status === 'COMPLETED').length,                   icon: '✅', color: '#A8861F', filter: 'completed' },
       ];
     }
+    // Shipper — Option B: Ouvert | Attribué | En transit | Fermé
     return [
-      { label: 'DASHBOARD.STATS.AVAILABLE',  value: orders.filter(o => o.status === 'POSTED').length,                           icon: '📦', color: '#C9A227', filter: 'available' },
-      { label: 'DASHBOARD.STATS.IN_TRANSIT', value: orders.filter(o => this.inTransitStatuses.includes(o.status)).length,       icon: '🚚', color: '#42A5F5', filter: 'in_transit' },
-      { label: 'DASHBOARD.STATS.DELIVERED',  value: orders.filter(o => o.status === 'DELIVERED').length,                        icon: '📬', color: '#66BB6A', filter: 'delivered' },
-      { label: 'DASHBOARD.STATS.COMPLETED',  value: orders.filter(o => o.status === 'COMPLETED').length,                        icon: '🏆', color: '#A8861F', filter: 'completed' },
+      { label: 'DASHBOARD.STATS.SHIPPER_OPEN',     value: orders.filter(o => o.status === 'POSTED').length,                         icon: '📤', color: '#C9A227', filter: 'open' },
+      { label: 'DASHBOARD.STATS.SHIPPER_ASSIGNED', value: orders.filter(o => o.status === 'ASSIGNED').length,                       icon: '🤝', color: '#42A5F5', filter: 'assigned' },
+      { label: 'DASHBOARD.STATS.SHIPPER_TRANSIT',  value: orders.filter(o => this.transitStatuses.includes(o.status)).length,       icon: '🚚', color: '#66BB6A', filter: 'in_transit' },
+      { label: 'DASHBOARD.STATS.SHIPPER_CLOSED',   value: orders.filter(o => ['DELIVERED', 'COMPLETED'].includes(o.status)).length, icon: '🏁', color: '#A8861F', filter: 'completed' },
     ];
   });
 
@@ -279,11 +551,12 @@ export class DashboardComponent implements OnInit {
     const filter = this.activeFilter();
     if (!filter) return orders;
     switch (filter) {
-      case 'available':   return orders.filter(o => o.status === 'POSTED');
-      case 'in_transit':  return orders.filter(o => this.inTransitStatuses.includes(o.status));
-      case 'delivered':   return orders.filter(o => o.status === 'DELIVERED');
-      case 'completed':   return orders.filter(o => o.status === 'COMPLETED');
-      default:            return orders;
+      case 'open':       return orders.filter(o => o.status === 'POSTED');
+      case 'assigned':   return orders.filter(o => o.status === 'ASSIGNED');
+      case 'in_transit': return orders.filter(o => [...this.allActiveStatuses, ...this.transitStatuses].includes(o.status));
+      case 'delivered':  return orders.filter(o => o.status === 'DELIVERED');
+      case 'completed':  return orders.filter(o => ['DELIVERED', 'COMPLETED'].includes(o.status));
+      default:           return orders;
     }
   });
 
