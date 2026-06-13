@@ -4,7 +4,6 @@
     "EN": "English",
     "WO": "Wolof"
   },
-
   "COMMON": {
     "LOADING": "Chargement...",
     "SAVE": "Enregistrer",
@@ -31,7 +30,6 @@
     "ALL": "Tous",
     "NONE": "Aucun"
   },
-
   "AUTH": {
     "BRAND_SUB": "Freight Platform",
     "LOGIN": {
@@ -98,7 +96,6 @@
       "BACK": "← Retour à la connexion"
     }
   },
-
   "NAV": {
     "DASHBOARD": "Tableau de bord",
     "MY_DASHBOARD": "Tableau de bord",
@@ -111,28 +108,25 @@
     "PROFILE": "Profil",
     "ADMIN": "Admin",
     "LOGOUT": "Déconnexion",
-    "DASHBOARD_DRIVER": "Mise à jour",
-    "LOAD_BOARD_DRIVER": "Trouver des charges",
+    "DASHBOARD_DRIVER": "Tableau de bord",
+    "LOAD_BOARD_DRIVER": "Trouver des chargements",
     "MY_TRIPS": "Mes voyages",
     "TRACKING_DRIVER": "Navigation",
-    "SHIPPER_LOADS": "Mes expéditions",
+    "SHIPPER_LOADS": "Mes chargements",
     "SHIPPER_TRACKING": "Suivi",
     "SHIPPER_ACCOUNT": "Compte"
   },
-
   "LOAD_BOARD": {
-    "SUBTITLE": "Emplois disponibles que vous pouvez accepter",
-    "EMPTY_TITLE": "Aucun emploi disponible",
-    "EMPTY_SUBTITLE": "Revenez bientôt pour de nouvelles charges."
+    "SUBTITLE": "Chargements disponibles que vous pouvez accepter",
+    "EMPTY_TITLE": "Aucun chargement disponible",
+    "EMPTY_SUBTITLE": "Revenez bientôt pour de nouveaux chargements."
   },
-
   "TOPBAR": {
     "AVAILABLE": "Disponible",
-    "UNAVAILABLE": "Indisponible",
+    "UNAVAILABLE": "Hors ligne",
     "REALTIME": "Connecté (temps réel)",
     "DISCONNECTED": "Non connecté"
   },
-
   "DASHBOARD": {
     "GREETING": "Bonjour 👋",
     "NEW_ORDER": "+ Nouvelle commande",
@@ -141,7 +135,7 @@
     "MY_DELIVERIES": "Mes livraisons",
     "QUICK_ACTIONS": "Actions rapides",
     "DRIVER": {
-      "LOAD_BOARD": "Trouver des charges",
+      "LOAD_BOARD": "Trouver des chargements",
       "TRACKING": "Navigation",
       "MESSAGING": "Messagerie",
       "PROFILE": "Mon profil",
@@ -152,29 +146,29 @@
       "DISTANCE": "Distance",
       "RATING": "Note",
       "CONTINUE_DELIVERY": "Poursuivre la livraison",
-      "FIND_LOADS_TITLE": "Trouver des charges",
-      "LOADS_AVAILABLE": "charges disponibles",
-      "FIND_LOADS_BTN": "Voir les charges",
-      "QA_LOADS": "Charges à proximité",
+      "FIND_LOADS_TITLE": "Trouver des chargements",
+      "LOADS_AVAILABLE": "chargements disponibles",
+      "FIND_LOADS_BTN": "Voir les chargements",
+      "QA_LOADS": "Chargements à proximité",
       "QA_TRIPS": "Mes voyages",
       "QA_DISPATCHER": "Contacter répartiteur",
       "QA_REPORT": "Signaler un problème"
     },
     "SHIPPER": {
-      "NEW_ORDER": "Créer une charge",
-      "MY_ORDERS": "Mes expéditions",
+      "NEW_ORDER": "Créer un chargement",
+      "MY_ORDERS": "Mes chargements",
       "TRACKING": "Suivi des chargements",
       "MESSAGING": "Messages transporteurs",
-      "CREATE_LOAD": "Créer une charge",
+      "CREATE_LOAD": "Créer un chargement",
       "ACTIVE_LOADS": "actives",
       "DELAYED": "retardées",
       "PENDING_ASSIGN": "en attente",
       "TODAY_SPEND": "dépenses totales",
       "LATE": "Retard",
       "NO_DRIVER": "Chauffeur non assigné",
-      "QA_CREATE": "Créer une charge",
-      "QA_TRACK": "Suivre l'expédition",
-      "QA_LOADS": "Mes expéditions",
+      "QA_CREATE": "Créer un chargement",
+      "QA_TRACK": "Suivre le chargement",
+      "QA_LOADS": "Mes chargements",
       "QA_MESSAGES": "Messages"
     },
     "STATS": {
@@ -182,7 +176,7 @@
       "IN_TRANSIT": "En transit",
       "DELIVERED": "Livrées",
       "COMPLETED": "Terminées",
-      "DRIVER_AVAILABLE": "Charges disponibles",
+      "DRIVER_AVAILABLE": "Chargements disponibles",
       "DRIVER_ACTIVE": "Actif",
       "DRIVER_PENDING": "En attente",
       "SHIPPER_OPEN": "Ouvert",
@@ -192,15 +186,14 @@
     },
     "RECENT_ORDERS": "Commandes récentes",
     "RECENT_DRIVER": "🚛 Mes voyages récents",
-    "RECENT_SHIPPER": "📦 Mes expéditions",
-    "EMPTY_TITLE": "Aucune expédition",
-    "EMPTY_SUBTITLE": "Vos expéditions apparaîtront ici.",
+    "RECENT_SHIPPER": "📦 Mes chargements",
+    "EMPTY_TITLE": "Aucun chargement",
+    "EMPTY_SUBTITLE": "Vos chargements apparaîtront ici.",
     "EMPTY_DRIVER_TITLE": "Aucun voyage trouvé",
-    "EMPTY_DRIVER_SUBTITLE": "Consultez les charges disponibles pour de nouvelles opportunités.",
-    "EMPTY_DRIVER_CTA": "Trouver des charges",
-    "EMPTY_SHIPPER_CTA": "Créer une charge"
+    "EMPTY_DRIVER_SUBTITLE": "Consultez les chargements disponibles pour de nouvelles opportunités.",
+    "EMPTY_DRIVER_CTA": "Trouver des chargements",
+    "EMPTY_SHIPPER_CTA": "Créer un chargement"
   },
-
   "ORDERS": {
     "TITLE": "Commandes",
     "NEW": "+ Nouvelle commande",
@@ -322,7 +315,6 @@
       }
     }
   },
-
   "TRACKING": {
     "TITLE": "Suivi GPS",
     "REFRESH": "🔄 Actualiser",
@@ -330,7 +322,6 @@
     "SPEED": "{{speed}} km/h",
     "EMPTY_TITLE": "Aucun chauffeur disponible"
   },
-
   "FLEET": {
     "TITLE": "Gestion de flotte",
     "ADD_BTN": "+ Ajouter un véhicule",
@@ -354,7 +345,6 @@
     "EMPTY_TITLE": "Aucun véhicule",
     "EMPTY_SUBTITLE": "Ajoutez votre premier véhicule."
   },
-
   "MESSAGING": {
     "TITLE": "Messages",
     "ORDER": "Commande",
@@ -365,13 +355,11 @@
     "EMPTY_TITLE": "Aucune conversation",
     "SELECT_PROMPT": "Sélectionnez une conversation"
   },
-
   "NOTIFICATIONS": {
     "TITLE": "Notifications",
     "MARK_ALL_READ": "✓ Tout marquer comme lu",
     "EMPTY_TITLE": "Aucune notification"
   },
-
   "PROFILE": {
     "TITLE": "Mon profil",
     "EDIT_TITLE": "Modifier mes informations",
@@ -395,7 +383,7 @@
     "REVIEWS": "Avis",
     "SELECT": "-- Sélectionner --",
     "AVAILABLE": "🟢 Disponible",
-    "UNAVAILABLE": "🔴 Indisponible",
+    "UNAVAILABLE": "🔴 Hors ligne",
     "ROLES": {
       "SHIPPER": "Expéditeur",
       "DRIVER": "Chauffeur",
@@ -473,7 +461,10 @@
       "REG_EXPIRY": "Expiration immatriculation",
       "EMPTY": "Aucun véhicule enregistré.",
       "ADD": "Ajouter le véhicule",
-      "ADDING": "Enregistrement..."
+      "ADDING": "Enregistrement...",
+      "INSURER": "Assureur",
+      "INS_START": "Date début assurance",
+      "INS_EXPIRY": "Date expiration assurance"
     },
     "CARRIER": {
       "COMPANY": "Raison sociale *",
@@ -518,5 +509,23 @@
       "PASSWORD_PH": "Min. 6 caractères",
       "LICENSE": "Permis :"
     }
+  },
+  "CONTACT": {
+    "TITLE": "Contactez-nous",
+    "SUBTITLE": "Envoyez-nous un message, nous répondrons rapidement.",
+    "FIRST_NAME": "Prénom",
+    "FIRST_NAME_PH": "Amadou",
+    "LAST_NAME": "Nom",
+    "LAST_NAME_PH": "Diallo",
+    "ADDRESS": "Adresse",
+    "ADDRESS_PH": "Dakar, Sénégal",
+    "SUBJECT": "Sujet",
+    "SUBJECT_PH": "Votre sujet...",
+    "MESSAGE": "Message",
+    "MESSAGE_PH": "Décrivez votre demande...",
+    "SUBMIT": "Envoyer le message",
+    "SUBMITTING": "Envoi en cours...",
+    "SUCCESS": "✓ Message envoyé ! Nous vous répondrons bientôt.",
+    "ERROR": "Erreur lors de l'envoi. Veuillez réessayer."
   }
 }

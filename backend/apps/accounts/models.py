@@ -274,3 +274,22 @@ class CarrierProfile(BaseModel):
         self.save(update_fields=["rating", "total_ratings"])
 
 
+
+
+class ContactMessage(BaseModel):
+    """Message sent via the contact form."""
+    first_name = models.CharField(max_length=100)
+    last_name  = models.CharField(max_length=100, blank=True)
+    address    = models.CharField(max_length=255, blank=True)
+    subject    = models.CharField(max_length=255)
+    message    = models.TextField()
+    user       = models.ForeignKey(
+        "accounts.User", null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="contact_messages"
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.first_name} — {self.subject}"
