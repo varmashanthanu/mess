@@ -26,13 +26,13 @@ interface NavItem {
         <div class="brand-mark" *ngIf="!collapsed()">
           <img src="yoolo-logo.png" class="brand-logo" alt="Yoolo" />
           <button class="contact-inline-btn" (click)="showContact.set(true)" [title]="'CONTACT.TITLE' | translate">
-            ✉️ {{ 'CONTACT.TITLE' | translate }}
+            {{ 'CONTACT.TITLE' | translate }}
           </button>
         </div>
         <div class="brand-icon" *ngIf="collapsed()">
           <img src="yoolo-logo.png" class="brand-logo-mini" alt="Yoolo" />
         </div>
-        <button class="contact-btn-icon" *ngIf="collapsed()" (click)="showContact.set(true)" [title]="'CONTACT.TITLE' | translate">✉️</button>
+        <button class="contact-btn-icon" *ngIf="collapsed()" (click)="showContact.set(true)" [title]="'CONTACT.TITLE' | translate">☎</button>
         <button class="sidebar-close" *ngIf="!collapsed()" (click)="onClose()" aria-label="Close sidebar">✕</button>
       </div>
 
