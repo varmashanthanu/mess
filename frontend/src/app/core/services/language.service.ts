@@ -10,7 +10,7 @@ export interface Language {
 
 export const SUPPORTED_LANGUAGES: Language[] = [
   { code: 'fr', label: 'Français', flag: '🇫🇷' },
-  { code: 'en', label: 'English',  flag: '🇬🇧' },
+  { code: 'en', label: 'English',  flag: '🇺🇸' },
 ];
 
 const STORAGE_KEY = 'mess_lang';

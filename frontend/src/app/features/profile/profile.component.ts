@@ -35,6 +35,9 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
         <button class="tab" [class.active]="tab() === 'info'" (click)="tab.set('info')">
           {{ 'PROFILE.TABS.INFO' | translate }}
         </button>
+        <button class="tab" [class.active]="tab() === 'role'" (click)="tab.set('role')" *ngIf="auth.role() === 'SHIPPER'">
+          {{ 'PROFILE.TABS.COMPANY_SHIPPER' | translate }}
+        </button>
         <button class="tab" [class.active]="tab() === 'role'" (click)="tab.set('role')" *ngIf="auth.role() === 'DRIVER'">
           {{ 'PROFILE.TABS.LICENSE' | translate }}
         </button>
@@ -76,6 +79,96 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
             <label>{{ 'PROFILE.CITY' | translate }}</label>
             <input type="text" formControlName="city" [placeholder]="'PROFILE.CITY_PH' | translate" />
           </div>
+          <button type="submit" class="btn-primary" [disabled]="saving()">
+            {{ (saving() ? 'PROFILE.SAVING' : 'PROFILE.SAVE') | translate }}
+          </button>
+        </form>
+      </div>
+
+      <!-- ── TAB: Shipper – Company info ── -->
+      <div class="card" *ngIf="tab() === 'role' && auth.role() === 'SHIPPER'">
+        <h3>{{ 'PROFILE.TABS.COMPANY_SHIPPER' | translate }}</h3>
+        <div class="alert-success" *ngIf="saved()">{{ 'PROFILE.SAVED' | translate }}</div>
+        <div class="alert-error" *ngIf="error()">{{ error() }}</div>
+        <form [formGroup]="shipperForm" (ngSubmit)="saveShipper()">
+
+          <div class="section-title">{{ 'PROFILE.SECTION.LEGAL_ID' | translate }}</div>
+          <div class="form-group">
+            <label>{{ 'PROFILE.SHIPPER.COMPANY' | translate }}</label>
+            <input type="text" formControlName="company_name" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'PROFILE.SHIPPER.NINEA' | translate }}</label>
+              <input type="text" formControlName="ninea" [placeholder]="'PROFILE.SHIPPER.NINEA_PH' | translate" />
+            </div>
+            <div class="form-group">
+              <label>{{ 'PROFILE.SHIPPER.RCCM' | translate }}</label>
+              <input type="text" formControlName="rccm" [placeholder]="'PROFILE.SHIPPER.RCCM_PH' | translate" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'PROFILE.SHIPPER.LEGAL_FORM' | translate }}</label>
+              <select formControlName="legal_form">
+                <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
+                <option value="SA">{{ 'PROFILE.SHIPPER.LEGAL_FORM_SA' | translate }}</option>
+                <option value="SARL">{{ 'PROFILE.SHIPPER.LEGAL_FORM_SARL' | translate }}</option>
+                <option value="GIE">{{ 'PROFILE.SHIPPER.LEGAL_FORM_GIE' | translate }}</option>
+                <option value="SNC">{{ 'PROFILE.SHIPPER.LEGAL_FORM_SNC' | translate }}</option>
+                <option value="INDIVIDUELLE">{{ 'PROFILE.SHIPPER.LEGAL_FORM_IND' | translate }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>{{ 'PROFILE.SHIPPER.COMPANY_REG' | translate }}</label>
+              <input type="text" formControlName="company_registration" />
+            </div>
+          </div>
+
+          <div class="section-title">{{ 'PROFILE.SECTION.ADDRESS' | translate }}</div>
+          <div class="form-group">
+            <label>{{ 'PROFILE.SHIPPER.ADDRESS' | translate }}</label>
+            <input type="text" formControlName="address" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'PROFILE.SHIPPER.CITY' | translate }}</label>
+              <input type="text" formControlName="city" [placeholder]="'PROFILE.CITY_PH' | translate" />
+            </div>
+            <div class="form-group">
+              <label>{{ 'PROFILE.SHIPPER.REGION' | translate }}</label>
+              <select formControlName="region">
+                <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
+                <option value="Dakar">Dakar</option>
+                <option value="Thiès">Thiès</option>
+                <option value="Diourbel">Diourbel</option>
+                <option value="Fatick">Fatick</option>
+                <option value="Kaolack">Kaolack</option>
+                <option value="Kaffrine">Kaffrine</option>
+                <option value="Louga">Louga</option>
+                <option value="Saint-Louis">Saint-Louis</option>
+                <option value="Matam">Matam</option>
+                <option value="Tambacounda">Tambacounda</option>
+                <option value="Kédougou">Kédougou</option>
+                <option value="Kolda">Kolda</option>
+                <option value="Sédhiou">Sédhiou</option>
+                <option value="Ziguinchor">Ziguinchor</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="section-title">{{ 'PROFILE.SECTION.CONTACT_PRO' | translate }}</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'PROFILE.SHIPPER.PRO_PHONE' | translate }}</label>
+              <input type="tel" formControlName="professional_phone" [placeholder]="'+221 33 XXX XX XX'" />
+            </div>
+            <div class="form-group">
+              <label>{{ 'PROFILE.SHIPPER.PRO_EMAIL' | translate }}</label>
+              <input type="email" formControlName="professional_email" />
+            </div>
+          </div>
+
           <button type="submit" class="btn-primary" [disabled]="saving()">
             {{ (saving() ? 'PROFILE.SAVING' : 'PROFILE.SAVE') | translate }}
           </button>
@@ -161,6 +254,28 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
             <div class="form-group">
               <label>{{ 'PROFILE.DRIVER.BANK_NUMBER' | translate }}</label>
               <input type="text" formControlName="bank_account_number" />
+            </div>
+          </div>
+
+          <div class="section-title">{{ 'PROFILE.SECTION.DRIVER_INSURANCE' | translate }}</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'PROFILE.DRIVER.INS_PROVIDER' | translate }}</label>
+              <input type="text" formControlName="insurance_provider" />
+            </div>
+            <div class="form-group">
+              <label>{{ 'PROFILE.DRIVER.INS_POLICY' | translate }}</label>
+              <input type="text" formControlName="insurance_policy_number" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'PROFILE.DRIVER.INS_START' | translate }}</label>
+              <input type="date" formControlName="insurance_start_date" />
+            </div>
+            <div class="form-group">
+              <label>{{ 'PROFILE.DRIVER.INS_EXPIRY' | translate }}</label>
+              <input type="date" formControlName="insurance_expiry" />
             </div>
           </div>
 
@@ -720,6 +835,23 @@ export class ProfileComponent implements OnInit {
     payment_method:           [''],
     bank_account_name:        [''],
     bank_account_number:      [''],
+    insurance_provider:       [''],
+    insurance_policy_number:  [''],
+    insurance_start_date:     [''],
+    insurance_expiry:         [''],
+  });
+
+  shipperForm = this.fb.group({
+    company_name:         [''],
+    company_registration: [''],
+    address:              [''],
+    city:                 [''],
+    region:               [''],
+    ninea:                [''],
+    rccm:                 [''],
+    legal_form:           [''],
+    professional_phone:   [''],
+    professional_email:   [''],
   });
 
   vehicleForm = this.fb.group({
@@ -779,6 +911,9 @@ export class ProfileComponent implements OnInit {
 
     const [first, ...rest] = (u.full_name ?? '').split(' ');
     this.infoForm.patchValue({ first_name: first ?? '', last_name: rest.join(' '), email: (u as any).email ?? '', city: (u as any).city ?? '' });
+
+    const sp = (u as any).shipper_profile;
+    if (sp) this.shipperForm.patchValue({ ...sp });
 
     const dp = (u as any).driver_profile;
     if (dp) this.driverForm.patchValue({ ...dp });
@@ -851,10 +986,18 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  saveShipper(): void {
+    this.saving.set(true); this.resetFeedback();
+    this.api.updateShipperProfile(this.shipperForm.value as any).subscribe({
+      next: () => { this.saved.set(true); this.saving.set(false); },
+      error: (err) => { this.error.set(err?.error?.error?.message || 'Erreur de mise à jour.'); this.saving.set(false); },
+    });
+  }
+
   saveDriver(): void {
     this.saving.set(true); this.resetFeedback();
-    this.api.updateMe({ driver_profile: this.driverForm.value } as any).subscribe({
-      next: (u) => { this.auth.updateProfile(u); this.saved.set(true); this.saving.set(false); },
+    this.api.updateDriverProfile(this.driverForm.value as any).subscribe({
+      next: () => { this.saved.set(true); this.saving.set(false); },
       error: (err) => { this.error.set(err?.error?.error?.message || 'Erreur de mise à jour.'); this.saving.set(false); },
     });
   }

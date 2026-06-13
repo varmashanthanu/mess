@@ -416,6 +416,7 @@
       "LICENSE": "🪪 Permis & Conformité",
       "VEHICLE": "🚛 Mon Véhicule",
       "COMPANY": "🏢 Ma Société",
+      "COMPANY_SHIPPER": "🏢 Ma Société",
       "FLEET": "🚛 Ma Flotte",
       "DRIVERS": "👷 Mes Chauffeurs"
     },
@@ -426,8 +427,11 @@
       "EXPERIENCE": "Expérience & Opérationnel",
       "PAYMENT": "Paiement",
       "LEGAL": "Identité juridique",
+      "LEGAL_ID": "Identification légale",
       "ADDRESS": "Adresse & Contacts",
+      "CONTACT_PRO": "Contact professionnel",
       "INSURANCE": "Assurance",
+      "DRIVER_INSURANCE": "Assurance personnelle",
       "ZONES": "Zones & Paiement"
     },
     "DRUG": {
@@ -458,7 +462,30 @@
       "LANES_PH": "Ex: Dakar – Thiès – Mbour",
       "PAYMENT_METHOD": "Mode de paiement",
       "BANK_NAME": "Nom du titulaire",
-      "BANK_NUMBER": "Numéro de compte"
+      "BANK_NUMBER": "Numéro de compte",
+      "INS_PROVIDER": "Assureur",
+      "INS_POLICY": "N° Police d'assurance",
+      "INS_START": "Date d'effet",
+      "INS_EXPIRY": "Date d'expiration assurance"
+    },
+    "SHIPPER": {
+      "COMPANY": "Raison sociale",
+      "NINEA": "NINEA",
+      "NINEA_PH": "7 chiffres + 1 lettre",
+      "RCCM": "RCCM",
+      "RCCM_PH": "SN-DKR-XXXX-XXXX",
+      "LEGAL_FORM": "Forme juridique",
+      "LEGAL_FORM_SA": "Société Anonyme (SA)",
+      "LEGAL_FORM_SARL": "SARL",
+      "LEGAL_FORM_GIE": "GIE",
+      "LEGAL_FORM_SNC": "SNC",
+      "LEGAL_FORM_IND": "Entreprise individuelle",
+      "ADDRESS": "Adresse du siège social",
+      "CITY": "Ville",
+      "REGION": "Région",
+      "PRO_PHONE": "Téléphone professionnel",
+      "PRO_EMAIL": "Email professionnel",
+      "COMPANY_REG": "N° d'enregistrement société"
     },
     "VEHICLE": {
       "PLATE": "Immatriculation *",
