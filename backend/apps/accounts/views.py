@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from core.permissions import IsAdmin, IsOwnerOrAdmin
-from .models import PhoneVerification
+from .models import PhoneVerification, ContactMessage
 from .serializers import (
     CarrierProfileSerializer,
     CustomTokenObtainPairSerializer,
@@ -355,3 +355,22 @@ def _send_otp(user):
         message=f"Your MESS verification code is: {otp}. Valid for {OTP_EXPIRY_MINUTES} minutes.",
     )
     logger.info(f"OTP sent to {user.phone_number}")
+
+
+class ContactMessageView(APIView):
+    """POST /api/v1/contact/ — save a contact form submission."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        if not data.get("first_name") or not data.get("subject") or not data.get("message"):
+            return Response({"error": "first_name, subject and message are required."}, status=status.HTTP_400_BAD_REQUEST)
+        ContactMessage.objects.create(
+            first_name=data.get("first_name", ""),
+            last_name=data.get("last_name", ""),
+            address=data.get("address", ""),
+            subject=data.get("subject", ""),
+            message=data.get("message", ""),
+            user=request.user,
+        )
+        return Response({"detail": "Message sent."}, status=status.HTTP_201_CREATED)

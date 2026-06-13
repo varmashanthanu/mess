@@ -229,6 +229,24 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
               <input type="date" formControlName="registration_expiry" />
             </div>
           </div>
+          <div class="section-title">{{ 'PROFILE.SECTION.INSURANCE' | translate }}</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'PROFILE.VEHICLE.INSURER' | translate }}</label>
+              <input type="text" formControlName="insurance_provider" />
+            </div>
+            <div class="form-group">
+              <label>{{ 'PROFILE.VEHICLE.INS_START' | translate }}</label>
+              <input type="date" formControlName="insurance_start_date" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'PROFILE.VEHICLE.INS_EXPIRY' | translate }}</label>
+              <input type="date" formControlName="insurance_expiry" />
+            </div>
+            <div class="form-group"></div>
+          </div>
           <button type="submit" class="btn-primary" [disabled]="saving()">
             {{ (saving() ? 'PROFILE.SAVING' : 'PROFILE.SAVE') | translate }}
           </button>
@@ -715,6 +733,9 @@ export class ProfileComponent implements OnInit {
     payload_kg:          [null as number | null],
     gross_weight_kg:     [null as number | null],
     registration_expiry: [''],
+    insurance_provider:  [''],
+    insurance_start_date:[''],
+    insurance_expiry:    [''],
   });
 
   createDriverForm = this.fb.group({

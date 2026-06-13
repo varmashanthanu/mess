@@ -1,8 +1,10 @@
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
+import { ApiService } from '../../../core/services/api.service';
 
 interface NavItem {
   labelKey: string;
@@ -15,7 +17,7 @@ interface NavItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, TranslateModule],
+  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive, TranslateModule],
   template: `
     <aside class="sidebar" [class.collapsed]="collapsed()" [class.mobile-open]="mobileOpen()">
 
@@ -28,6 +30,16 @@ interface NavItem {
           <img src="yoolo-logo.png" class="brand-logo-mini" alt="Yoolo" />
         </div>
         <button class="sidebar-close" (click)="onClose()" aria-label="Close sidebar">✕</button>
+      </div>
+
+      <!-- Contact us button -->
+      <div class="contact-row" *ngIf="!collapsed()">
+        <button class="contact-btn" (click)="showContact.set(true)">
+          ✉️ {{ 'CONTACT.TITLE' | translate }}
+        </button>
+      </div>
+      <div class="contact-row contact-row--collapsed" *ngIf="collapsed()">
+        <button class="contact-btn-icon" (click)="showContact.set(true)" [title]="'CONTACT.TITLE' | translate">✉️</button>
       </div>
 
       <!-- Role badge -->
@@ -70,6 +82,48 @@ interface NavItem {
         </button>
       </div>
     </aside>
+
+    <!-- Contact modal -->
+    <div class="modal-overlay" *ngIf="showContact()" (click)="showContact.set(false)">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>{{ 'CONTACT.TITLE' | translate }}</h2>
+          <button class="modal-close" (click)="showContact.set(false)">✕</button>
+        </div>
+        <p class="modal-subtitle">{{ 'CONTACT.SUBTITLE' | translate }}</p>
+
+        <div class="modal-success" *ngIf="contactSuccess()">{{ 'CONTACT.SUCCESS' | translate }}</div>
+        <div class="modal-error" *ngIf="contactError()">{{ 'CONTACT.ERROR' | translate }}</div>
+
+        <form *ngIf="!contactSuccess()" (ngSubmit)="submitContact()" #contactForm="ngForm">
+          <div class="modal-row">
+            <div class="modal-group">
+              <label>{{ 'CONTACT.FIRST_NAME' | translate }}</label>
+              <input type="text" [(ngModel)]="contact.first_name" name="first_name" required [placeholder]="'CONTACT.FIRST_NAME_PH' | translate" />
+            </div>
+            <div class="modal-group">
+              <label>{{ 'CONTACT.LAST_NAME' | translate }}</label>
+              <input type="text" [(ngModel)]="contact.last_name" name="last_name" [placeholder]="'CONTACT.LAST_NAME_PH' | translate" />
+            </div>
+          </div>
+          <div class="modal-group">
+            <label>{{ 'CONTACT.ADDRESS' | translate }}</label>
+            <input type="text" [(ngModel)]="contact.address" name="address" [placeholder]="'CONTACT.ADDRESS_PH' | translate" />
+          </div>
+          <div class="modal-group">
+            <label>{{ 'CONTACT.SUBJECT' | translate }}</label>
+            <input type="text" [(ngModel)]="contact.subject" name="subject" required [placeholder]="'CONTACT.SUBJECT_PH' | translate" />
+          </div>
+          <div class="modal-group">
+            <label>{{ 'CONTACT.MESSAGE' | translate }}</label>
+            <textarea rows="4" [(ngModel)]="contact.message" name="message" required [placeholder]="'CONTACT.MESSAGE_PH' | translate"></textarea>
+          </div>
+          <button type="submit" class="modal-submit" [disabled]="contactSubmitting() || !contactForm.valid">
+            {{ (contactSubmitting() ? 'CONTACT.SUBMITTING' : 'CONTACT.SUBMIT') | translate }}
+          </button>
+        </form>
+      </div>
+    </div>
   `,
   styles: [`
     .sidebar {
@@ -151,6 +205,59 @@ interface NavItem {
     .logout-btn:hover { background: rgba(229,57,53,0.12); color: #EF5350; }
 
     /* Mobile */
+    /* Contact button */
+    .contact-row { padding: 6px 10px 2px; }
+    .contact-btn {
+      width: 100%; padding: 8px 12px; background: rgba(201,162,39,0.12);
+      color: #E8C84A; border: 1px solid rgba(201,162,39,0.3); border-radius: 8px;
+      font-size: 12px; font-weight: 700; cursor: pointer; text-align: left;
+      transition: background .15s; white-space: nowrap; overflow: hidden;
+    }
+    .contact-btn:hover { background: rgba(201,162,39,0.22); }
+    .contact-row--collapsed { padding: 6px 10px 2px; display: flex; justify-content: center; }
+    .contact-btn-icon {
+      width: 40px; height: 40px; background: rgba(201,162,39,0.12);
+      color: #E8C84A; border: 1px solid rgba(201,162,39,0.3); border-radius: 8px;
+      font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    .contact-btn-icon:hover { background: rgba(201,162,39,0.22); }
+
+    /* Contact modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center; z-index: 500;
+    }
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 28px; width: 480px; max-width: calc(100vw - 32px); max-height: 90vh;
+      overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .modal-header h2 { font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0; }
+    .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-secondary); padding: 4px 8px; border-radius: 6px; }
+    .modal-close:hover { background: var(--surface-raised); }
+    .modal-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
+    .modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-group { margin-bottom: 14px; }
+    .modal-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; }
+    .modal-group input, .modal-group textarea {
+      width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 14px; background: var(--surface-raised); color: var(--text-primary);
+      font-family: inherit; outline: none; box-sizing: border-box;
+    }
+    .modal-group input:focus, .modal-group textarea:focus { border-color: #C9A227; }
+    .modal-group textarea { resize: vertical; }
+    .modal-submit {
+      width: 100%; padding: 12px; background: #C9A227; color: #111; border: none;
+      border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer;
+      margin-top: 4px; transition: background .15s;
+    }
+    .modal-submit:hover:not(:disabled) { background: #A8861F; }
+    .modal-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .modal-success { background: rgba(67,160,71,0.12); color: #81C784; border: 1px solid rgba(67,160,71,0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 13px; }
+    .modal-error { background: rgba(198,40,40,0.12); color: #EF9A9A; border: 1px solid rgba(244,67,54,0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 13px; }
+
     @media (max-width: 768px) {
       .sidebar { transform: translateX(-100%); width: 100% !important; z-index: 150; }
       .sidebar.mobile-open { transform: translateX(0); }
@@ -179,6 +286,15 @@ export class SidebarComponent {
   close = output<void>();
 
   auth = inject(AuthService);
+  private api = inject(ApiService);
+  private translate = inject(TranslateService);
+
+  // Contact form
+  showContact    = signal(false);
+  contactSubmitting = signal(false);
+  contactSuccess = signal(false);
+  contactError   = signal(false);
+  contact = { first_name: '', last_name: '', address: '', subject: '', message: '' };
 
   initials = computed(() => {
     const name = this.auth.user()?.full_name ?? '';
@@ -244,5 +360,21 @@ export class SidebarComponent {
 
   onClose(): void {
     this.close.emit();
+  }
+
+  submitContact(): void {
+    this.contactSubmitting.set(true);
+    this.contactError.set(false);
+    this.api.sendContactMessage(this.contact).subscribe({
+      next: () => {
+        this.contactSubmitting.set(false);
+        this.contactSuccess.set(true);
+        this.contact = { first_name: '', last_name: '', address: '', subject: '', message: '' };
+      },
+      error: () => {
+        this.contactSubmitting.set(false);
+        this.contactError.set(true);
+      },
+    });
   }
 }

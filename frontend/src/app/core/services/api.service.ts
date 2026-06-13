@@ -183,4 +183,8 @@ export class ApiService {
       is_available: available
     });
   }
+
+  sendContactMessage(data: { first_name: string; last_name: string; address: string; subject: string; message: string }): Observable<void> {
+    return this.http.post<void>(`${this.base}/accounts/contact/`, data);
+  }
 }
