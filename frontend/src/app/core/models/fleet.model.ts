@@ -1,10 +1,15 @@
 export interface VehicleType {
   id: string;
   name: string;
-  code: string;
+  name_fr?: string;
+  name_wo?: string;
+  code?: string;
   max_payload_kg: number;
-  max_volume_m3: number | null;
-  description: string;
+  volume_m3?: number | null;
+  max_volume_m3?: number | null;
+  icon?: string;
+  description?: string;
+  is_active?: boolean;
 }
 
 export interface Vehicle {

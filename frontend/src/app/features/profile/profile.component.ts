@@ -326,7 +326,7 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
               <label>{{ 'PROFILE.VEHICLE.TYPE' | translate }}</label>
               <select formControlName="vehicle_type">
                 <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
-                <option *ngFor="let vt of vehicleTypes()" [value]="vt.id">{{ vt.name }}</option>
+                <option *ngFor="let vt of vehicleTypes()" [value]="vt.id">{{ vt.icon ? vt.icon + ' ' : '' }}{{ vt.name }}</option>
               </select>
             </div>
             <div class="form-group">
@@ -534,7 +534,7 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
                 <label>{{ 'PROFILE.VEHICLE.TYPE' | translate }}</label>
                 <select formControlName="vehicle_type">
                   <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
-                  <option *ngFor="let vt of vehicleTypes()" [value]="vt.id">{{ vt.name }}</option>
+                  <option *ngFor="let vt of vehicleTypes()" [value]="vt.id">{{ vt.icon ? vt.icon + ' ' : '' }}{{ vt.name }}</option>
                 </select>
               </div>
               <div class="form-group">
