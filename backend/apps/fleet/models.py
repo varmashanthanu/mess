@@ -38,7 +38,8 @@ class Vehicle(BaseModel):
         "accounts.User", on_delete=models.PROTECT,
         related_name="vehicles", limit_choices_to={"role__in": ["DRIVER", "CARRIER"]}
     )
-    vehicle_type = models.ForeignKey(VehicleType, on_delete=models.PROTECT, related_name="vehicles")
+    vehicle_type = models.ForeignKey(VehicleType, null=True, blank=True, on_delete=models.PROTECT, related_name="vehicles")
+    custom_vehicle_type = models.CharField(max_length=255, blank=True, help_text="Type personnalisé quand 'Autre' est sélectionné")
 
     # Identity
     registration_number = models.CharField(max_length=50, unique=True, db_index=True)
@@ -76,11 +77,12 @@ class Vehicle(BaseModel):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.registration_number} — {self.vehicle_type.name}"
+        vt = self.vehicle_type.name if self.vehicle_type_id else self.custom_vehicle_type or "?"
+        return f"{self.registration_number} — {vt}"
 
     @property
     def effective_payload_kg(self):
-        return self.payload_kg or self.vehicle_type.max_payload_kg
+        return self.payload_kg or (self.vehicle_type.max_payload_kg if self.vehicle_type_id else None)
 
 
 class VehicleDocument(BaseModel):
