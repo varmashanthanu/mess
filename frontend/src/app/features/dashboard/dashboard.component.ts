@@ -570,7 +570,7 @@ interface StatCard { label: string; value: string | number; icon: string; color:
       background: var(--surface); border-radius: 14px; padding: 18px 20px;
       border: 1.5px solid rgba(255,179,0,0.25); margin-bottom: 16px; box-shadow: var(--shadow);
     }
-    .attention-title { font-size: 13px; font-weight: 700; color: #FFB300; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
+    .attention-title { font-size: 13px; font-weight: 700; color: #E53935; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
     .attention-empty { font-size: 13px; color: #66BB6A; }
     .attention-item {
       display: flex; align-items: center; gap: 10px; padding: 10px 14px;

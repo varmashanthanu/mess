@@ -114,7 +114,8 @@
     "TRACKING_DRIVER": "Navigation",
     "SHIPPER_LOADS": "Mes chargements",
     "SHIPPER_TRACKING": "Suivi",
-    "SHIPPER_ACCOUNT": "Compte"
+    "SHIPPER_ACCOUNT": "Compte",
+    "ACCOUNT": "Compte"
   },
   "LOAD_BOARD": {
     "SUBTITLE": "Chargements disponibles que vous pouvez accepter",
