@@ -40,7 +40,7 @@ class FreightOrderListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ["status", "cargo_type", "pickup_city", "delivery_city"]
     search_fields = ["reference", "cargo_description", "pickup_address", "delivery_address", "pickup_city", "delivery_city"]
-    ordering_fields = ["created_at", "pickup_scheduled_at", "proposed_price", "weight_kg"]
+    ordering_fields = ["created_at", "pickup_scheduled_at", "proposed_price", "weight_kg", "estimated_distance_km"]
 
     def filter_queryset(self, queryset):
         qs = super().filter_queryset(queryset)
