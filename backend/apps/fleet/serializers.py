@@ -26,6 +26,7 @@ class VehicleSerializer(serializers.ModelSerializer):
         model = Vehicle
         fields = [
             "id", "registration_number", "vin", "vehicle_type", "vehicle_type_detail",
+            "custom_vehicle_type",
             "make", "model", "year", "fuel_type", "color", "trailer_type",
             "payload_kg", "gross_weight_kg", "volume_m3", "effective_payload_kg",
             "registration_expiry",
@@ -45,7 +46,12 @@ class VehicleSerializer(serializers.ModelSerializer):
 
 class VehicleListSerializer(serializers.ModelSerializer):
     """Compact for lists."""
-    vehicle_type_name = serializers.CharField(source="vehicle_type.name", read_only=True)
+    vehicle_type_name = serializers.SerializerMethodField()
+
+    def get_vehicle_type_name(self, obj):
+        if obj.vehicle_type_id:
+            return obj.vehicle_type.name
+        return obj.custom_vehicle_type or "—"
 
     class Meta:
         model = Vehicle
