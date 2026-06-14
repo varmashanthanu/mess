@@ -2,7 +2,7 @@ import { Component, computed, inject, input, output, signal } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
 
@@ -63,13 +63,6 @@ interface NavItem {
       </nav>
 
       <div class="sidebar-footer">
-        <div class="user-info" *ngIf="!collapsed()">
-          <div class="user-avatar">{{ initials() }}</div>
-          <div class="user-details">
-            <div class="user-name">{{ auth.user()?.full_name }}</div>
-            <div class="user-role">{{ roleKey() | translate }}</div>
-          </div>
-        </div>
         <button class="logout-btn" (click)="auth.logout()" [title]="collapsed() ? ('NAV.LOGOUT' | translate) : ''">
           <span>🚪</span>
           <span *ngIf="!collapsed()">{{ 'NAV.LOGOUT' | translate }}</span>
@@ -98,6 +91,16 @@ interface NavItem {
             <div class="modal-group">
               <label>{{ 'CONTACT.LAST_NAME' | translate }}</label>
               <input type="text" [(ngModel)]="contact.last_name" name="last_name" [placeholder]="'CONTACT.LAST_NAME_PH' | translate" />
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="modal-group">
+              <label>{{ 'CONTACT.PHONE' | translate }}</label>
+              <input type="tel" [(ngModel)]="contact.phone" name="phone" [placeholder]="'CONTACT.PHONE_PH' | translate" />
+            </div>
+            <div class="modal-group">
+              <label>{{ 'CONTACT.EMAIL' | translate }}</label>
+              <input type="email" [(ngModel)]="contact.email" name="email" [placeholder]="'CONTACT.EMAIL_PH' | translate" />
             </div>
           </div>
           <div class="modal-group">
@@ -183,26 +186,36 @@ interface NavItem {
     .nav-icon { font-size: 18px; flex-shrink: 0; width: 20px; text-align: center; }
     .nav-label { flex: 1; white-space: normal; line-height: 1.25; word-break: break-word; }
 
-    /* Footer */
-    .sidebar-footer { padding: 10px 10px; border-top: 1px solid rgba(201,162,39,0.15); }
-    .user-info { display: flex; align-items: center; gap: 10px; padding: 8px 10px; margin-bottom: 4px; }
-    .user-avatar {
-      width: 38px; height: 38px; border-radius: 50%;
+    /* Profile card in nav */
+    .profile-nav-card {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 6px; padding: 12px 10px; margin-top: 8px;
+      border-radius: 12px; text-decoration: none; cursor: pointer;
+      border: 1.5px solid rgba(201,162,39,0.25);
+      background: rgba(201,162,39,0.07);
+      transition: background .15s, border-color .15s;
+    }
+    .profile-nav-card:hover, .profile-nav-card.active { background: rgba(201,162,39,0.14); border-color: rgba(201,162,39,0.5); }
+    .profile-nav-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
       background: linear-gradient(135deg, #C9A227, #A8861F);
       color: #111; display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 800; flex-shrink: 0;
-      border: 2px solid rgba(201,162,39,0.6);
+      font-size: 16px; font-weight: 800; flex-shrink: 0;
+      border: 2px solid rgba(201,162,39,0.7);
     }
-    .user-details { overflow: hidden; }
-    .user-name {
-      font-size: 14px; font-weight: 700; color: #FFFFFF;
+    .profile-nav-info { text-align: center; width: 100%; overflow: hidden; }
+    .profile-nav-name {
+      font-size: 13px; font-weight: 700; color: #FFFFFF;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .user-role { font-size: 11px; color: #C9A227; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px; }
+    .profile-nav-role { font-size: 10px; color: #C9A227; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px; }
+
+    /* Footer */
+    .sidebar-footer { padding: 6px 10px 10px; border-top: 1px solid rgba(201,162,39,0.15); }
     .logout-btn {
-      display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px;
+      display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 9px 14px;
       background: none; border: none; color: #9E9A93; cursor: pointer;
-      border-radius: 8px; font-size: 14px; font-weight: 500; transition: all .15s; white-space: nowrap;
+      border-radius: 8px; font-size: 13px; font-weight: 500; transition: all .15s; white-space: nowrap;
     }
     .logout-btn:hover { background: rgba(229,57,53,0.12); color: #EF5350; }
 
@@ -254,9 +267,11 @@ interface NavItem {
       .sidebar { transform: translateX(-100%); width: 100% !important; z-index: 150; }
       .sidebar.mobile-open { transform: translateX(0); }
       .sidebar-close { display: flex; }
-      .sidebar-brand { justify-content: center; position: relative; padding: 14px; }
-      .brand-mark { flex: unset; justify-content: center; }
-      .sidebar-close { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); }
+      .sidebar-brand { flex-direction: row; align-items: center; position: relative; padding: 10px 44px 10px 10px; gap: 8px; }
+      .brand-mark { flex: 1; min-width: 0; flex-direction: row; align-items: center; gap: 8px; }
+      .brand-logo { flex: 1; width: 0; height: 60px; object-fit: contain; object-position: center center; margin-left: 8px; }
+      .contact-inline-btn { flex: 1; min-width: 0; font-size: 11px; padding: 8px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+      .sidebar-close { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); }
       .sidebar-nav { display: flex; flex-direction: column; padding: 12px; gap: 10px; overflow: visible; }
       .nav-item { flex: 1; padding: 0 16px; margin-bottom: 0; font-size: 1.5rem; font-weight: 800; border-radius: 12px; box-shadow: 0 6px 0 color-mix(in srgb, var(--item-color) 60%, black); justify-content: flex-start; overflow: hidden; }
       .nav-item:active { transform: translateY(5px); box-shadow: 0 1px 0 color-mix(in srgb, var(--item-color) 60%, black); }
@@ -279,14 +294,13 @@ export class SidebarComponent {
 
   auth = inject(AuthService);
   private api = inject(ApiService);
-  private translate = inject(TranslateService);
 
   // Contact form
   showContact    = signal(false);
   contactSubmitting = signal(false);
   contactSuccess = signal(false);
   contactError   = signal(false);
-  contact = { first_name: '', last_name: '', address: '', subject: '', message: '' };
+  contact = { first_name: '', last_name: '', phone: '', email: '', address: '', subject: '', message: '' };
 
   initials = computed(() => {
     const name = this.auth.user()?.full_name ?? '';
@@ -361,7 +375,7 @@ export class SidebarComponent {
       next: () => {
         this.contactSubmitting.set(false);
         this.contactSuccess.set(true);
-        this.contact = { first_name: '', last_name: '', address: '', subject: '', message: '' };
+        this.contact = { first_name: '', last_name: '', phone: '', email: '', address: '', subject: '', message: '' };
       },
       error: () => {
         this.contactSubmitting.set(false);

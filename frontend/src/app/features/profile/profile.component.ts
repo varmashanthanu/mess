@@ -75,6 +75,16 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
             <label>{{ 'PROFILE.EMAIL' | translate }}</label>
             <input type="email" formControlName="email" />
           </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'PROFILE.PHONE' | translate }}</label>
+              <input type="tel" formControlName="phone_number" placeholder="+221 77 000 00 00" />
+            </div>
+            <div class="form-group" *ngIf="auth.role() === 'DRIVER'">
+              <label>{{ 'PROFILE.NATIONAL_ID' | translate }}</label>
+              <input type="text" formControlName="national_id" placeholder="XXXXXXXXXXXXX" />
+            </div>
+          </div>
           <div class="form-group">
             <label>{{ 'PROFILE.CITY' | translate }}</label>
             <input type="text" formControlName="city" [placeholder]="'PROFILE.CITY_PH' | translate" />
@@ -211,11 +221,6 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
               <input type="date" formControlName="license_expiry" />
             </div>
           </div>
-          <div class="form-group">
-            <label>{{ 'PROFILE.DRIVER.NATIONAL_ID' | translate }}</label>
-            <input type="text" formControlName="national_id" />
-          </div>
-
           <div class="section-title">{{ 'PROFILE.SECTION.EXPERIENCE' | translate }}</div>
           <div class="form-group">
             <label>{{ 'PROFILE.DRIVER.HOME_ADDRESS' | translate }}</label>
@@ -568,6 +573,21 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
                 <input type="number" formControlName="gross_weight_kg" />
               </div>
             </div>
+            <div class="section-title">{{ 'PROFILE.SECTION.DRIVER_INSURANCE' | translate }}</div>
+            <div class="form-group">
+              <label>{{ 'PROFILE.DRIVER.INS_PROVIDER' | translate }}</label>
+              <input type="text" formControlName="insurance_provider" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ 'PROFILE.DRIVER.INS_START' | translate }}</label>
+                <input type="date" formControlName="insurance_start_date" />
+              </div>
+              <div class="form-group">
+                <label>{{ 'PROFILE.DRIVER.INS_EXPIRY' | translate }}</label>
+                <input type="date" formControlName="insurance_expiry" />
+              </div>
+            </div>
             <button type="submit" class="btn-primary" [disabled]="saving()">
               {{ (saving() ? 'PROFILE.VEHICLE.ADDING' : 'PROFILE.VEHICLE.ADD') | translate }}
             </button>
@@ -611,6 +631,7 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
           <div class="alert-success" *ngIf="createSaved()">{{ 'PROFILE.CARRIER.CREATED' | translate }}</div>
           <div class="alert-error" *ngIf="createError()">{{ createError() }}</div>
           <form [formGroup]="createDriverForm" (ngSubmit)="createDriver()">
+            <div class="section-title" style="margin-top:0">{{ 'PROFILE.SECTION.PERSONAL' | translate }}</div>
             <div class="form-row">
               <div class="form-group">
                 <label>{{ 'PROFILE.FIRST_NAME' | translate }} *</label>
@@ -627,10 +648,21 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
                 <input type="tel" formControlName="phone_number" placeholder="+221 77 000 00 00" />
               </div>
               <div class="form-group">
+                <label>{{ 'PROFILE.EMAIL' | translate }}</label>
+                <input type="email" formControlName="email" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ 'PROFILE.NATIONAL_ID' | translate }}</label>
+                <input type="text" formControlName="national_id" placeholder="XXXXXXXXXXXXX" />
+              </div>
+              <div class="form-group">
                 <label>{{ 'PROFILE.CITY' | translate }}</label>
                 <input type="text" formControlName="city" [placeholder]="'PROFILE.CITY_PH' | translate" />
               </div>
             </div>
+            <div class="section-title">{{ 'PROFILE.CARRIER.DRIVER_PASSWORD' | translate }}</div>
             <div class="form-group">
               <label>{{ 'PROFILE.CARRIER.DRIVER_PASSWORD' | translate }} *</label>
               <input type="password" formControlName="password" [placeholder]="'PROFILE.CARRIER.PASSWORD_PH' | translate" />
@@ -829,10 +861,12 @@ export class ProfileComponent implements OnInit {
 
   // ── Forms ─────────────────────────────────────────────────────────
   infoForm = this.fb.group({
-    first_name: ['', Validators.required],
-    last_name:  [''],
-    email:      [''],
-    city:       [''],
+    first_name:  ['', Validators.required],
+    last_name:   [''],
+    email:       [''],
+    phone_number:[''],
+    national_id: [''],
+    city:        [''],
   });
 
   driverForm = this.fb.group({
@@ -841,7 +875,6 @@ export class ProfileComponent implements OnInit {
     license_state:            [''],
     license_expiry:           [''],
     cdl_endorsements:         [''],
-    national_id:              [''],
     medical_card_expiry:      [''],
     drug_testing_status:      [''],
     home_address:             [''],
@@ -895,6 +928,8 @@ export class ProfileComponent implements OnInit {
     first_name:   ['', Validators.required],
     last_name:    [''],
     phone_number: ['', Validators.required],
+    email:        [''],
+    national_id:  [''],
     city:         [''],
     password:     ['', [Validators.required, Validators.minLength(6)]],
   });
@@ -931,7 +966,14 @@ export class ProfileComponent implements OnInit {
     if (!u) return;
 
     const [first, ...rest] = (u.full_name ?? '').split(' ');
-    this.infoForm.patchValue({ first_name: first ?? '', last_name: rest.join(' '), email: (u as any).email ?? '', city: (u as any).city ?? '' });
+    this.infoForm.patchValue({
+      first_name:   first ?? '',
+      last_name:    rest.join(' '),
+      email:        (u as any).email ?? '',
+      phone_number: (u as any).phone_number ?? '',
+      national_id:  (u as any).driver_profile?.national_id ?? '',
+      city:         (u as any).city ?? '',
+    });
 
     const sp = (u as any).shipper_profile;
     if (sp) this.shipperForm.patchValue({ ...sp });
@@ -1001,8 +1043,19 @@ export class ProfileComponent implements OnInit {
   saveInfo(): void {
     if (this.infoForm.invalid) return;
     this.saving.set(true); this.resetFeedback();
-    this.api.updateMe(this.infoForm.value as any).subscribe({
-      next: (u) => { this.auth.updateProfile(u); this.saved.set(true); this.saving.set(false); },
+    const { national_id, ...meFields } = this.infoForm.value as any;
+    this.api.updateMe(meFields as any).subscribe({
+      next: (u) => {
+        this.auth.updateProfile(u);
+        if (this.auth.role() === 'DRIVER') {
+          this.api.updateDriverProfile({ national_id } as any).subscribe({
+            next: () => { this.saved.set(true); this.saving.set(false); },
+            error: () => { this.saved.set(true); this.saving.set(false); },
+          });
+        } else {
+          this.saved.set(true); this.saving.set(false);
+        }
+      },
       error: (err) => { this.error.set(err?.error?.error?.message || 'Erreur de mise à jour.'); this.saving.set(false); },
     });
   }

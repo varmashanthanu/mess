@@ -1,4 +1,4 @@
-import { Component, inject, output, OnInit } from '@angular/core';
+import { Component, inject, output, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -15,6 +15,15 @@ import { ThemeService } from '../../../core/services/theme.service';
   template: `
     <header class="topbar">
       <button class="menu-toggle" (click)="toggleSidebar.emit()">☰</button>
+
+      <!-- User profile card -->
+      <a class="topbar-profile" routerLink="/profile">
+        <div class="tp-avatar">{{ initials() }}</div>
+        <div class="tp-info">
+          <div class="tp-name">{{ auth.user()?.full_name }}</div>
+          <div class="tp-role">{{ roleKey() | translate }}</div>
+        </div>
+      </a>
 
       <div class="topbar-right">
 
@@ -133,6 +142,30 @@ import { ThemeService } from '../../../core/services/theme.service';
     .theme-toggle:hover { border-color: var(--gold); background: var(--gold-bg, rgba(201,162,39,0.08)); }
     .theme-icon { line-height: 1; }
 
+    /* Profile card in topbar */
+    .topbar-profile {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; padding: 6px 12px; border-radius: 10px;
+      transition: background .15s; flex: 1; justify-content: center;
+      max-width: 260px;
+    }
+    .topbar-profile:hover { background: var(--gold-bg, rgba(201,162,39,0.08)); }
+    .tp-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--gold); color: #fff; font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .tp-info { display: flex; flex-direction: column; min-width: 0; }
+    .tp-name {
+      font-size: 14px; font-weight: 700; color: var(--text-primary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .tp-role { font-size: 11px; color: var(--text-secondary); font-weight: 500; }
+    @media (max-width: 600px) {
+      .tp-info { display: none; }
+      .topbar-profile { flex: unset; padding: 6px; }
+    }
+
     /* Notifications */
     .notif-btn { position: relative; text-decoration: none; font-size: 20px; padding: 8px; border-radius: 8px; display: flex; align-items: center; }
     .notif-btn:hover { background: var(--surface-raised); }
@@ -149,6 +182,21 @@ export class TopbarComponent implements OnInit {
 
   isAvailable = false;
   langOpen = false;
+
+  initials = computed(() => {
+    const name = this.auth.user()?.full_name ?? '';
+    return name.split(' ').map((p: string) => p[0]).join('').slice(0, 2).toUpperCase() || '?';
+  });
+
+  roleKey = computed(() => {
+    const roleMap: Record<string, string> = {
+      SHIPPER: 'PROFILE.ROLES.SHIPPER',
+      DRIVER: 'PROFILE.ROLES.DRIVER',
+      CARRIER: 'PROFILE.ROLES.CARRIER',
+      ADMIN: 'PROFILE.ROLES.ADMIN',
+    };
+    return roleMap[this.auth.user()?.role ?? ''] ?? '';
+  });
 
   ngOnInit(): void {
     this.isAvailable = this.auth.user()?.driver_profile?.is_available ?? false;

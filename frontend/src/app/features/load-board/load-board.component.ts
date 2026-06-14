@@ -67,9 +67,9 @@ const CARGO_TYPES = ['GENERAL','REFRIGERATED','HAZARDOUS','LIVESTOCK','BULK','CO
             <div class="filter-group">
               <label>↕ {{ 'LOAD_BOARD.SORT' | translate }}</label>
               <select [(ngModel)]="ordering" (change)="onFilterChange()">
-                <option value="-pickup_scheduled_at">{{ 'LOAD_BOARD.SORT_DATE' | translate }}</option>
+                <option value="pickup_scheduled_at">{{ 'LOAD_BOARD.SORT_DATE' | translate }}</option>
                 <option value="proposed_price">{{ 'LOAD_BOARD.SORT_PRICE_ASC' | translate }}</option>
-                <option value="-proposed_price">{{ 'LOAD_BOARD.SORT_PRICE_DESC' | translate }}</option>
+                <option value="estimated_distance_km">{{ 'LOAD_BOARD.SORT_DISTANCE' | translate }}</option>
                 <option value="weight_kg">{{ 'LOAD_BOARD.SORT_WEIGHT' | translate }}</option>
               </select>
             </div>
@@ -237,7 +237,7 @@ export class LoadBoardComponent implements OnInit {
   deliveryCity = '';
   cargoType    = '';
   maxPrice     = '';
-  ordering     = '-pickup_scheduled_at';
+  ordering     = 'pickup_scheduled_at';
   filtersOpen  = true;
 
   readonly cargoTypes = [...CARGO_TYPES];
@@ -276,7 +276,7 @@ export class LoadBoardComponent implements OnInit {
 
   resetFilters(): void {
     this.search = this.pickupCity = this.deliveryCity = this.cargoType = this.maxPrice = '';
-    this.ordering = '-pickup_scheduled_at';
+    this.ordering = 'pickup_scheduled_at';
     this.page = 1;
     this.load();
   }
