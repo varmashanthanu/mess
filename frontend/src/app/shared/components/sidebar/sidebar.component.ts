@@ -93,6 +93,16 @@ interface NavItem {
               <input type="text" [(ngModel)]="contact.last_name" name="last_name" [placeholder]="'CONTACT.LAST_NAME_PH' | translate" />
             </div>
           </div>
+          <div class="modal-row">
+            <div class="modal-group">
+              <label>{{ 'CONTACT.PHONE' | translate }}</label>
+              <input type="tel" [(ngModel)]="contact.phone" name="phone" [placeholder]="'CONTACT.PHONE_PH' | translate" />
+            </div>
+            <div class="modal-group">
+              <label>{{ 'CONTACT.EMAIL' | translate }}</label>
+              <input type="email" [(ngModel)]="contact.email" name="email" [placeholder]="'CONTACT.EMAIL_PH' | translate" />
+            </div>
+          </div>
           <div class="modal-group">
             <label>{{ 'CONTACT.ADDRESS' | translate }}</label>
             <input type="text" [(ngModel)]="contact.address" name="address" [placeholder]="'CONTACT.ADDRESS_PH' | translate" />
@@ -290,7 +300,7 @@ export class SidebarComponent {
   contactSubmitting = signal(false);
   contactSuccess = signal(false);
   contactError   = signal(false);
-  contact = { first_name: '', last_name: '', address: '', subject: '', message: '' };
+  contact = { first_name: '', last_name: '', phone: '', email: '', address: '', subject: '', message: '' };
 
   initials = computed(() => {
     const name = this.auth.user()?.full_name ?? '';
@@ -365,7 +375,7 @@ export class SidebarComponent {
       next: () => {
         this.contactSubmitting.set(false);
         this.contactSuccess.set(true);
-        this.contact = { first_name: '', last_name: '', address: '', subject: '', message: '' };
+        this.contact = { first_name: '', last_name: '', phone: '', email: '', address: '', subject: '', message: '' };
       },
       error: () => {
         this.contactSubmitting.set(false);
