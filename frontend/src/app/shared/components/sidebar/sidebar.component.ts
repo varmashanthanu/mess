@@ -344,9 +344,17 @@ export class SidebarComponent {
     { labelKey: 'NAV.SHIPPER_ACCOUNT',  icon: '👤', route: '/profile',    color: '#757575' },
   ];
 
+  private carrierItems: NavItem[] = [
+    { labelKey: 'NAV.MY_DASHBOARD', icon: '📊', route: '/dashboard',  color: '#2196F3' },
+    { labelKey: 'NAV.FLEET',        icon: '🚛', route: '/fleet',      color: '#C9A227' },
+    { labelKey: 'NAV.TRACKING',     icon: '🗺️', route: '/tracking',  color: '#E53935' },
+    { labelKey: 'NAV.MESSAGES',     icon: '💬', route: '/messaging',  color: '#43A047' },
+    { labelKey: 'NAV.ACCOUNT',      icon: '👤', route: '/profile',    color: '#757575' },
+  ];
+
   private allItems: NavItem[] = [
     { labelKey: 'NAV.MY_DASHBOARD', icon: '📊', route: '/dashboard',  color: '#2196F3' },
-    { labelKey: 'NAV.FLEET',        icon: '🚛', route: '/fleet',      color: '#0288D1', roles: ['CARRIER'] },
+    { labelKey: 'NAV.FLEET',        icon: '🚛', route: '/fleet',      color: '#C9A227', roles: ['CARRIER'] },
     { labelKey: 'NAV.TRACKING',     icon: '🗺️', route: '/tracking',  color: '#E53935' },
     { labelKey: 'NAV.MESSAGES',     icon: '💬', route: '/messaging',  color: '#43A047' },
     { labelKey: 'NAV.PROFILE',      icon: '👤', route: '/profile',    color: '#757575' },
@@ -355,8 +363,9 @@ export class SidebarComponent {
 
   visibleItems = computed(() => {
     const role = this.auth.role();
-    if (role === 'DRIVER') return this.driverItems;
+    if (role === 'DRIVER')  return this.driverItems;
     if (role === 'SHIPPER') return this.shipperItems;
+    if (role === 'CARRIER') return this.carrierItems;
     return this.allItems.filter(item => !item.roles || (role && item.roles.includes(role)));
   });
 

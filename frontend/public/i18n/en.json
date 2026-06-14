@@ -114,7 +114,8 @@
     "TRACKING_DRIVER": "Navigation",
     "SHIPPER_LOADS": "My loads",
     "SHIPPER_TRACKING": "Tracking",
-    "SHIPPER_ACCOUNT": "Account"
+    "SHIPPER_ACCOUNT": "Account",
+    "ACCOUNT": "Account"
   },
   "LOAD_BOARD": {
     "SUBTITLE": "Available loads you can pick up",
@@ -237,7 +238,12 @@
       "OPPS_TITLE": "Available Opportunities",
       "PERF_TITLE": "Performance",
       "ONTIME": "On-time rate",
-      "UTIL": "Fleet utilization"
+      "UTIL": "Fleet utilization",
+      "LOADS_MGMT": "Loads Management",
+      "LOADS_OPEN": "Open",
+      "LOADS_ASSIGNED": "Assigned",
+      "LOADS_TRANSIT": "In Transit",
+      "LOADS_CLOSED": "Closed"
     }
   },
   "ORDERS": {

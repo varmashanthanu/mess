@@ -71,6 +71,10 @@ export const routes: Routes = [
         path: 'profile',
         loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent),
       },
+      {
+        path: 'fleet',
+        loadComponent: () => import('./features/fleet/fleet.component').then(m => m.FleetComponent),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
