@@ -97,7 +97,9 @@ export class ApiService {
 
   // ── Fleet ─────────────────────────────────────────────────────
   getVehicleTypes(): Observable<VehicleType[]> {
-    return this.http.get<VehicleType[]>(`${this.base}/fleet/vehicle-types/`);
+    return this.http.get<any>(`${this.base}/fleet/vehicle-types/`).pipe(
+      map(res => res.results ?? res)
+    );
   }
 
   getVehicles(params?: Record<string, string>): Observable<PaginatedResponse<Vehicle>> {

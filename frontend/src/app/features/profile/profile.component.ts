@@ -326,13 +326,21 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
               <label>{{ 'PROFILE.VEHICLE.TYPE' | translate }}</label>
               <select formControlName="vehicle_type">
                 <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
-                <option *ngFor="let vt of vehicleTypes()" [value]="vt.id">{{ vt.name }}</option>
+                <option *ngFor="let vt of vehicleTypes()" [value]="vt.id">{{ vt.icon ? vt.icon + ' ' : '' }}{{ vt.name }}</option>
+                <option value="other">{{ 'PROFILE.VEHICLE.OTHER_TYPE' | translate }}</option>
               </select>
             </div>
             <div class="form-group">
               <label>{{ 'PROFILE.VEHICLE.PAYLOAD' | translate }}</label>
               <input type="number" formControlName="payload_kg" />
             </div>
+          </div>
+          <div class="form-row" *ngIf="isOtherVehicleType">
+            <div class="form-group">
+              <label>{{ 'PROFILE.VEHICLE.CUSTOM_TYPE' | translate }}</label>
+              <input type="text" formControlName="custom_vehicle_type" [placeholder]="'PROFILE.VEHICLE.CUSTOM_TYPE_PH' | translate" />
+            </div>
+            <div class="form-group"></div>
           </div>
           <div class="form-row">
             <div class="form-group">
@@ -534,13 +542,21 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
                 <label>{{ 'PROFILE.VEHICLE.TYPE' | translate }}</label>
                 <select formControlName="vehicle_type">
                   <option value="">{{ 'PROFILE.SELECT' | translate }}</option>
-                  <option *ngFor="let vt of vehicleTypes()" [value]="vt.id">{{ vt.name }}</option>
+                  <option *ngFor="let vt of vehicleTypes()" [value]="vt.id">{{ vt.icon ? vt.icon + ' ' : '' }}{{ vt.name }}</option>
+                  <option value="other">{{ 'PROFILE.VEHICLE.OTHER_TYPE' | translate }}</option>
                 </select>
               </div>
               <div class="form-group">
                 <label>{{ 'PROFILE.VEHICLE.PAYLOAD' | translate }}</label>
                 <input type="number" formControlName="payload_kg" />
               </div>
+            </div>
+            <div class="form-row" *ngIf="isOtherVehicleType">
+              <div class="form-group">
+                <label>{{ 'PROFILE.VEHICLE.CUSTOM_TYPE' | translate }}</label>
+                <input type="text" formControlName="custom_vehicle_type" [placeholder]="'PROFILE.VEHICLE.CUSTOM_TYPE_PH' | translate" />
+              </div>
+              <div class="form-group"></div>
             </div>
             <div class="form-row">
               <div class="form-group">
@@ -855,20 +871,25 @@ export class ProfileComponent implements OnInit {
   });
 
   vehicleForm = this.fb.group({
-    registration_number: ['', Validators.required],
-    vin:                 [''],
-    make:                [''],
-    model:               [''],
-    year:                [null as number | null],
-    trailer_type:        [''],
-    vehicle_type:        ['', Validators.required],
-    payload_kg:          [null as number | null],
-    gross_weight_kg:     [null as number | null],
-    registration_expiry: [''],
-    insurance_provider:  [''],
-    insurance_start_date:[''],
-    insurance_expiry:    [''],
+    registration_number:  ['', Validators.required],
+    vin:                  [''],
+    make:                 [''],
+    model:                [''],
+    year:                 [null as number | null],
+    trailer_type:         [''],
+    vehicle_type:         [''],
+    custom_vehicle_type:  [''],
+    payload_kg:           [null as number | null],
+    gross_weight_kg:      [null as number | null],
+    registration_expiry:  [''],
+    insurance_provider:   [''],
+    insurance_start_date: [''],
+    insurance_expiry:     [''],
   });
+
+  get isOtherVehicleType(): boolean {
+    return this.vehicleForm.get('vehicle_type')?.value === 'other';
+  }
 
   createDriverForm = this.fb.group({
     first_name:   ['', Validators.required],
@@ -1003,9 +1024,11 @@ export class ProfileComponent implements OnInit {
   }
 
   saveVehicle(): void {
-    if (this.vehicleForm.invalid) return;
     this.saving.set(true); this.resetFeedback();
-    const payload = this.vehicleForm.value as any;
+    const payload = { ...this.vehicleForm.value } as any;
+    if (payload.vehicle_type === 'other') {
+      payload.vehicle_type = null;
+    }
     const existingId = this.existingVehicleId();
     const obs = existingId
       ? this.api.updateVehicle(existingId, payload)

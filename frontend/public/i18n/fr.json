@@ -508,7 +508,10 @@
       "ADDING": "Enregistrement...",
       "INSURER": "Assureur",
       "INS_START": "Date début assurance",
-      "INS_EXPIRY": "Date expiration assurance"
+      "INS_EXPIRY": "Date expiration assurance",
+      "OTHER_TYPE": "Autre (non listé)",
+      "CUSTOM_TYPE": "Précisez le type de véhicule",
+      "CUSTOM_TYPE_PH": "Ex : Camion 7T bâché, Tracteur agricole..."
     },
     "CARRIER": {
       "COMPANY": "Raison sociale *",

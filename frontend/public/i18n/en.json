@@ -508,7 +508,10 @@
       "ADDING": "Saving...",
       "INSURER": "Insurer",
       "INS_START": "Insurance start date",
-      "INS_EXPIRY": "Insurance expiry date"
+      "INS_EXPIRY": "Insurance expiry date",
+      "OTHER_TYPE": "Other (not listed)",
+      "CUSTOM_TYPE": "Specify vehicle type",
+      "CUSTOM_TYPE_PH": "e.g. 7T tarpaulin truck, agricultural tractor..."
     },
     "CARRIER": {
       "COMPANY": "Company name *",
