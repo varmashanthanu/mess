@@ -237,7 +237,12 @@
       "OPPS_TITLE": "Available Opportunities",
       "PERF_TITLE": "Performance",
       "ONTIME": "On-time rate",
-      "UTIL": "Fleet utilization"
+      "UTIL": "Fleet utilization",
+      "LOADS_MGMT": "Loads Management",
+      "LOADS_OPEN": "Open",
+      "LOADS_ASSIGNED": "Assigned",
+      "LOADS_TRANSIT": "In Transit",
+      "LOADS_CLOSED": "Closed"
     }
   },
   "ORDERS": {

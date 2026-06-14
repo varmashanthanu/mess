@@ -237,7 +237,12 @@
       "OPPS_TITLE": "Opportunités disponibles",
       "PERF_TITLE": "Performance",
       "ONTIME": "À l'heure",
-      "UTIL": "Taux d'utilisation flotte"
+      "UTIL": "Taux d'utilisation flotte",
+      "LOADS_MGMT": "Gestion des chargements",
+      "LOADS_OPEN": "Ouvert",
+      "LOADS_ASSIGNED": "Assigné",
+      "LOADS_TRANSIT": "En transit",
+      "LOADS_CLOSED": "Clôturé"
     }
   },
   "ORDERS": {

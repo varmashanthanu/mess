@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { User } from '../../core/models/user.model';
@@ -837,6 +838,7 @@ export class ProfileComponent implements OnInit {
   auth = inject(AuthService);
   private api = inject(ApiService);
   private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
 
   tab = signal<string>('info');
   saving = signal(false);
@@ -962,6 +964,9 @@ export class ProfileComponent implements OnInit {
 
   // ── Lifecycle ─────────────────────────────────────────────────────
   ngOnInit(): void {
+    const tabParam = this.route.snapshot.queryParamMap.get('tab');
+    if (tabParam) this.tab.set(tabParam);
+
     const u = this.auth.user();
     if (!u) return;
 

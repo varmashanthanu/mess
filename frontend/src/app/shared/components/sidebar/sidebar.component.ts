@@ -346,7 +346,7 @@ export class SidebarComponent {
 
   private allItems: NavItem[] = [
     { labelKey: 'NAV.MY_DASHBOARD', icon: '📊', route: '/dashboard',  color: '#2196F3' },
-    { labelKey: 'NAV.FLEET',        icon: '🚛', route: '/fleet',      color: '#0288D1', roles: ['CARRIER'] },
+    { labelKey: 'NAV.FLEET',        icon: '🚛', route: '/fleet',      color: '#C9A227', roles: ['CARRIER'] },
     { labelKey: 'NAV.TRACKING',     icon: '🗺️', route: '/tracking',  color: '#E53935' },
     { labelKey: 'NAV.MESSAGES',     icon: '💬', route: '/messaging',  color: '#43A047' },
     { labelKey: 'NAV.PROFILE',      icon: '👤', route: '/profile',    color: '#757575' },
