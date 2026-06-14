@@ -123,6 +123,103 @@ interface StatCard { label: string; value: string | number; icon: string; color:
         </div>
       </div>
 
+      <!-- ════════════════ CARRIER ════════════════ -->
+
+      <!-- Carrier: hero -->
+      <div class="carrier-header" *ngIf="isCarrier()">
+        <div class="carrier-header-left">
+          <div class="carrier-greeting">{{ 'DASHBOARD.CARRIER.GREETING' | translate: { name: companyName() } }}</div>
+          <div class="carrier-status">
+            <span class="fleet-dot"></span>
+            {{ 'DASHBOARD.CARRIER.FLEET_ONLINE' | translate }}
+            &nbsp;·&nbsp; {{ activeCarrierLoads() }} {{ 'DASHBOARD.CARRIER.ACTIVE_LOADS' | translate }}
+            &nbsp;·&nbsp; {{ availableTrucks() }} {{ 'DASHBOARD.CARRIER.TRUCKS_AVAILABLE' | translate }}
+          </div>
+        </div>
+        <div class="carrier-header-right">
+          <div class="carrier-revenue">
+            <div class="carrier-revenue-val">{{ carrierRevenue() | number:'1.0-0' }} XOF</div>
+            <div class="carrier-revenue-lbl">{{ 'DASHBOARD.CARRIER.TODAY_REVENUE' | translate }}</div>
+          </div>
+          <a class="btn-find-loads" routerLink="/load-board">
+            ＋ {{ 'DASHBOARD.CARRIER.FIND_LOADS' | translate }}
+          </a>
+        </div>
+      </div>
+
+      <!-- Carrier: KPI cards -->
+      <div class="carrier-kpis" *ngIf="isCarrier()">
+        <div class="ckpi ckpi--green">
+          <div class="ckpi-icon">🚛</div>
+          <div class="ckpi-val">{{ availableTrucks() }}</div>
+          <div class="ckpi-lbl">{{ 'DASHBOARD.CARRIER.KPI_TRUCKS' | translate }}</div>
+        </div>
+        <div class="ckpi ckpi--blue">
+          <div class="ckpi-icon">📦</div>
+          <div class="ckpi-val">{{ activeCarrierLoads() }}</div>
+          <div class="ckpi-lbl">{{ 'DASHBOARD.CARRIER.KPI_LOADS' | translate }}</div>
+        </div>
+        <div class="ckpi ckpi--purple">
+          <div class="ckpi-icon">👷</div>
+          <div class="ckpi-val">{{ driversOnline() }}</div>
+          <div class="ckpi-lbl">{{ 'DASHBOARD.CARRIER.KPI_DRIVERS' | translate }}</div>
+        </div>
+        <div class="ckpi ckpi--gold">
+          <div class="ckpi-icon">💰</div>
+          <div class="ckpi-val">{{ carrierRevenue() | number:'1.0-0' }}</div>
+          <div class="ckpi-lbl">{{ 'DASHBOARD.CARRIER.KPI_REVENUE' | translate }} (XOF)</div>
+        </div>
+      </div>
+
+      <!-- Carrier: Attention center -->
+      <div class="carrier-attention" *ngIf="isCarrier()">
+        <div class="attention-title">⚠ {{ 'DASHBOARD.CARRIER.ATTENTION' | translate }}</div>
+        <div class="attention-empty" *ngIf="loadsNeedingDriver() === 0 && delayedCarrierLoads().length === 0">
+          ✓ {{ 'DASHBOARD.CARRIER.NO_ALERTS' | translate }}
+        </div>
+        <div class="attention-item attention-item--warn" *ngIf="loadsNeedingDriver() > 0">
+          <span class="att-icon">📌</span>
+          <span>{{ loadsNeedingDriver() }} {{ 'DASHBOARD.CARRIER.ALERT_NO_DRIVER' | translate }}</span>
+          <a routerLink="/load-board" class="att-cta">Voir →</a>
+        </div>
+        <div class="attention-item attention-item--danger" *ngFor="let o of delayedCarrierLoads()">
+          <span class="att-icon">⏰</span>
+          <span>{{ o.reference }} — {{ o.pickup_city }} → {{ o.delivery_city }}</span>
+          <span class="badge badge--{{ o.status.toLowerCase() }}">{{ 'ORDERS.STATUS.' + o.status | translate }}</span>
+        </div>
+      </div>
+
+      <!-- Carrier: Quick actions -->
+      <div class="quick-actions" *ngIf="isCarrier()">
+        <div class="quick-title">{{ 'DASHBOARD.QUICK_ACTIONS' | translate }}</div>
+        <div class="quick-grid quick-grid--6">
+          <a class="quick-card quick-card--primary" routerLink="/load-board">
+            <span class="quick-icon">🚛</span>
+            <span>{{ 'DASHBOARD.CARRIER.QA_LOADS' | translate }}</span>
+          </a>
+          <a class="quick-card" routerLink="/tracking">
+            <span class="quick-icon">📍</span>
+            <span>{{ 'DASHBOARD.CARRIER.QA_FLEET' | translate }}</span>
+          </a>
+          <a class="quick-card" routerLink="/profile">
+            <span class="quick-icon">👷</span>
+            <span>{{ 'DASHBOARD.CARRIER.QA_DRIVERS' | translate }}</span>
+          </a>
+          <a class="quick-card" routerLink="/orders">
+            <span class="quick-icon">📦</span>
+            <span>{{ 'DASHBOARD.CARRIER.QA_ASSIGN' | translate }}</span>
+          </a>
+          <a class="quick-card" routerLink="/messaging">
+            <span class="quick-icon">💬</span>
+            <span>{{ 'DASHBOARD.CARRIER.QA_MESSAGES' | translate }}</span>
+          </a>
+          <a class="quick-card" routerLink="/orders">
+            <span class="quick-icon">💰</span>
+            <span>{{ 'DASHBOARD.CARRIER.QA_PAYMENTS' | translate }}</span>
+          </a>
+        </div>
+      </div>
+
       <!-- ════════════════ STATS (partagé) ════════════════ -->
       <div class="stats-grid">
         <div class="stat-card" *ngFor="let s of stats()"
@@ -425,6 +522,70 @@ interface StatCard { label: string; value: string | number; icon: string; color:
     h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
     .mt-2 { margin-top: 16px; display: inline-block; }
 
+    /* ── Carrier header ── */
+    .carrier-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 24px 28px; border-radius: 16px; margin-bottom: 16px; gap: 20px; flex-wrap: wrap;
+      background: linear-gradient(135deg, #0A0F1A, #121E2E);
+      border-left: 5px solid #42A5F5; box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    .carrier-header-left { display: flex; flex-direction: column; gap: 10px; }
+    .carrier-greeting { font-size: 22px; font-weight: 800; color: #F0EDE6; }
+    .carrier-status { font-size: 13px; color: rgba(240,237,230,0.6); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .fleet-dot { width: 8px; height: 8px; border-radius: 50%; background: #66BB6A; box-shadow: 0 0 6px #66BB6A; display: inline-block; }
+    .carrier-header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; }
+    .carrier-revenue { text-align: right; }
+    .carrier-revenue-val { font-size: 24px; font-weight: 900; color: #C9A227; }
+    .carrier-revenue-lbl { font-size: 10px; color: rgba(240,237,230,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+    .btn-find-loads {
+      padding: 12px 24px; background: linear-gradient(135deg, #42A5F5, #1565C0);
+      color: #fff; border-radius: 10px; font-size: 14px; font-weight: 800;
+      text-decoration: none; transition: all .2s; white-space: nowrap;
+      box-shadow: 0 3px 12px rgba(66,165,245,0.35);
+    }
+    .btn-find-loads:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(66,165,245,0.5); text-decoration: none; color: #fff; }
+
+    /* ── Carrier KPIs ── */
+    .carrier-kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 16px; }
+    .ckpi {
+      border-radius: 14px; padding: 20px 16px; display: flex; flex-direction: column; gap: 6px;
+      border: 1.5px solid var(--border); background: var(--surface); box-shadow: var(--shadow);
+    }
+    .ckpi-icon { font-size: 24px; }
+    .ckpi-val { font-size: 28px; font-weight: 900; line-height: 1; }
+    .ckpi-lbl { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+    .ckpi--green { border-color: rgba(102,187,106,0.35); } .ckpi--green .ckpi-val { color: #66BB6A; }
+    .ckpi--blue  { border-color: rgba(66,165,245,0.35); }  .ckpi--blue  .ckpi-val { color: #42A5F5; }
+    .ckpi--purple{ border-color: rgba(156,39,176,0.25); }  .ckpi--purple .ckpi-val{ color: #CE93D8; }
+    .ckpi--gold  { border-color: rgba(201,162,39,0.35); }  .ckpi--gold  .ckpi-val { color: #C9A227; }
+
+    /* ── Attention center ── */
+    .carrier-attention {
+      background: var(--surface); border-radius: 14px; padding: 18px 20px;
+      border: 1.5px solid rgba(255,179,0,0.25); margin-bottom: 16px; box-shadow: var(--shadow);
+    }
+    .attention-title { font-size: 13px; font-weight: 700; color: #FFB300; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
+    .attention-empty { font-size: 13px; color: #66BB6A; }
+    .attention-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      border-radius: 8px; margin-bottom: 8px; font-size: 13px; font-weight: 600;
+    }
+    .attention-item:last-child { margin-bottom: 0; }
+    .attention-item--warn   { background: rgba(255,179,0,0.1);  color: #FFB300; border: 1px solid rgba(255,179,0,0.25); }
+    .attention-item--danger { background: rgba(239,83,80,0.08); color: #EF5350; border: 1px solid rgba(239,83,80,0.2); }
+    .att-icon { font-size: 16px; }
+    .att-cta { margin-left: auto; font-size: 12px; color: inherit; text-decoration: underline; white-space: nowrap; }
+
+    /* ── Quick grid 6-col ── */
+    .quick-grid--6 { grid-template-columns: repeat(6,1fr); }
+
+    @media (max-width: 768px) {
+      .carrier-header { padding: 16px; }
+      .carrier-greeting { font-size: 18px; }
+      .carrier-kpis { grid-template-columns: repeat(2,1fr); }
+      .quick-grid--6 { grid-template-columns: repeat(3,1fr); }
+    }
+
     @media (max-width: 768px) {
       .driver-header, .shipper-header { padding: 16px; }
       .greeting-text, .sh-greeting { font-size: 18px; }
@@ -450,8 +611,14 @@ export class DashboardComponent implements OnInit {
   activeFilter = signal<StatFilter>(null);
 
   firstName = computed(() => (this.auth.user()?.full_name || '').split(' ')[0]);
-  isDriver = computed(() => this.auth.role() === 'DRIVER');
+  isDriver  = computed(() => this.auth.role() === 'DRIVER');
   isShipper = computed(() => this.auth.role() === 'SHIPPER' || this.auth.role() === 'ADMIN');
+  isCarrier = computed(() => this.auth.role() === 'CARRIER');
+
+  // Carrier-specific signals
+  carrierVehicles = signal<any[]>([]);
+  carrierDrivers  = signal<any[]>([]);
+  nearbyLoads     = signal<any[]>([]);
 
   private transitStatuses = ['PICKUP_PENDING', 'PICKED_UP', 'IN_TRANSIT'];
   private allActiveStatuses = ['ASSIGNED', 'PICKUP_PENDING', 'PICKED_UP', 'IN_TRANSIT'];
@@ -564,11 +731,46 @@ export class DashboardComponent implements OnInit {
     this.activeFilter.set(this.activeFilter() === filter ? null : filter);
   }
 
+  // ── Carrier computed ─────────────────────────────────────────────
+  availableTrucks = computed(() => this.carrierVehicles().filter(v => v.is_active).length);
+  trucksOnTrip    = computed(() => this.carrierVehicles().filter(v => !v.is_active).length);
+  driversOnline   = computed(() => this.carrierDrivers().filter((d: any) => d.driver_profile?.is_available).length);
+  activeCarrierLoads = computed(() =>
+    this.recentOrders().filter(o => ['ASSIGNED','PICKUP_PENDING','PICKED_UP','IN_TRANSIT'].includes(o.status)).length
+  );
+  loadsNeedingDriver = computed(() => this.recentOrders().filter(o => o.status === 'POSTED').length);
+  delayedCarrierLoads = computed(() => {
+    const now = new Date();
+    return this.recentOrders().filter(o =>
+      o.delivery_deadline && new Date(o.delivery_deadline) < now &&
+      !['DELIVERED','COMPLETED','CANCELLED'].includes(o.status)
+    );
+  });
+  carrierRevenue = computed(() =>
+    this.recentOrders()
+      .filter(o => ['DELIVERED','COMPLETED'].includes(o.status))
+      .reduce((s, o) => s + (o.final_price || o.proposed_price || 0), 0)
+  );
+  fleetUtilization = computed(() => {
+    const total = this.carrierVehicles().length;
+    if (!total) return 0;
+    return Math.round((this.trucksOnTrip() / total) * 100);
+  });
+  companyName = computed(() => {
+    const cp = (this.auth.user() as any)?.carrier_profile;
+    return cp?.legal_company_name || this.firstName();
+  });
+
   ngOnInit(): void {
     this.api.getOrders({ page_size: '100' }).subscribe({
       next: (res) => { this.recentOrders.set(res.results); this.loading.set(false); },
       error: () => this.loading.set(false),
     });
+    if (this.auth.role() === 'CARRIER') {
+      this.api.getVehicles().subscribe({ next: (res: any) => this.carrierVehicles.set(res.results ?? res) });
+      this.api.getMyDrivers().subscribe({ next: (drivers) => this.carrierDrivers.set(drivers) });
+      this.api.getOrders({ page_size: '5', status: 'POSTED' }).subscribe({ next: (res) => this.nearbyLoads.set(res.results) });
+    }
   }
 
   today(): string {
