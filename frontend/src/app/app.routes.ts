@@ -75,6 +75,10 @@ export const routes: Routes = [
         path: 'fleet',
         loadComponent: () => import('./features/fleet/fleet.component').then(m => m.FleetComponent),
       },
+      {
+        path: 'admin',
+        loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

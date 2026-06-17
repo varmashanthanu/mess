@@ -352,6 +352,18 @@ export class SidebarComponent {
     { labelKey: 'NAV.ACCOUNT',      icon: '👤', route: '/profile',    color: '#757575' },
   ];
 
+  private adminItems: NavItem[] = [
+    { labelKey: 'NAV.ADMIN_CC',          icon: '⚡', route: '/admin',     color: '#1A237E' },
+    { labelKey: 'NAV.ADMIN_MARKETPLACE', icon: '🏪', route: '/load-board', color: '#283593' },
+    { labelKey: 'NAV.ADMIN_TRUST',       icon: '🛡', route: '/admin',     color: '#4527A0' },
+    { labelKey: 'NAV.ADMIN_ORGS',        icon: '🏢', route: '/admin',     color: '#006064' },
+    { labelKey: 'NAV.ADMIN_FLEET',       icon: '🚛', route: '/fleet',     color: '#01579B' },
+    { labelKey: 'NAV.ADMIN_FINANCE',     icon: '💰', route: '/admin',     color: '#1B5E20' },
+    { labelKey: 'NAV.ADMIN_OPS',         icon: '📍', route: '/tracking',  color: '#E65100' },
+    { labelKey: 'NAV.ADMIN_ANALYTICS',   icon: '📈', route: '/admin',     color: '#880E4F' },
+    { labelKey: 'NAV.ADMIN_GOV',         icon: '⚙️', route: '/admin',    color: '#37474F' },
+  ];
+
   private allItems: NavItem[] = [
     { labelKey: 'NAV.MY_DASHBOARD', icon: '📊', route: '/dashboard',  color: '#2196F3' },
     { labelKey: 'NAV.FLEET',        icon: '🚛', route: '/fleet',      color: '#C9A227', roles: ['CARRIER'] },
@@ -366,6 +378,7 @@ export class SidebarComponent {
     if (role === 'DRIVER')  return this.driverItems;
     if (role === 'SHIPPER') return this.shipperItems;
     if (role === 'CARRIER') return this.carrierItems;
+    if (role === 'ADMIN')   return this.adminItems;
     return this.allItems.filter(item => !item.roles || (role && item.roles.includes(role)));
   });
 
