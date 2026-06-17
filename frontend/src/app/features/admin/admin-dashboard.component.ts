@@ -244,7 +244,7 @@ import { User } from '../../core/models/user.model';
             <tbody>
               <tr *ngFor="let u of recentUsers()">
                 <td class="user-name">{{ u.full_name }}</td>
-                <td><span class="role-pill role-pill--{{ u.role?.toLowerCase() }}">{{ u.role }}</span></td>
+                <td><span class="role-pill role-pill--{{ u.role.toLowerCase() }}">{{ u.role }}</span></td>
                 <td class="user-phone">{{ u.phone_number }}</td>
                 <td>
                   <span class="status-pill" [class.status-pill--ok]="u.is_verified" [class.status-pill--warn]="!u.is_verified">
@@ -528,7 +528,7 @@ export class AdminDashboardComponent implements OnInit {
       .map((u: any) => ({ type: u.role, name: u.full_name }));
   });
 
-  complianceQueue = computed(() => []);
+  complianceQueue = computed((): { type: string; name: string; expiry: string }[] => []);
 
   riskQueue = computed(() => {
     const lowTrust = this.allUsers()
