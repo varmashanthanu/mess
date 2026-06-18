@@ -197,15 +197,15 @@ interface StatCard { label: string; value: string | number; icon: string; color:
             <span class="quick-icon">🚛</span>
             <span>{{ 'DASHBOARD.CARRIER.QA_LOADS' | translate }}</span>
           </a>
-          <a class="quick-card" routerLink="/tracking">
+          <a class="quick-card" routerLink="/fleet">
             <span class="quick-icon">📍</span>
             <span>{{ 'DASHBOARD.CARRIER.QA_FLEET' | translate }}</span>
           </a>
-          <a class="quick-card" routerLink="/profile">
+          <a class="quick-card" routerLink="/profile" [queryParams]="{tab:'drivers'}">
             <span class="quick-icon">👷</span>
             <span>{{ 'DASHBOARD.CARRIER.QA_DRIVERS' | translate }}</span>
           </a>
-          <a class="quick-card" routerLink="/orders">
+          <a class="quick-card" routerLink="/profile" [queryParams]="{tab:'drivers'}">
             <span class="quick-icon">📦</span>
             <span>{{ 'DASHBOARD.CARRIER.QA_ASSIGN' | translate }}</span>
           </a>
@@ -218,6 +218,10 @@ interface StatCard { label: string; value: string | number; icon: string; color:
             <span>{{ 'DASHBOARD.CARRIER.QA_PAYMENTS' | translate }}</span>
           </a>
         </div>
+
+        <!-- Loads Management -->
+        <div class="lm-divider"></div>
+        <div class="quick-title">{{ 'DASHBOARD.CARRIER.LOADS_MGMT' | translate }}</div>
       </div>
 
       <!-- ════════════════ STATS (partagé) ════════════════ -->
@@ -560,11 +564,13 @@ interface StatCard { label: string; value: string | number; icon: string; color:
     .ckpi--gold  { border-color: rgba(201,162,39,0.35); }  .ckpi--gold  .ckpi-val { color: #C9A227; }
 
     /* ── Attention center ── */
+    .lm-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0 14px; }
+
     .carrier-attention {
       background: var(--surface); border-radius: 14px; padding: 18px 20px;
       border: 1.5px solid rgba(255,179,0,0.25); margin-bottom: 16px; box-shadow: var(--shadow);
     }
-    .attention-title { font-size: 13px; font-weight: 700; color: #FFB300; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
+    .attention-title { font-size: 13px; font-weight: 700; color: #E53935; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
     .attention-empty { font-size: 13px; color: #66BB6A; }
     .attention-item {
       display: flex; align-items: center; gap: 10px; padding: 10px 14px;
