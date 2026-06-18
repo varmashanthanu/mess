@@ -80,10 +80,15 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                 <span class="role-name">{{ 'AUTH.REGISTER.ROLE_DRIVER' | translate }}</span>
                 <span class="role-desc">{{ 'AUTH.REGISTER.ROLE_DRIVER_DESC' | translate }}</span>
               </div>
-              <div class="role-card role-card--wide" [class.role-card--active]="f['role'].value === 'CARRIER'" (click)="f['role'].setValue('CARRIER')">
+              <div class="role-card" [class.role-card--active]="f['role'].value === 'CARRIER'" (click)="f['role'].setValue('CARRIER')">
                 <span class="role-emoji">🏢</span>
                 <span class="role-name">{{ 'AUTH.REGISTER.ROLE_CARRIER' | translate }}</span>
                 <span class="role-desc">{{ 'AUTH.REGISTER.ROLE_CARRIER_DESC' | translate }}</span>
+              </div>
+              <div class="role-card role-card--wide" [class.role-card--active]="f['role'].value === 'BROKER'" (click)="f['role'].setValue('BROKER')">
+                <span class="role-emoji">🤝</span>
+                <span class="role-name">{{ 'AUTH.REGISTER.ROLE_BROKER' | translate }}</span>
+                <span class="role-desc">{{ 'AUTH.REGISTER.ROLE_BROKER_DESC' | translate }}</span>
               </div>
             </div>
             <span class="field-error" *ngIf="submitted && f['role'].errors?.['required']">{{ 'COMMON.REQUIRED' | translate }}</span>
@@ -184,7 +189,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 
     /* Role selector */
     .role-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .role-card--wide { grid-column: 1 / -1; flex-direction: row; justify-content: center; gap: 10px; padding: 12px 16px; }
+    .role-card--wide { grid-column: 1 / -1; flex-direction: row; justify-content: flex-start; gap: 10px; padding: 12px 16px; }
     .role-card {
       display: flex; flex-direction: column; align-items: center; gap: 4px;
       padding: 14px 10px; border: 2px solid #E5E2DA; border-radius: 12px;

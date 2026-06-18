@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import DriverProfile, PhoneVerification, ShipperProfile, User
+from .models import BrokerProfile, DriverProfile, PhoneVerification, ShipperProfile, User
 
 
 @admin.register(User)
@@ -37,6 +37,12 @@ class DriverProfileAdmin(admin.ModelAdmin):
 @admin.register(ShipperProfile)
 class ShipperProfileAdmin(admin.ModelAdmin):
     list_display = ["user", "company_name", "city", "rating", "total_orders"]
+    search_fields = ["user__phone_number", "company_name"]
+
+
+@admin.register(BrokerProfile)
+class BrokerProfileAdmin(admin.ModelAdmin):
+    list_display = ["user", "company_name", "commission_rate", "total_matches", "rating"]
     search_fields = ["user__phone_number", "company_name"]
 
 

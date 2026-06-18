@@ -290,6 +290,27 @@ class CarrierProfile(BaseModel):
 
 
 
+class BrokerProfile(BaseModel):
+    """Extended profile for brokers (freight intermediaries)."""
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="broker_profile")
+    company_name = models.CharField(max_length=255, blank=True)
+    commission_rate = models.DecimalField(max_digits=5, decimal_places=2, default=3.50)
+    service_area = models.TextField(blank=True)
+    avatar = models.ImageField(upload_to="avatars/brokers/", null=True, blank=True)
+
+    # Stats
+    total_matches = models.PositiveIntegerField(default=0)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    total_commission_earned = models.DecimalField(max_digits=14, decimal_places=2, default=0.00)
+
+    class Meta:
+        verbose_name = "Broker Profile"
+
+    def __str__(self):
+        return f"Broker: {self.company_name or self.user.full_name}"
+
+
 class ContactMessage(BaseModel):
     """Message sent via the contact form."""
     first_name = models.CharField(max_length=100)
