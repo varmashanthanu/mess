@@ -7,7 +7,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .constants import UserRole
-from .models import CarrierProfile, DriverProfile, PhoneVerification, ShipperProfile
+from .models import BrokerProfile, CarrierProfile, DriverProfile, PhoneVerification, ShipperProfile
 
 User = get_user_model()
 
@@ -67,6 +67,8 @@ def _create_role_profile(user):
         DriverProfile.objects.get_or_create(user=user, defaults={"license_number": "PENDING"})
     elif user.role == UserRole.CARRIER:
         CarrierProfile.objects.get_or_create(user=user)
+    elif user.role == UserRole.BROKER:
+        BrokerProfile.objects.get_or_create(user=user)
 
 
 # ── OTP Verification ──────────────────────────────────────────────

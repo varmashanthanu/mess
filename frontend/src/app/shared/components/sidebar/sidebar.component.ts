@@ -312,6 +312,7 @@ export class SidebarComponent {
       SHIPPER: 'PROFILE.ROLES.SHIPPER',
       DRIVER: 'PROFILE.ROLES.DRIVER',
       CARRIER: 'PROFILE.ROLES.CARRIER',
+      BROKER: 'PROFILE.ROLES.BROKER',
       ADMIN: 'PROFILE.ROLES.ADMIN',
     };
     return roleMap[this.auth.user()?.role ?? ''] ?? '';
@@ -322,6 +323,7 @@ export class SidebarComponent {
       SHIPPER: 'PROFILE.ROLES.SHIPPER_LABEL',
       DRIVER: 'PROFILE.ROLES.DRIVER_LABEL',
       CARRIER: 'PROFILE.ROLES.CARRIER_LABEL',
+      BROKER: 'PROFILE.ROLES.BROKER_LABEL',
       ADMIN: 'PROFILE.ROLES.ADMIN_LABEL',
     };
     return roleMap[this.auth.user()?.role ?? ''] ?? '';
@@ -352,6 +354,18 @@ export class SidebarComponent {
     { labelKey: 'NAV.ACCOUNT',      icon: '👤', route: '/profile',    color: '#757575' },
   ];
 
+  private brokerItems: NavItem[] = [
+    { labelKey: 'NAV.BROKER_DASHBOARD', icon: '🏠', route: '/broker-dashboard', color: '#1B5E20' },
+    { labelKey: 'NAV.BROKER_LOADS',     icon: '📦', route: '/load-board',       color: '#2E7D32' },
+    { labelKey: 'NAV.BROKER_MATCHING',  icon: '🔍', route: '/load-board',       color: '#388E3C' },
+    { labelKey: 'NAV.BROKER_NEGOTS',    icon: '🟢', route: '/orders',           color: '#43A047' },
+    { labelKey: 'NAV.BROKER_CARRIERS',  icon: '🚛', route: '/load-board',       color: '#2196F3' },
+    { labelKey: 'NAV.MESSAGES',         icon: '💬', route: '/messaging',        color: '#00897B' },
+    { labelKey: 'NAV.BROKER_COMMISSIONS', icon: '💰', route: '/broker-dashboard', color: '#C9A227' },
+    { labelKey: 'NAV.BROKER_PERF',      icon: '📊', route: '/broker-dashboard', color: '#6A1B9A' },
+    { labelKey: 'NAV.PROFILE',          icon: '⚙️', route: '/profile',         color: '#455A64' },
+  ];
+
   private adminItems: NavItem[] = [
     { labelKey: 'NAV.ADMIN_CC',          icon: '⚡', route: '/admin',     color: '#1A237E' },
     { labelKey: 'NAV.ADMIN_MARKETPLACE', icon: '🏪', route: '/load-board', color: '#283593' },
@@ -378,6 +392,7 @@ export class SidebarComponent {
     if (role === 'DRIVER')  return this.driverItems;
     if (role === 'SHIPPER') return this.shipperItems;
     if (role === 'CARRIER') return this.carrierItems;
+    if (role === 'BROKER')  return this.brokerItems;
     if (role === 'ADMIN')   return this.adminItems;
     return this.allItems.filter(item => !item.roles || (role && item.roles.includes(role)));
   });

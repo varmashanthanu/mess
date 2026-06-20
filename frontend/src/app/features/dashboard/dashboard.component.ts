@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -611,6 +611,7 @@ interface StatCard { label: string; value: string | number; icon: string; color:
 export class DashboardComponent implements OnInit {
   auth = inject(AuthService);
   private api = inject(ApiService);
+  private router = inject(Router);
 
   loading = signal(true);
   recentOrders = signal<FreightOrder[]>([]);
@@ -768,6 +769,10 @@ export class DashboardComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    if (this.auth.role() === 'BROKER') {
+      this.router.navigate(['/broker-dashboard']);
+      return;
+    }
     this.api.getOrders({ page_size: '100' }).subscribe({
       next: (res) => { this.recentOrders.set(res.results); this.loading.set(false); },
       error: () => this.loading.set(false),
