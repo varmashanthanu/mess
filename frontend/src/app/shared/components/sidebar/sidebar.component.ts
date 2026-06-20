@@ -355,15 +355,15 @@ export class SidebarComponent {
   ];
 
   private brokerItems: NavItem[] = [
-    { labelKey: 'NAV.BROKER_DASHBOARD', icon: '🏠', route: '/broker-dashboard', color: '#1B5E20' },
-    { labelKey: 'NAV.BROKER_LOADS',     icon: '📦', route: '/load-board',       color: '#2E7D32' },
-    { labelKey: 'NAV.BROKER_MATCHING',  icon: '🔍', route: '/load-board',       color: '#388E3C' },
-    { labelKey: 'NAV.BROKER_NEGOTS',    icon: '🟢', route: '/orders',           color: '#43A047' },
-    { labelKey: 'NAV.BROKER_CARRIERS',  icon: '🚛', route: '/load-board',       color: '#2196F3' },
-    { labelKey: 'NAV.MESSAGES',         icon: '💬', route: '/messaging',        color: '#00897B' },
+    { labelKey: 'NAV.BROKER_DASHBOARD',   icon: '🏠', route: '/broker-dashboard', color: '#1565C0' },
+    { labelKey: 'NAV.BROKER_LOADS',       icon: '📦', route: '/load-board',       color: '#C9A227' },
+    { labelKey: 'NAV.BROKER_CARRIERS',    icon: '🚛', route: '/load-board',       color: '#5D4037' },
+    { labelKey: 'NAV.BROKER_MATCHING',    icon: '🔗', route: '/load-board',       color: '#E65100' },
+    { labelKey: 'NAV.BROKER_NEGOTS',      icon: '🤝', route: '/orders',           color: '#E91E63' },
+    { labelKey: 'NAV.MESSAGES',           icon: '💬', route: '/messaging',        color: '#00838F' },
     { labelKey: 'NAV.BROKER_COMMISSIONS', icon: '💰', route: '/broker-dashboard', color: '#C9A227' },
-    { labelKey: 'NAV.BROKER_PERF',      icon: '📊', route: '/broker-dashboard', color: '#6A1B9A' },
-    { labelKey: 'NAV.PROFILE',          icon: '⚙️', route: '/profile',         color: '#455A64' },
+    { labelKey: 'NAV.BROKER_PERF',        icon: '📊', route: '/broker-dashboard', color: '#6A1B9A' },
+    { labelKey: 'NAV.PROFILE',            icon: '⚙️', route: '/profile',         color: '#455A64' },
   ];
 
   private adminItems: NavItem[] = [
