@@ -15,7 +15,7 @@ class MessageSerializer(serializers.ModelSerializer):
             "message_type", "content", "file", "file_duration_seconds",
             "is_read", "created_at",
         ]
-        read_only_fields = ["id", "sender", "created_at"]
+        read_only_fields = ["id", "sender", "conversation", "created_at"]
 
     def get_is_read(self, obj):
         request = self.context.get("request")
