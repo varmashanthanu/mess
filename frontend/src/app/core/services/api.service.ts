@@ -133,6 +133,16 @@ export class ApiService {
     );
   }
 
+  sendVoiceMessage(conversationId: string, blob: Blob, durationSeconds: number): Observable<Message> {
+    const fd = new FormData();
+    fd.append('message_type', 'VOICE');
+    fd.append('file', blob, 'voice_note.webm');
+    fd.append('file_duration_seconds', String(Math.round(durationSeconds)));
+    return this.http.post<Message>(
+      `${this.base}/messaging/conversations/${conversationId}/messages/`, fd
+    );
+  }
+
   // ── Notifications ─────────────────────────────────────────────
   getNotifications(unreadOnly = false): Observable<PaginatedResponse<Notification>> {
     const params = unreadOnly ? new HttpParams().set('is_read', 'false') : undefined;

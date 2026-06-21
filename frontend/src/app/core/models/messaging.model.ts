@@ -4,7 +4,9 @@ export interface Message {
   sender: string;
   sender_name: string;
   content: string;
-  message_type: 'TEXT' | 'IMAGE' | 'SYSTEM';
+  message_type: 'TEXT' | 'IMAGE' | 'VOICE' | 'DOCUMENT' | 'SYSTEM';
+  file: string | null;
+  file_duration_seconds: number | null;
   attachment: string | null;
   is_read: boolean;
   created_at: string;

@@ -423,7 +423,9 @@
     "MESSAGES_COUNT": "{{count}} messages",
     "SEND_PLACEHOLDER": "Écrire un message...",
     "EMPTY_TITLE": "Aucune conversation",
-    "SELECT_PROMPT": "Sélectionnez une conversation"
+    "SELECT_PROMPT": "Sélectionnez une conversation",
+    "SELECT_CONV": "Sélectionnez une conversation",
+    "HOLD_RECORD": "Maintenir pour enregistrer un message vocal"
   },
   "NOTIFICATIONS": {
     "TITLE": "Notifications",
