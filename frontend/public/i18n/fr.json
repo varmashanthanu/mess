@@ -424,8 +424,19 @@
     "SEND_PLACEHOLDER": "Écrire un message...",
     "EMPTY_TITLE": "Aucune conversation",
     "SELECT_PROMPT": "Sélectionnez une conversation",
-    "SELECT_CONV": "Sélectionnez une conversation",
-    "HOLD_RECORD": "Maintenir pour enregistrer un message vocal"
+    "SELECT_CONV": "Sélectionnez une conversation pour commencer",
+    "HOLD_RECORD": "Maintenir pour enregistrer un message vocal",
+    "TAB_ORDERS": "Commandes",
+    "TAB_DIRECT": "Directs",
+    "TAB_GROUP": "Groupes",
+    "NEW_CONV": "Nouvelle conversation",
+    "NEW_DM": "Nouveau message direct",
+    "NEW_GROUP": "Nouveau groupe",
+    "GROUP_NAME": "Nom du groupe",
+    "GROUP_NAME_PH": "Ex: Équipe Dakar Nord",
+    "SEARCH_USERS": "Ajouter des participants",
+    "SEARCH_USERS_PH": "Rechercher par nom ou téléphone...",
+    "START_CONV": "Démarrer la conversation"
   },
   "NOTIFICATIONS": {
     "TITLE": "Notifications",

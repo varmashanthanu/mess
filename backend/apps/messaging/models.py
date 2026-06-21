@@ -1,17 +1,30 @@
 """
 MESS Platform — Messaging Models
-Per-order conversations between shipper, driver, and broker.
+Conversations: per-order, direct (DM), or group (carrier dispatch).
 """
 from django.db import models
 
 from core.models import BaseModel
 
 
+class ConversationType(models.TextChoices):
+    ORDER  = "ORDER",  "Order Conversation"
+    DIRECT = "DIRECT", "Direct Message"
+    GROUP  = "GROUP",  "Group Chat"
+
+
 class Conversation(BaseModel):
-    """One conversation thread per order."""
-    order = models.OneToOneField(
-        "orders.FreightOrder", on_delete=models.CASCADE, related_name="conversation"
+    """A conversation thread — can be tied to an order, a DM pair, or a group."""
+    conversation_type = models.CharField(
+        max_length=10, choices=ConversationType.choices, default=ConversationType.ORDER
     )
+    # Null for DIRECT / GROUP conversations
+    order = models.OneToOneField(
+        "orders.FreightOrder", on_delete=models.CASCADE, related_name="conversation",
+        null=True, blank=True
+    )
+    # Used as display name for GROUP conversations
+    title = models.CharField(max_length=255, blank=True)
     participants = models.ManyToManyField("accounts.User", related_name="conversations")
     is_active = models.BooleanField(default=True)
 
@@ -19,18 +32,20 @@ class Conversation(BaseModel):
         verbose_name = "Conversation"
 
     def __str__(self):
-        return f"Conversation for order {self.order.reference}"
+        if self.order:
+            return f"Conversation for order {self.order.reference}"
+        return self.title or f"Conversation #{str(self.id)[:8]}"
 
 
 class Message(BaseModel):
     """A single message in a conversation."""
 
     class MessageType(models.TextChoices):
-        TEXT = "TEXT", "Text"
-        VOICE = "VOICE", "Voice Note"
-        IMAGE = "IMAGE", "Image"
+        TEXT     = "TEXT",     "Text"
+        VOICE    = "VOICE",    "Voice Note"
+        IMAGE    = "IMAGE",    "Image"
         DOCUMENT = "DOCUMENT", "Document"
-        SYSTEM = "SYSTEM", "System Message"  # Auto-generated status updates
+        SYSTEM   = "SYSTEM",   "System Message"
 
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages")
     sender = models.ForeignKey(

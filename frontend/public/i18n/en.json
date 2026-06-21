@@ -424,8 +424,19 @@
     "SEND_PLACEHOLDER": "Write a message...",
     "EMPTY_TITLE": "No conversations",
     "SELECT_PROMPT": "Select a conversation",
-    "SELECT_CONV": "Select a conversation",
-    "HOLD_RECORD": "Hold to record a voice message"
+    "SELECT_CONV": "Select a conversation to get started",
+    "HOLD_RECORD": "Hold to record a voice message",
+    "TAB_ORDERS": "Orders",
+    "TAB_DIRECT": "Direct",
+    "TAB_GROUP": "Groups",
+    "NEW_CONV": "New conversation",
+    "NEW_DM": "New direct message",
+    "NEW_GROUP": "New group",
+    "GROUP_NAME": "Group name",
+    "GROUP_NAME_PH": "E.g. Dakar North Team",
+    "SEARCH_USERS": "Add participants",
+    "SEARCH_USERS_PH": "Search by name or phone...",
+    "START_CONV": "Start conversation"
   },
   "NOTIFICATIONS": {
     "TITLE": "Notifications",
