@@ -6,8 +6,9 @@ from apps.accounts.views import (
     CustomTokenObtainPairView,
     LogoutView,
     RegisterView,
-    RequestOTPView,
-    VerifyOTPView,
+    # SMS verification disabled — no SMS provider configured
+    # RequestOTPView,
+    # VerifyOTPView,
 )
 
 urlpatterns = [
@@ -15,6 +16,7 @@ urlpatterns = [
     path("login/", CustomTokenObtainPairView.as_view(), name="auth-login"),
     path("token/refresh/", TokenRefreshView.as_view(), name="auth-token-refresh"),
     path("logout/", LogoutView.as_view(), name="auth-logout"),
-    path("otp/request/", RequestOTPView.as_view(), name="auth-otp-request"),
-    path("otp/verify/", VerifyOTPView.as_view(), name="auth-otp-verify"),
+    # SMS verification disabled — no SMS provider configured
+    # path("otp/request/", RequestOTPView.as_view(), name="auth-otp-request"),
+    # path("otp/verify/", VerifyOTPView.as_view(), name="auth-otp-verify"),
 ]

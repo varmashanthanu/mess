@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { PaginatedResponse, FreightOrder, CreateOrderPayload, OrderAssignment, SuggestedPrice } from '../models/order.model';
 import { Vehicle, VehicleType } from '../models/fleet.model';
-import { Conversation, Message } from '../models/messaging.model';
+import { Conversation, Message, UserBasic } from '../models/messaging.model';
 import { Notification } from '../models/notification.model';
 import { User } from '../models/user.model';
 import { DriverLocation } from '../models/tracking.model';
@@ -130,6 +130,39 @@ export class ApiService {
   sendMessage(conversationId: string, content: string): Observable<Message> {
     return this.http.post<Message>(
       `${this.base}/messaging/conversations/${conversationId}/messages/`, { content }
+    );
+  }
+
+  sendVoiceMessage(conversationId: string, blob: Blob, durationSeconds: number): Observable<Message> {
+    const fd = new FormData();
+    fd.append('message_type', 'VOICE');
+    fd.append('file', blob, 'voice_note.webm');
+    fd.append('file_duration_seconds', String(Math.round(durationSeconds)));
+    return this.http.post<Message>(
+      `${this.base}/messaging/conversations/${conversationId}/messages/`, fd
+    );
+  }
+
+  sendImageMessage(conversationId: string, file: File): Observable<Message> {
+    const fd = new FormData();
+    fd.append('message_type', 'IMAGE');
+    fd.append('file', file, file.name);
+    return this.http.post<Message>(
+      `${this.base}/messaging/conversations/${conversationId}/messages/`, fd
+    );
+  }
+
+  createConversation(payload: { conversation_type: 'DIRECT' | 'GROUP'; participant_ids: string[]; title?: string }): Observable<Conversation> {
+    return this.http.post<Conversation>(`${this.base}/messaging/conversations/create/`, payload);
+  }
+
+  searchUsers(q: string): Observable<UserBasic[]> {
+    return this.http.get<UserBasic[]>(`${this.base}/messaging/users/search/?q=${encodeURIComponent(q)}`);
+  }
+
+  getConversationsByType(type: 'ORDER' | 'DIRECT' | 'GROUP'): Observable<Conversation[]> {
+    return this.http.get<any>(`${this.base}/messaging/conversations/?type=${type}`).pipe(
+      map(res => res.results ?? res)
     );
   }
 

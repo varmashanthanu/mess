@@ -41,7 +41,7 @@ class ConversationConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         try:
             data = json.loads(text_data)
-            msg_type = data.get("type", "TEXT")
+            msg_type = data.get("message_type", "TEXT").upper()
             content = data.get("content", "")
         except (json.JSONDecodeError, KeyError):
             await self.send(text_data=json.dumps({"error": "Invalid payload."}))

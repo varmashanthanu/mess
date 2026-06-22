@@ -5,6 +5,11 @@
     "changeOrigin": true,
     "logLevel": "debug"
   },
+  "/media": {
+    "target": "http://backend:8000",
+    "secure": false,
+    "changeOrigin": true
+  },
   "/ws": {
     "target": "ws://backend:8000",
     "secure": false,

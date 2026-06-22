@@ -1,8 +1,9 @@
 -r base.txt
 
 # ── ASGI Server ───────────────────────────────────────────────────
-gunicorn==23.0.0
-uvicorn[standard]==0.31.1
+gunicorn==22.0.0
+uvicorn[standard]==0.30.1
 
 # ── Monitoring ────────────────────────────────────────────────────
-sentry-sdk[django]==2.16.0
+sentry-sdk==2.61.1
+python-json-logger==4.1.0

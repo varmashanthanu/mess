@@ -62,7 +62,7 @@ export class WebSocketService implements OnDestroy {
     switch (channel) {
       case 'tracking':       return `${base}/tracking/order/${id}/${tokenParam}`;
       case 'order':          return `${base}/orders/${id}/${tokenParam}`;
-      case 'chat':           return `${base}/chat/${id}/${tokenParam}`;
+      case 'chat':           return `${base}/messaging/${id}/${tokenParam}`;
       case 'notifications':  return `${base}/notifications/${tokenParam}`;
       default:               return `${base}/${id}/${tokenParam}`;
     }

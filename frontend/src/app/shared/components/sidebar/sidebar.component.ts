@@ -25,14 +25,14 @@ interface NavItem {
       <div class="sidebar-brand">
         <div class="brand-mark" *ngIf="!collapsed()">
           <img src="yoolo-logo.png" class="brand-logo" alt="Yoolo" />
-          <button class="contact-inline-btn" (click)="showContact.set(true)" [title]="'CONTACT.TITLE' | translate">
+          <button class="contact-inline-btn" (click)="openContact()" [title]="'CONTACT.TITLE' | translate">
             {{ 'CONTACT.TITLE' | translate }}
           </button>
         </div>
         <div class="brand-icon" *ngIf="collapsed()">
           <img src="yoolo-logo.png" class="brand-logo-mini" alt="Yoolo" />
         </div>
-        <button class="contact-btn-icon" *ngIf="collapsed()" (click)="showContact.set(true)" [title]="'CONTACT.TITLE' | translate">☎</button>
+        <button class="contact-btn-icon" *ngIf="collapsed()" (click)="openContact()" [title]="'CONTACT.TITLE' | translate">☎</button>
         <button class="sidebar-close" *ngIf="!collapsed()" (click)="onClose()" aria-label="Close sidebar">✕</button>
       </div>
 
@@ -296,11 +296,28 @@ export class SidebarComponent {
   private api = inject(ApiService);
 
   // Contact form
-  showContact    = signal(false);
+  showContact       = signal(false);
   contactSubmitting = signal(false);
-  contactSuccess = signal(false);
-  contactError   = signal(false);
+  contactSuccess    = signal(false);
+  contactError      = signal(false);
   contact = { first_name: '', last_name: '', phone: '', email: '', address: '', subject: '', message: '' };
+
+  openContact(): void {
+    const u = this.auth.user() as any;
+    if (u) {
+      this.contact.first_name = u.first_name ?? '';
+      this.contact.last_name  = u.last_name  ?? '';
+      this.contact.phone      = u.phone_number ? String(u.phone_number) : '';
+      this.contact.email      = u.email ?? '';
+      const profile = u.shipper_profile ?? u.carrier_profile ?? u.driver_profile ?? u.broker_profile;
+      const city    = profile?.city ?? profile?.company_city ?? '';
+      const addr    = profile?.address ?? profile?.company_address ?? '';
+      this.contact.address = [addr, city].filter(Boolean).join(', ');
+    }
+    this.contactSuccess.set(false);
+    this.contactError.set(false);
+    this.showContact.set(true);
+  }
 
   initials = computed(() => {
     const name = this.auth.user()?.full_name ?? '';
@@ -355,15 +372,15 @@ export class SidebarComponent {
   ];
 
   private brokerItems: NavItem[] = [
-    { labelKey: 'NAV.BROKER_DASHBOARD', icon: '🏠', route: '/broker-dashboard', color: '#1B5E20' },
-    { labelKey: 'NAV.BROKER_LOADS',     icon: '📦', route: '/load-board',       color: '#2E7D32' },
-    { labelKey: 'NAV.BROKER_MATCHING',  icon: '🔍', route: '/load-board',       color: '#388E3C' },
-    { labelKey: 'NAV.BROKER_NEGOTS',    icon: '🟢', route: '/orders',           color: '#43A047' },
-    { labelKey: 'NAV.BROKER_CARRIERS',  icon: '🚛', route: '/load-board',       color: '#2196F3' },
-    { labelKey: 'NAV.MESSAGES',         icon: '💬', route: '/messaging',        color: '#00897B' },
+    { labelKey: 'NAV.BROKER_DASHBOARD',   icon: '🏠', route: '/broker-dashboard', color: '#1565C0' },
+    { labelKey: 'NAV.BROKER_LOADS',       icon: '📦', route: '/load-board',       color: '#C9A227' },
+    { labelKey: 'NAV.BROKER_CARRIERS',    icon: '🚛', route: '/load-board',       color: '#5D4037' },
+    { labelKey: 'NAV.BROKER_MATCHING',    icon: '🔗', route: '/load-board',       color: '#E65100' },
+    { labelKey: 'NAV.BROKER_NEGOTS',      icon: '🤝', route: '/orders',           color: '#E91E63' },
+    { labelKey: 'NAV.MESSAGES',           icon: '💬', route: '/messaging',        color: '#00838F' },
     { labelKey: 'NAV.BROKER_COMMISSIONS', icon: '💰', route: '/broker-dashboard', color: '#C9A227' },
-    { labelKey: 'NAV.BROKER_PERF',      icon: '📊', route: '/broker-dashboard', color: '#6A1B9A' },
-    { labelKey: 'NAV.PROFILE',          icon: '⚙️', route: '/profile',         color: '#455A64' },
+    { labelKey: 'NAV.BROKER_PERF',        icon: '📊', route: '/broker-dashboard', color: '#6A1B9A' },
+    { labelKey: 'NAV.PROFILE',            icon: '⚙️', route: '/profile',         color: '#455A64' },
   ];
 
   private adminItems: NavItem[] = [

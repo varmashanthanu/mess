@@ -20,5 +20,8 @@ def create_order_conversation(sender, instance, created, **kwargs):
     if created:
         from apps.messaging.models import Conversation
         order = instance.order
-        conv, _ = Conversation.objects.get_or_create(order=order)
+        conv, _ = Conversation.objects.get_or_create(
+            order=order,
+            defaults={"conversation_type": "ORDER"},
+        )
         conv.participants.add(order.shipper, instance.driver)
