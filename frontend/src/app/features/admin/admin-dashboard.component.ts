@@ -19,7 +19,7 @@ import { User } from '../../core/models/user.model';
         <div class="hero-left">
           <div class="hero-label">{{ 'ADMIN.COMMAND_CENTER' | translate }}</div>
           <div class="hero-greeting">{{ 'ADMIN.GREETING' | translate: { name: adminName() } }} 👋</div>
-          <div class="hero-sub">Here's what's happening in your marketplace today.</div>
+          <div class="hero-sub">{{ 'ADMIN.HERO_SUBTITLE' | translate }}</div>
           <div class="hero-status">
             <span class="status-dot" [class.status-dot--ok]="marketplaceHealthy()" [class.status-dot--warn]="!marketplaceHealthy()"></span>
             <span class="status-text">{{ (marketplaceHealthy() ? 'ADMIN.OPERATIONAL' : 'ADMIN.DEGRADED') | translate }}</span>
@@ -42,38 +42,38 @@ import { User } from '../../core/models/user.model';
         <div class="ov-stat">
           <div class="ov-icon">📋</div>
           <div class="ov-val">{{ loadsPosted() }}</div>
-          <div class="ov-lbl">Loads Posted</div>
-          <div class="ov-trend ov-trend--up">↑ 12.5% vs yesterday</div>
+          <div class="ov-lbl">{{ 'ADMIN.LOADS_POSTED' | translate }}</div>
+          <div class="ov-trend ov-trend--up">↑ 12.5% {{ 'ADMIN.VS_YESTERDAY' | translate }}</div>
         </div>
         <div class="ov-sep"></div>
         <div class="ov-stat">
           <div class="ov-icon">🤝</div>
           <div class="ov-val">{{ loadsBooked() }}</div>
-          <div class="ov-lbl">Loads Booked</div>
-          <div class="ov-trend ov-trend--up">↑ 15.6% vs yesterday</div>
+          <div class="ov-lbl">{{ 'ADMIN.LOADS_BOOKED' | translate }}</div>
+          <div class="ov-trend ov-trend--up">↑ 15.6% {{ 'ADMIN.VS_YESTERDAY' | translate }}</div>
         </div>
         <div class="ov-sep"></div>
         <div class="ov-stat">
           <div class="ov-icon">✅</div>
           <div class="ov-val">{{ loadsDelivered() }}</div>
-          <div class="ov-lbl">Loads Delivered</div>
-          <div class="ov-trend ov-trend--up">↑ 10.2% vs yesterday</div>
+          <div class="ov-lbl">{{ 'ADMIN.LOADS_DELIVERED' | translate }}</div>
+          <div class="ov-trend ov-trend--up">↑ 10.2% {{ 'ADMIN.VS_YESTERDAY' | translate }}</div>
         </div>
         <div class="ov-sep"></div>
         <div class="ov-stat">
           <div class="ov-icon">📊</div>
           <div class="ov-val">{{ completionRate() }}%</div>
-          <div class="ov-lbl">Completion Rate</div>
+          <div class="ov-lbl">{{ 'ADMIN.COMPLETION_RATE_LBL' | translate }}</div>
           <div class="ov-trend" [class.ov-trend--up]="completionRate() >= 80" [class.ov-trend--down]="completionRate() < 80">
-            {{ completionRate() >= 80 ? '↑' : '↓' }} {{ completionRate() >= 80 ? '4.3%' : 'Attention' }}
+            {{ completionRate() >= 80 ? '↑ 4.3%' : '↓ Attention' }}
           </div>
         </div>
         <div class="ov-sep"></div>
         <div class="ov-stat">
           <div class="ov-icon">💰</div>
           <div class="ov-val">{{ volumeToday() | number:'1.0-0' }}</div>
-          <div class="ov-lbl">Revenu (FCFA)</div>
-          <div class="ov-trend ov-trend--up">↑ 5.7% vs yesterday</div>
+          <div class="ov-lbl">{{ 'ADMIN.REVENUE_FCFA' | translate }}</div>
+          <div class="ov-trend ov-trend--up">↑ 5.7% {{ 'ADMIN.VS_YESTERDAY' | translate }}</div>
         </div>
       </div>
 
@@ -83,8 +83,8 @@ import { User } from '../../core/models/user.model';
         <!-- Attention Center -->
         <div class="panel attention-panel">
           <div class="panel-header">
-            <span class="panel-title alert-red">⚠ ATTENTION CENTER</span>
-            <span class="panel-sub">Items that require your immediate action</span>
+            <span class="panel-title alert-red">⚠ {{ 'ADMIN.ATTENTION_CENTER' | translate }}</span>
+            <span class="panel-sub">{{ 'ADMIN.ATTN_SUBTITLE' | translate }}</span>
             <span class="alert-count" *ngIf="totalAlerts() > 0">{{ totalAlerts() }}</span>
           </div>
 
@@ -92,30 +92,30 @@ import { User } from '../../core/models/user.model';
             <div class="attn-card attn-card--blue" routerLink="/admin/users">
               <div class="attn-icon">✅</div>
               <div class="attn-num">{{ verificationCount() }}</div>
-              <div class="attn-lbl">Verifications</div>
-              <div class="attn-sub">Pending review</div>
-              <div class="attn-link">View queue →</div>
+              <div class="attn-lbl">{{ 'ADMIN.VERIFICATIONS_LBL' | translate }}</div>
+              <div class="attn-sub">{{ 'ADMIN.PENDING_REVIEW' | translate }}</div>
+              <div class="attn-link">{{ 'ADMIN.VIEW_QUEUE' | translate }}</div>
             </div>
             <div class="attn-card attn-card--orange">
               <div class="attn-icon">⚖</div>
               <div class="attn-num">{{ disputeCount() }}</div>
-              <div class="attn-lbl">Disputes</div>
-              <div class="attn-sub">Open cases</div>
-              <div class="attn-link">View queue →</div>
+              <div class="attn-lbl">{{ 'ADMIN.DISPUTES_LBL' | translate }}</div>
+              <div class="attn-sub">{{ 'ADMIN.OPEN_CASES' | translate }}</div>
+              <div class="attn-link">{{ 'ADMIN.VIEW_QUEUE' | translate }}</div>
             </div>
             <div class="attn-card attn-card--red">
               <div class="attn-icon">💳</div>
               <div class="attn-num">{{ failedPayments() }}</div>
-              <div class="attn-lbl">Payments</div>
-              <div class="attn-sub">Failed payments</div>
-              <div class="attn-link">View queue →</div>
+              <div class="attn-lbl">{{ 'ADMIN.PAYMENTS_LBL' | translate }}</div>
+              <div class="attn-sub">{{ 'ADMIN.FAILED_PAYMENTS_LBL' | translate }}</div>
+              <div class="attn-link">{{ 'ADMIN.VIEW_QUEUE' | translate }}</div>
             </div>
             <div class="attn-card attn-card--purple">
               <div class="attn-icon">🛡</div>
               <div class="attn-num">{{ fraudAlerts() }}</div>
-              <div class="attn-lbl">Fraud Alert</div>
-              <div class="attn-sub">High-risk detected</div>
-              <div class="attn-link">View details →</div>
+              <div class="attn-lbl">{{ 'ADMIN.FRAUD_LBL' | translate }}</div>
+              <div class="attn-sub">{{ 'ADMIN.HIGH_RISK' | translate }}</div>
+              <div class="attn-link">{{ 'ADMIN.VIEW_DETAILS' | translate }}</div>
             </div>
           </div>
         </div>
@@ -123,8 +123,8 @@ import { User } from '../../core/models/user.model';
         <!-- System Alerts -->
         <div class="panel">
           <div class="panel-header">
-            <span class="panel-title">🔔 SYSTEM ALERTS</span>
-            <a class="see-all">View all</a>
+            <span class="panel-title">🔔 {{ 'ADMIN.SYSTEM_ALERTS_LBL' | translate }}</span>
+            <a class="see-all">{{ 'ADMIN.VIEW_ALL' | translate }}</a>
           </div>
           <div class="sys-alert sys-alert--high" *ngFor="let a of systemAlertsHigh()">
             <span class="severity-badge severity--high">High</span>
@@ -160,8 +160,8 @@ import { User } from '../../core/models/user.model';
         <!-- Marketplace Health -->
         <div class="panel">
           <div class="panel-header">
-            <span class="panel-title">📊 MARKETPLACE HEALTH</span>
-            <a class="see-all">View full report</a>
+            <span class="panel-title">📊 {{ 'ADMIN.MARKETPLACE_HEALTH_LBL' | translate }}</span>
+            <a class="see-all">{{ 'ADMIN.VIEW_FULL_REPORT' | translate }}</a>
           </div>
           <div class="mh-row" *ngFor="let row of healthRows()">
             <div class="mh-label">{{ row.label }}</div>
@@ -173,7 +173,7 @@ import { User } from '../../core/models/user.model';
           </div>
           <!-- Fulfillment Rate donut -->
           <div class="fulfillment-row">
-            <div class="fulfillment-label">Load Fulfillment Rate</div>
+            <div class="fulfillment-label">{{ 'ADMIN.FULFILLMENT_LBL' | translate }}</div>
             <div class="fulfillment-ring">
               <svg viewBox="0 0 36 36" width="54" height="54">
                 <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--border)" stroke-width="3"/>
@@ -190,11 +190,11 @@ import { User } from '../../core/models/user.model';
         <!-- Operational Queues -->
         <div class="panel">
           <div class="panel-header">
-            <span class="panel-title">📋 OPERATIONAL QUEUES</span>
+            <span class="panel-title">📋 {{ 'ADMIN.OPERATIONAL_QUEUES' | translate }}</span>
           </div>
           <div class="op-queue-item" *ngFor="let q of operationalQueues()">
             <span class="op-queue-icon">{{ q.icon }}</span>
-            <span class="op-queue-lbl">{{ q.label }}</span>
+            <span class="op-queue-lbl">{{ q.labelKey | translate }}</span>
             <span class="op-queue-count" [class.op-count--red]="q.count > 5" [class.op-count--amber]="q.count > 0 && q.count <= 5">{{ q.count }}</span>
             <span class="op-queue-arrow">›</span>
           </div>
@@ -208,8 +208,8 @@ import { User } from '../../core/models/user.model';
         <!-- Recent Activity -->
         <div class="panel">
           <div class="panel-header">
-            <span class="panel-title">🕐 RECENT ACTIVITY</span>
-            <a class="see-all">View all</a>
+            <span class="panel-title">🕐 {{ 'ADMIN.RECENT_ACTIVITY_LBL' | translate }}</span>
+            <a class="see-all">{{ 'ADMIN.VIEW_ALL' | translate }}</a>
           </div>
           <div class="activity-item" *ngFor="let a of recentActivity()">
             <div class="activity-icon" [class.ai--green]="a.type==='success'" [class.ai--red]="a.type==='alert'" [class.ai--gold]="a.type==='info'" [class.ai--blue]="a.type==='new'">
@@ -226,13 +226,13 @@ import { User } from '../../core/models/user.model';
         <!-- Top Routes -->
         <div class="panel">
           <div class="panel-header">
-            <span class="panel-title">🗺 TOP ROUTES</span>
-            <a class="see-all">View report</a>
+            <span class="panel-title">🗺 {{ 'ADMIN.TOP_ROUTES_LBL' | translate }}</span>
+            <a class="see-all">{{ 'ADMIN.VIEW_REPORT' | translate }}</a>
           </div>
           <div class="routes-header-row">
-            <span class="routes-col-lbl">ROUTE</span>
-            <span class="routes-col-lbl">LOADS</span>
-            <span class="routes-col-lbl">TREND</span>
+            <span class="routes-col-lbl">{{ 'ADMIN.ROUTE_COL' | translate }}</span>
+            <span class="routes-col-lbl">{{ 'ADMIN.LOADS_COL' | translate }}</span>
+            <span class="routes-col-lbl">{{ 'ADMIN.TREND_COL' | translate }}</span>
           </div>
           <div class="route-row" *ngFor="let r of topRoutes()">
             <span class="route-name">{{ r.route }}</span>
@@ -251,8 +251,8 @@ import { User } from '../../core/models/user.model';
         <!-- Payment Overview -->
         <div class="panel">
           <div class="panel-header">
-            <span class="panel-title">💳 PAYMENT OVERVIEW</span>
-            <a class="see-all">View all</a>
+            <span class="panel-title">💳 {{ 'ADMIN.PAYMENT_OVERVIEW_LBL' | translate }}</span>
+            <a class="see-all">{{ 'ADMIN.VIEW_ALL' | translate }}</a>
           </div>
           <div class="pay-layout">
             <div class="pay-donut">
@@ -273,24 +273,24 @@ import { User } from '../../core/models/user.model';
             <div class="pay-legend">
               <div class="pay-leg-row">
                 <span class="pay-dot pay-dot--green"></span>
-                <span class="pay-leg-lbl">Successful</span>
+                <span class="pay-leg-lbl">{{ 'ADMIN.SUCCESSFUL' | translate }}</span>
                 <span class="pay-leg-pct green">{{ paySuccessPct() }}%</span>
                 <span class="pay-leg-amt">{{ volumeToday() | number:'1.0-0' }} FCFA</span>
               </div>
               <div class="pay-leg-row">
                 <span class="pay-dot pay-dot--red"></span>
-                <span class="pay-leg-lbl">Failed</span>
+                <span class="pay-leg-lbl">{{ 'ADMIN.FAILED_PAY' | translate }}</span>
                 <span class="pay-leg-pct red">{{ payFailedPct() }}%</span>
                 <span class="pay-leg-amt">{{ failedAmount() | number:'1.0-0' }} FCFA</span>
               </div>
               <div class="pay-leg-row">
                 <span class="pay-dot pay-dot--amber"></span>
-                <span class="pay-leg-lbl">Pending</span>
+                <span class="pay-leg-lbl">{{ 'ADMIN.PENDING_PAY' | translate }}</span>
                 <span class="pay-leg-pct amber">{{ payPendingPct() }}%</span>
                 <span class="pay-leg-amt">{{ pendingAmount() | number:'1.0-0' }} FCFA</span>
               </div>
               <div class="pay-success-rate">
-                Payment Success Rate <strong>&gt; {{ paySuccessPct() }}%</strong>
+                {{ 'ADMIN.PAYMENT_SUCCESS_RATE' | translate }} <strong>&gt; {{ paySuccessPct() }}%</strong>
               </div>
             </div>
           </div>
@@ -299,29 +299,29 @@ import { User } from '../../core/models/user.model';
         <!-- Quick Actions -->
         <div class="panel">
           <div class="panel-header">
-            <span class="panel-title">⚡ QUICK ACTIONS</span>
+            <span class="panel-title">⚡ {{ 'ADMIN.QUICK_ACTIONS_LBL' | translate }}</span>
           </div>
           <div class="qa-grid">
             <a class="qa-btn" routerLink="/admin/users">
-              <span class="qa-icon">✅</span> Verify User
+              <span class="qa-icon">✅</span> {{ 'ADMIN.VERIFY_USER' | translate }}
             </a>
             <a class="qa-btn" routerLink="/admin">
-              <span class="qa-icon">📢</span> Create Announcement
+              <span class="qa-icon">📢</span> {{ 'ADMIN.CREATE_ANNOUNCEMENT' | translate }}
             </a>
             <a class="qa-btn" routerLink="/loads/new">
-              <span class="qa-icon">📦</span> Add Load
+              <span class="qa-icon">📦</span> {{ 'ADMIN.ADD_LOAD' | translate }}
             </a>
             <a class="qa-btn" routerLink="/messaging">
-              <span class="qa-icon">💬</span> Send Message
+              <span class="qa-icon">💬</span> {{ 'ADMIN.SEND_MESSAGE_BTN' | translate }}
             </a>
             <a class="qa-btn" routerLink="/admin/users">
-              <span class="qa-icon">🔍</span> Investigate User
+              <span class="qa-icon">🔍</span> {{ 'ADMIN.INVESTIGATE_USER' | translate }}
             </a>
             <button class="qa-btn qa-btn--export" (click)="exportReport()">
-              <span class="qa-icon">📄</span> Export Report
+              <span class="qa-icon">📄</span> {{ 'ADMIN.EXPORT_REPORT' | translate }}
             </button>
           </div>
-          <button class="qa-more">+ More Actions</button>
+          <button class="qa-more">{{ 'ADMIN.MORE_ACTIONS' | translate }}</button>
         </div>
 
       </div>
@@ -329,25 +329,25 @@ import { User } from '../../core/models/user.model';
       <!-- ══ USERS OVERVIEW ══ -->
       <div class="panel">
         <div class="panel-header">
-          <span class="panel-title">👤 USERS OVERVIEW</span>
-          <a routerLink="/admin/users" class="see-all">View all →</a>
+          <span class="panel-title">👤 {{ 'ADMIN.USERS_OVERVIEW_LBL' | translate }}</span>
+          <a routerLink="/admin/users" class="see-all">{{ 'ADMIN.VIEW_ALL' | translate }} →</a>
         </div>
         <div class="users-grid">
           <div class="user-stat">
             <div class="user-stat-val">{{ totalUsers() }}</div>
-            <div class="user-stat-lbl">Total Users</div>
+            <div class="user-stat-lbl">{{ 'ADMIN.TOTAL_USERS' | translate }}</div>
           </div>
           <div class="user-stat">
             <div class="user-stat-val user-stat-val--gold">{{ activeCarriers() }}</div>
-            <div class="user-stat-lbl">Active Carriers</div>
+            <div class="user-stat-lbl">{{ 'ADMIN.ACTIVE_CARRIERS_LBL' | translate }}</div>
           </div>
           <div class="user-stat">
             <div class="user-stat-val user-stat-val--blue">{{ totalShippers() }}</div>
-            <div class="user-stat-lbl">Active Shippers</div>
+            <div class="user-stat-lbl">{{ 'ADMIN.ACTIVE_SHIPPERS_LBL' | translate }}</div>
           </div>
           <div class="user-stat">
             <div class="user-stat-val user-stat-val--green">{{ driversOnline() }}</div>
-            <div class="user-stat-lbl">Drivers Available</div>
+            <div class="user-stat-lbl">{{ 'ADMIN.DRIVERS_AVAILABLE' | translate }}</div>
           </div>
         </div>
         <div class="users-table-wrap" *ngIf="recentUsers().length">
@@ -367,7 +367,7 @@ import { User } from '../../core/models/user.model';
                 <td class="user-phone">{{ u.phone_number }}</td>
                 <td>
                   <span class="status-pill" [class.status-pill--ok]="u.is_verified" [class.status-pill--warn]="!u.is_verified">
-                    {{ u.is_verified ? 'Verified' : 'Pending' }}
+                    {{ (u.is_verified ? 'ADMIN.VERIFIED' : 'ADMIN.PENDING') | translate }}
                   </span>
                 </td>
               </tr>
@@ -702,11 +702,11 @@ export class AdminDashboardComponent implements OnInit {
 
   // ── Operational Queues ───────────────────────────────────────────────
   operationalQueues = computed(() => [
-    { icon: '✅', label: 'Verification Queue', count: this.verificationCount() },
-    { icon: '⚖',  label: 'Dispute Queue',      count: this.disputeCount()      },
-    { icon: '💳', label: 'Settlement Queue',   count: 6                         },
-    { icon: '🎫', label: 'Support Tickets',    count: 6                         },
-    { icon: '↩',  label: 'Refund Requests',    count: 3                         },
+    { icon: '✅', labelKey: 'ADMIN.VERIF_QUEUE_LBL', count: this.verificationCount() },
+    { icon: '⚖',  labelKey: 'ADMIN.DISPUTE_QUEUE',   count: this.disputeCount()      },
+    { icon: '💳', labelKey: 'ADMIN.SETTLEMENT_QUEUE', count: 6                        },
+    { icon: '🎫', labelKey: 'ADMIN.SUPPORT_TICKETS',  count: 6                        },
+    { icon: '↩',  labelKey: 'ADMIN.REFUND_REQUESTS',  count: 3                        },
   ]);
 
   // ── Recent Activity ──────────────────────────────────────────────────
