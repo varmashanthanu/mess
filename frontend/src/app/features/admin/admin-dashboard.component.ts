@@ -178,7 +178,7 @@ import { User } from '../../core/models/user.model';
               <svg viewBox="0 0 36 36" width="54" height="54">
                 <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--border)" stroke-width="3"/>
                 <circle cx="18" cy="18" r="15.9" fill="none" stroke="#66BB6A" stroke-width="3"
-                  stroke-dasharray="{{ completionRate() }} {{ 100 - completionRate() }}"
+                  [attr.stroke-dasharray]="completionRate() + ' ' + (100 - completionRate())"
                   stroke-dashoffset="25" stroke-linecap="round"/>
                 <text x="18" y="20.5" text-anchor="middle" font-size="7" fill="var(--text-primary)" font-weight="700">{{ completionRate() }}%</text>
               </svg>
@@ -260,12 +260,12 @@ import { User } from '../../core/models/user.model';
                 <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--border)" stroke-width="3"/>
                 <!-- Success -->
                 <circle cx="18" cy="18" r="15.9" fill="none" stroke="#66BB6A" stroke-width="3"
-                  stroke-dasharray="{{ paySuccessPct() }} {{ 100 - paySuccessPct() }}"
+                  [attr.stroke-dasharray]="paySuccessPct() + ' ' + (100 - paySuccessPct())"
                   stroke-dashoffset="25" stroke-linecap="round"/>
                 <!-- Failed -->
                 <circle cx="18" cy="18" r="15.9" fill="none" stroke="#E53935" stroke-width="3"
-                  stroke-dasharray="{{ payFailedPct() }} {{ 100 - payFailedPct() }}"
-                  stroke-dashoffset="{{ 25 - paySuccessPct() }}" stroke-linecap="round"/>
+                  [attr.stroke-dasharray]="payFailedPct() + ' ' + (100 - payFailedPct())"
+                  [attr.stroke-dashoffset]="25 - paySuccessPct()" stroke-linecap="round"/>
                 <text x="18" y="17" text-anchor="middle" font-size="5" fill="var(--text-secondary)">Success</text>
                 <text x="18" y="23" text-anchor="middle" font-size="6" fill="#66BB6A" font-weight="700">> 99%</text>
               </svg>

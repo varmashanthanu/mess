@@ -432,8 +432,8 @@ export class SuperAdminComponent implements OnInit {
 
   loadAdmins(): void {
     this.loadingAdmins.set(true);
-    this.http.get<AdminUser[]>(`${this.apiBase}/admins/`, { headers: this.headers() }).subscribe({
-      next: r => { this.admins.set(r); this.loadingAdmins.set(false); },
+    this.http.get<{ results: AdminUser[] }>(`${this.apiBase}/admins/`, { headers: this.headers() }).subscribe({
+      next: r => { this.admins.set(r.results ?? []); this.loadingAdmins.set(false); },
       error: () => this.loadingAdmins.set(false),
     });
   }
