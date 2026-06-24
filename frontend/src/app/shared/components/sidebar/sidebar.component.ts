@@ -384,6 +384,7 @@ export class SidebarComponent {
   ];
 
   private adminItems: NavItem[] = [
+    { labelKey: 'NAV.ADMIN_SUPER',       icon: '🔑', route: '/superadmin', color: '#4A148C' },
     { labelKey: 'NAV.ADMIN_CC',          icon: '⚡', route: '/admin',     color: '#1A237E' },
     { labelKey: 'NAV.ADMIN_MARKETPLACE', icon: '🏪', route: '/load-board', color: '#C9A227' },
     { labelKey: 'NAV.ADMIN_TRUST',       icon: '🛡', route: '/admin',     color: '#C62828' },
@@ -410,7 +411,11 @@ export class SidebarComponent {
     if (role === 'SHIPPER') return this.shipperItems;
     if (role === 'CARRIER') return this.carrierItems;
     if (role === 'BROKER')  return this.brokerItems;
-    if (role === 'ADMIN')   return this.adminItems;
+    if (role === 'ADMIN') {
+      return this.auth.isSuperAdmin()
+        ? this.adminItems
+        : this.adminItems.filter(i => i.labelKey !== 'NAV.ADMIN_SUPER');
+    }
     return this.allItems.filter(item => !item.roles || (role && item.roles.includes(role)));
   });
 

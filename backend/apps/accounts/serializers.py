@@ -122,10 +122,10 @@ class UserDetailSerializer(serializers.ModelSerializer):
         fields = [
             "id", "phone_number", "email", "first_name", "last_name",
             "full_name", "role", "preferred_language", "is_verified",
-            "is_identity_verified", "date_joined",
+            "is_identity_verified", "is_superuser", "date_joined",
             "shipper_profile", "driver_profile", "carrier_profile",
         ]
-        read_only_fields = ["id", "phone_number", "is_verified", "is_identity_verified", "date_joined"]
+        read_only_fields = ["id", "phone_number", "is_verified", "is_identity_verified", "is_superuser", "date_joined"]
 
     def get_shipper_profile(self, obj):
         if hasattr(obj, "shipper_profile"):

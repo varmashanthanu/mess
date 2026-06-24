@@ -118,6 +118,7 @@
     "SHIPPER_TRACKING": "Suivi",
     "SHIPPER_ACCOUNT": "Compte",
     "ACCOUNT": "Compte",
+    "ADMIN_SUPER": "Super Admin",
     "ADMIN_CC": "Dashboard",
     "ADMIN_MARKETPLACE": "Marketplace",
     "ADMIN_TRUST": "Conformité",

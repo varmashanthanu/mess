@@ -311,6 +311,28 @@ class BrokerProfile(BaseModel):
         return f"Broker: {self.company_name or self.user.full_name}"
 
 
+class AdminPermission(BaseModel):
+    """Granular permissions for admin users (set by superadmin)."""
+    user = models.OneToOneField(
+        "accounts.User", on_delete=models.CASCADE, related_name="admin_permissions"
+    )
+    can_manage_users     = models.BooleanField(default=True)
+    can_manage_fleet     = models.BooleanField(default=True)
+    can_manage_orders    = models.BooleanField(default=True)
+    can_manage_finance   = models.BooleanField(default=True)
+    can_manage_analytics = models.BooleanField(default=True)
+    can_manage_messaging = models.BooleanField(default=True)
+    can_manage_tracking  = models.BooleanField(default=True)
+    can_view_governance  = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Admin Permission"
+        verbose_name_plural = "Admin Permissions"
+
+    def __str__(self):
+        return f"Permissions — {self.user.full_name}"
+
+
 class ContactMessage(BaseModel):
     """Message sent via the contact form."""
     first_name = models.CharField(max_length=100)
