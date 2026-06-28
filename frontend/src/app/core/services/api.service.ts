@@ -221,6 +221,10 @@ export class ApiService {
     return this.http.patch<any>(`${this.base}/accounts/me/driver-profile/`, data);
   }
 
+  updateCarrierProfile(data: Record<string, any>): Observable<any> {
+    return this.http.patch<any>(`${this.base}/accounts/me/carrier-profile/`, data);
+  }
+
   updateDriverAvailability(available: boolean): Observable<any> {
     return this.http.patch<any>(`${this.base}/accounts/me/availability/`, {
       is_available: available

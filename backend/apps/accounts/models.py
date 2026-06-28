@@ -258,6 +258,9 @@ class CarrierProfile(BaseModel):
     bank_account_number = models.CharField(max_length=100, blank=True)
     bank_routing_number = models.CharField(max_length=100, blank=True)
 
+    # Availability
+    is_available = models.BooleanField(default=False, db_index=True)
+
     # Operational
     preferred_lanes = models.TextField(blank=True)
     service_area = models.TextField(blank=True)

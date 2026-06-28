@@ -410,6 +410,10 @@
     "VEHICLE_TYPE_SELECT": "-- Select --",
     "SAVE": "Save",
     "SAVING": "Saving...",
+    "UPDATE": "Update",
+    "CANCEL": "Cancel",
+    "EDIT": "Edit",
+    "EDIT_FORM_TITLE": "Edit vehicle",
     "STATUS_ACTIVE": "Active",
     "STATUS_INACTIVE": "Inactive",
     "OWNER": "Owner",
@@ -480,7 +484,9 @@
       "DRIVER_LABEL": "🚚 Driver",
       "CARRIER_LABEL": "🏢 Carrier",
       "BROKER_LABEL": "🤝 Broker",
-      "ADMIN_LABEL": "⚙️ Admin"
+      "ADMIN_LABEL": "⚙️ Admin",
+      "SUPERADMIN": "Super Admin",
+      "PERSONAL": "Personal Space"
     },
     "TABS": {
       "INFO": "👤 Information",
@@ -585,7 +591,7 @@
       "CUSTOM_TYPE_PH": "e.g. 7T tarpaulin truck, agricultural tractor..."
     },
     "CARRIER": {
-      "COMPANY": "Company name *",
+      "COMPANY": "Company Name *",
       "DOT": "DOT number",
       "MC": "MC / Authority number",
       "AUTHORITY": "Operating authority",

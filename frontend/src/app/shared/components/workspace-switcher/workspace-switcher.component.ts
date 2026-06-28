@@ -2,6 +2,8 @@ import { Component, inject, signal, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { WorkspaceService } from '../../../core/services/workspace.service';
 import { WorkspaceType, Workspace } from '../../../core/models/workspace.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { WorkspaceOnboardingModalComponent } from '../workspace-onboarding-modal/workspace-onboarding-modal.component';
 
 const WORKSPACE_ICONS: Record<WorkspaceType, string> = {
   PERSONAL:   '👤',
@@ -26,7 +28,7 @@ const WORKSPACE_COLORS: Record<WorkspaceType, string> = {
 @Component({
   selector: 'app-workspace-switcher',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, WorkspaceOnboardingModalComponent],
   template: `
     <div class="ws-switcher" *ngIf="ws.activeWorkspace()">
 
@@ -53,6 +55,14 @@ const WORKSPACE_COLORS: Record<WorkspaceType, string> = {
         <div class="ws-loading" *ngIf="ws.loading()">Changement en cours...</div>
       </div>
     </div>
+
+    <!-- Onboarding modal — shown before switching to CARRIER or DRIVER -->
+    <app-workspace-onboarding-modal
+      *ngIf="pendingWorkspace()"
+      [targetWorkspace]="pendingWorkspace()!"
+      (confirmed)="onOnboardingConfirmed()"
+      (cancelled)="onOnboardingCancelled()"
+    ></app-workspace-onboarding-modal>
   `,
   styles: [`
     .ws-switcher { position: relative; padding: 6px 10px; }
@@ -109,13 +119,17 @@ const WORKSPACE_COLORS: Record<WorkspaceType, string> = {
   `]
 })
 export class WorkspaceSwitcherComponent implements OnInit {
-  readonly ws: WorkspaceService = inject(WorkspaceService);
-  readonly open = signal(false);
+  readonly ws:   WorkspaceService = inject(WorkspaceService);
+  private  auth: AuthService      = inject(AuthService);
+
+  readonly open            = signal(false);
+  readonly pendingWorkspace = signal<WorkspaceType | null>(null);
+
+  private pendingTarget: WorkspaceType | null = null;
 
   ngOnInit(): void {
-    // Workspaces may already be in cache — API call confirms/updates the list
     this.ws.loadWorkspaces().subscribe({
-      error: () => { /* cached data still in signal, dropdown remains functional */ }
+      error: () => { /* cached data still in signal */ }
     });
   }
 
@@ -126,12 +140,41 @@ export class WorkspaceSwitcherComponent implements OnInit {
 
   select(w: Workspace, e: Event): void {
     e.stopPropagation();
-    if (w.id === this.ws.activeWorkspace()?.id) {
-      this.open.set(false);
+    if (w.id === this.ws.activeWorkspace()?.id) { this.open.set(false); return; }
+    this.open.set(false);
+
+    // Check if onboarding is needed for DRIVER or CARRIER
+    if (this.needsOnboarding(w.id)) {
+      this.pendingTarget = w.id;
+      this.pendingWorkspace.set(w.id);
       return;
     }
-    this.open.set(false);
-    this.ws.switchWorkspace(w.id).subscribe({
+
+    this.doSwitch(w.id);
+  }
+
+  private needsOnboarding(targetId: WorkspaceType): boolean {
+    if (targetId !== 'DRIVER' && targetId !== 'CARRIER') return false;
+    const user = this.auth.user() as any;
+    if (targetId === 'DRIVER')  return !user?.driver_profile;
+    if (targetId === 'CARRIER') return !user?.carrier_profile;
+    return false;
+  }
+
+  onOnboardingConfirmed(): void {
+    const target = this.pendingTarget;
+    this.pendingWorkspace.set(null);
+    this.pendingTarget = null;
+    if (target) this.doSwitch(target);
+  }
+
+  onOnboardingCancelled(): void {
+    this.pendingWorkspace.set(null);
+    this.pendingTarget = null;
+  }
+
+  private doSwitch(workspaceId: WorkspaceType): void {
+    this.ws.switchWorkspace(workspaceId).subscribe({
       error: (err: unknown) => console.error('Workspace switch failed', err),
     });
   }

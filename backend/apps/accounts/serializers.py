@@ -215,6 +215,8 @@ class CarrierProfileSerializer(serializers.ModelSerializer):
             "payment_method", "bank_account_name", "bank_account_number", "bank_routing_number",
             # Operational
             "preferred_lanes", "service_area", "availability_notes", "drug_testing_status",
+            # Availability
+            "is_available",
             # Compliance
             "carrier_agreement_accepted", "carrier_agreement_accepted_at",
             # Stats
