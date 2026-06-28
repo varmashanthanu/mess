@@ -59,4 +59,6 @@ export interface JwtPayload {
   full_name: string;
   exp: number;
   iat: number;
+  workspace_type?: string;
+  workspace_name?: string;
 }

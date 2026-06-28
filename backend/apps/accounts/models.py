@@ -3,6 +3,7 @@ MESS Platform — Accounts Models
 Phone-number-based user authentication with role differentiation.
 """
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+import uuid
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -350,3 +351,20 @@ class ContactMessage(BaseModel):
 
     def __str__(self):
         return f"{self.first_name} — {self.subject}"
+
+
+class WorkspaceSwitchLog(models.Model):
+    """Audit log for every workspace switch."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workspace_switches')
+    from_workspace = models.CharField(max_length=20, null=True, blank=True)
+    to_workspace = models.CharField(max_length=20)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user} | {self.from_workspace} → {self.to_workspace}'

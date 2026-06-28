@@ -4,6 +4,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
+import { WorkspaceSwitcherComponent } from '../workspace-switcher/workspace-switcher.component';
+import { WorkspaceService } from '../../../core/services/workspace.service';
 import { ApiService } from '../../../core/services/api.service';
 
 interface NavItem {
@@ -17,7 +19,7 @@ interface NavItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive, TranslateModule],
+  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive, TranslateModule, WorkspaceSwitcherComponent],
   template: `
     <aside class="sidebar" [class.collapsed]="collapsed()" [class.mobile-open]="mobileOpen()">
 
@@ -35,6 +37,9 @@ interface NavItem {
         <button class="contact-btn-icon" *ngIf="collapsed()" (click)="openContact()" [title]="'CONTACT.TITLE' | translate">☎</button>
         <button class="sidebar-close" *ngIf="!collapsed()" (click)="onClose()" aria-label="Close sidebar">✕</button>
       </div>
+
+      <!-- Workspace switcher -->
+      <app-workspace-switcher *ngIf="!collapsed()"></app-workspace-switcher>
 
       <!-- Role badge -->
       <div class="role-badge" *ngIf="!collapsed()">
@@ -293,6 +298,7 @@ export class SidebarComponent {
   close = output<void>();
 
   auth = inject(AuthService);
+  private wsService = inject(WorkspaceService);
   private api = inject(ApiService);
 
   // Contact form
@@ -337,13 +343,17 @@ export class SidebarComponent {
 
   rolePillKey = computed(() => {
     const roleMap: Record<string, string> = {
-      SHIPPER: 'PROFILE.ROLES.SHIPPER_LABEL',
-      DRIVER: 'PROFILE.ROLES.DRIVER_LABEL',
-      CARRIER: 'PROFILE.ROLES.CARRIER_LABEL',
-      BROKER: 'PROFILE.ROLES.BROKER_LABEL',
-      ADMIN: 'PROFILE.ROLES.ADMIN_LABEL',
+      PERSONAL:   'WORKSPACE.PERSONAL',
+      SHIPPER:    'PROFILE.ROLES.SHIPPER_LABEL',
+      DRIVER:     'PROFILE.ROLES.DRIVER_LABEL',
+      CARRIER:    'PROFILE.ROLES.CARRIER_LABEL',
+      BROKER:     'PROFILE.ROLES.BROKER_LABEL',
+      ADMIN:      'PROFILE.ROLES.ADMIN_LABEL',
+      SUPERADMIN: 'WORKSPACE.SUPERADMIN',
     };
-    return roleMap[this.auth.user()?.role ?? ''] ?? '';
+    const ws = this.wsService.activeWorkspace();
+    const key = ws?.type || this.auth.user()?.role || '';
+    return roleMap[key] ?? '';
   });
 
   private driverItems: NavItem[] = [
@@ -411,15 +421,17 @@ export class SidebarComponent {
   ];
 
   visibleItems = computed(() => {
-    const role = this.auth.role();
-    if (role === 'DRIVER')  return this.driverItems;
-    if (role === 'SHIPPER') return this.shipperItems;
-    if (role === 'CARRIER') return this.carrierItems;
-    if (role === 'BROKER')  return this.brokerItems;
-    if (role === 'ADMIN') {
-      return this.auth.isSuperAdmin() ? this.superAdminItems : this.adminItems;
-    }
-    return this.allItems.filter(item => !item.roles || (role && item.roles.includes(role)));
+    // Use active workspace type if available, fallback to user role
+    const ws = this.wsService.activeWorkspace();
+    const role = (ws?.type || this.auth.role()) as string;
+    if (role === 'DRIVER')     return this.driverItems;
+    if (role === 'SHIPPER')    return this.shipperItems;
+    if (role === 'CARRIER')    return this.carrierItems;
+    if (role === 'BROKER')     return this.brokerItems;
+    if (role === 'SUPERADMIN') return this.superAdminItems;
+    if (role === 'ADMIN')      return this.auth.isSuperAdmin() ? this.superAdminItems : this.adminItems;
+    if (role === 'PERSONAL')   return [this.allItems[0]];  // only dashboard
+    return this.allItems.filter(item => !item.roles || (this.auth.role() && item.roles.includes(this.auth.role()!)));
   });
 
   onNavClick(): void {

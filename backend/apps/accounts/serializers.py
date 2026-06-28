@@ -21,6 +21,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["role"] = user.role
         token["name"] = user.full_name
         token["phone"] = str(user.phone_number)
+        token["workspace_type"] = user.role
+        token["workspace_name"] = ""
         return token
 
 

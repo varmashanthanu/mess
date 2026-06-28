@@ -807,5 +807,15 @@
     "SUBMITTING": "Envoi en cours...",
     "SUCCESS": "✓ Message envoyé ! Nous vous répondrons bientôt.",
     "ERROR": "Erreur lors de l'envoi. Veuillez réessayer."
+  },
+  "WORKSPACE": {
+    "SWITCH_TITLE": "Changer d'espace",
+    "PERSONAL": "Espace Personnel",
+    "SHIPPER": "Espace Expediteur",
+    "DRIVER": "Espace Chauffeur",
+    "CARRIER": "Espace Transporteur",
+    "BROKER": "Espace Courtier",
+    "ADMIN": "Administration",
+    "SUPERADMIN": "Super Admin"
   }
 }

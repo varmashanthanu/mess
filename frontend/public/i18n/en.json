@@ -807,5 +807,15 @@
     "SUBMITTING": "Sending...",
     "SUCCESS": "✓ Message sent! We will respond shortly.",
     "ERROR": "Failed to send. Please try again."
+  },
+  "WORKSPACE": {
+    "SWITCH_TITLE": "Switch Workspace",
+    "PERSONAL": "Personal Space",
+    "SHIPPER": "Shipper Space",
+    "DRIVER": "Driver Space",
+    "CARRIER": "Carrier Space",
+    "BROKER": "Broker Space",
+    "ADMIN": "Administration",
+    "SUPERADMIN": "Super Admin"
   }
 }
