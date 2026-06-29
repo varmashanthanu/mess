@@ -33,7 +33,7 @@ import { User } from '../../core/models/user.model';
         </div>
         <div class="hero-right">
           <div class="hero-date">{{ today | date:'MMMM d, y' }}</div>
-          <a class="btn-trust" routerLink="/admin">🛡 Trust Center</a>
+          <a class="btn-trust" routerLink="/admin">🛡 {{ 'ADMIN.TRUST_CENTER' | translate }}</a>
         </div>
       </div>
 
@@ -127,7 +127,7 @@ import { User } from '../../core/models/user.model';
             <a class="see-all">{{ 'ADMIN.VIEW_ALL' | translate }}</a>
           </div>
           <div class="sys-alert sys-alert--high" *ngFor="let a of systemAlertsHigh()">
-            <span class="severity-badge severity--high">High</span>
+            <span class="severity-badge severity--high">Élevé</span>
             <div class="sys-alert-body">
               <div class="sys-alert-title">{{ a.title }}</div>
               <div class="sys-alert-detail">{{ a.detail }}</div>
@@ -135,7 +135,7 @@ import { User } from '../../core/models/user.model';
             <div class="sys-alert-time">{{ a.time }}</div>
           </div>
           <div class="sys-alert sys-alert--medium" *ngFor="let a of systemAlertsMedium()">
-            <span class="severity-badge severity--medium">Medium</span>
+            <span class="severity-badge severity--medium">Moyen</span>
             <div class="sys-alert-body">
               <div class="sys-alert-title">{{ a.title }}</div>
               <div class="sys-alert-detail">{{ a.detail }}</div>
@@ -143,12 +143,12 @@ import { User } from '../../core/models/user.model';
             <div class="sys-alert-time">{{ a.time }}</div>
           </div>
           <div class="sys-alert sys-alert--low">
-            <span class="severity-badge severity--low">Low</span>
+            <span class="severity-badge severity--low">Faible</span>
             <div class="sys-alert-body">
-              <div class="sys-alert-title">System maintenance scheduled</div>
-              <div class="sys-alert-detail">May 22, 2025 02:00 AM</div>
+              <div class="sys-alert-title">Maintenance système planifiée</div>
+              <div class="sys-alert-detail">22 mai 2025 à 02h00</div>
             </div>
-            <div class="sys-alert-time">2 hrs ago</div>
+            <div class="sys-alert-time">Il y a 2h</div>
           </div>
         </div>
 
@@ -266,7 +266,7 @@ import { User } from '../../core/models/user.model';
                 <circle cx="18" cy="18" r="15.9" fill="none" stroke="#E53935" stroke-width="3"
                   [attr.stroke-dasharray]="payFailedPct() + ' ' + (100 - payFailedPct())"
                   [attr.stroke-dashoffset]="25 - paySuccessPct()" stroke-linecap="round"/>
-                <text x="18" y="17" text-anchor="middle" font-size="5" fill="var(--text-secondary)">Success</text>
+                <text x="18" y="17" text-anchor="middle" font-size="5" fill="var(--text-secondary)">Succès</text>
                 <text x="18" y="23" text-anchor="middle" font-size="6" fill="#66BB6A" font-weight="700">> 99%</text>
               </svg>
             </div>
@@ -354,10 +354,10 @@ import { User } from '../../core/models/user.model';
           <table class="users-table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Phone</th>
-                <th>Status</th>
+                <th>Nom</th>
+                <th>Rôle</th>
+                <th>Téléphone</th>
+                <th>Statut</th>
               </tr>
             </thead>
             <tbody>
@@ -682,22 +682,22 @@ export class AdminDashboardComponent implements OnInit {
   systemAlertsHigh = computed(() => {
     const alerts = [];
     if (this.fraudAlerts() > 0)
-      alerts.push({ title: 'Suspicious document detected', detail: `Driver ID — ${this.allUsers().find((u: any) => !u.is_verified && u.role === 'DRIVER')?.full_name ?? 'Utilisateur inconnu'}`, time: '10 min ago' });
+      alerts.push({ title: 'Document suspect détecté', detail: `ID Chauffeur — ${this.allUsers().find((u: any) => !u.is_verified && u.role === 'DRIVER')?.full_name ?? 'Utilisateur inconnu'}`, time: 'Il y a 10 min' });
     return alerts;
   });
   systemAlertsMedium = computed(() => {
     const alerts = [];
     if (this.failedPayments() > 0)
-      alerts.push({ title: 'Payment failure', detail: `${this.failedPayments()} paiement(s) échoué(s) — action requise`, time: '25 min ago' });
+      alerts.push({ title: 'Échec de paiement', detail: `${this.failedPayments()} paiement(s) échoué(s) — action requise`, time: 'Il y a 25 min' });
     return alerts;
   });
 
   // ── Marketplace Health rows ───────────────────────────────────────────
   healthRows = computed(() => [
-    { label: 'Active Loads',      value: this.activeLoads(),    trend:  8.2 },
-    { label: 'Active Carriers',   value: this.activeCarriers(), trend:  6.1 },
-    { label: 'Active Shippers',   value: this.totalShippers(),  trend:  4.3 },
-    { label: 'Active Brokers',    value: Math.max(1, Math.round(this.totalUsers() * 0.05)), trend: 3.2 },
+    { label: 'Chargements actifs',   value: this.activeLoads(),    trend:  8.2 },
+    { label: 'Transporteurs actifs', value: this.activeCarriers(), trend:  6.1 },
+    { label: 'Expéditeurs actifs',   value: this.totalShippers(),  trend:  4.3 },
+    { label: 'Courtiers actifs',     value: Math.max(1, Math.round(this.totalUsers() * 0.05)), trend: 3.2 },
   ]);
 
   // ── Operational Queues ───────────────────────────────────────────────
@@ -712,11 +712,11 @@ export class AdminDashboardComponent implements OnInit {
   // ── Recent Activity ──────────────────────────────────────────────────
   recentActivity = computed(() => {
     const items = [
-      { icon: '🚛', type: 'new',     text: 'New carrier verification request', sub: this.allUsers().find((u: any) => !u.is_verified && u.role === 'CARRIER')?.full_name ?? 'Transporteur', time: '5 min ago' },
-      { icon: '📦', type: 'success', text: `Load ${this.allOrders()[0]?.reference ?? '#LD-001'} created`, sub: '', time: '15 min ago' },
-      { icon: '🤝', type: 'success', text: 'Booking confirmed', sub: `${this.allOrders().find(o => o.status === 'ASSIGNED')?.reference ?? '#BK-002'}`, time: '25 min ago' },
-      { icon: '💰', type: 'success', text: 'Payment completed', sub: `${this.volumeToday() > 0 ? (this.volumeToday() / Math.max(1, this.loadsDelivered()) | 0).toLocaleString() : '850,000'} FCFA`, time: '35 min ago' },
-      { icon: '⚠',  type: 'alert',   text: 'Dispute opened', sub: this.allOrders().find(o => o.status === 'POSTED')?.reference ?? '#LD-003', time: '1 hr ago' },
+      { icon: '🚛', type: 'new',     text: 'Nouvelle demande de vérification transporteur', sub: this.allUsers().find((u: any) => !u.is_verified && u.role === 'CARRIER')?.full_name ?? 'Transporteur', time: 'Il y a 5 min' },
+      { icon: '📦', type: 'success', text: `Chargement ${this.allOrders()[0]?.reference ?? '#LD-001'} créé`, sub: '', time: 'Il y a 15 min' },
+      { icon: '🤝', type: 'success', text: 'Réservation confirmée', sub: `${this.allOrders().find(o => o.status === 'ASSIGNED')?.reference ?? '#BK-002'}`, time: 'Il y a 25 min' },
+      { icon: '💰', type: 'success', text: 'Paiement effectué', sub: `${this.volumeToday() > 0 ? (this.volumeToday() / Math.max(1, this.loadsDelivered()) | 0).toLocaleString() : '850,000'} FCFA`, time: 'Il y a 35 min' },
+      { icon: '⚠',  type: 'alert',   text: 'Litige ouvert', sub: this.allOrders().find(o => o.status === 'POSTED')?.reference ?? '#LD-003', time: 'Il y a 1h' },
     ];
     return items;
   });

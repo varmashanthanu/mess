@@ -103,6 +103,55 @@ class AdminPermissionView(APIView):
         return Response(serializer.data)
 
 
+class PlatformUserSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(read_only=True)
+
+    class Meta:
+        model  = User
+        fields = [
+            "id", "full_name", "first_name", "last_name",
+            "phone_number", "email", "role",
+            "is_active", "is_verified", "is_superuser",
+            "date_joined", "last_login",
+        ]
+        read_only_fields = fields
+
+
+class PlatformUserListView(generics.ListAPIView):
+    """List ALL platform users (superadmin only)."""
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+    serializer_class   = PlatformUserSerializer
+
+    def get_queryset(self):
+        qs = User.objects.all().order_by("-date_joined")
+        role   = self.request.query_params.get("role")
+        search = self.request.query_params.get("search")
+        active = self.request.query_params.get("is_active")
+        if role:
+            qs = qs.filter(role=role)
+        if search:
+            qs = qs.filter(phone_number__icontains=search) | qs.filter(first_name__icontains=search) | qs.filter(last_name__icontains=search)
+        if active is not None:
+            qs = qs.filter(is_active=(active.lower() == "true"))
+        return qs
+
+
+class PlatformUserToggleBlockView(APIView):
+    """Block or unblock any platform user (superadmin only)."""
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+
+    def patch(self, request, pk):
+        try:
+            user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({"detail": "Utilisateur introuvable."}, status=404)
+        if user.is_superuser:
+            return Response({"detail": "Impossible de bloquer un super administrateur."}, status=400)
+        user.is_active = not user.is_active
+        user.save(update_fields=["is_active"])
+        return Response(PlatformUserSerializer(user).data)
+
+
 class SystemStatsView(APIView):
     """System monitoring — DB, disk, process stats (superadmin only)."""
     permission_classes = [IsAuthenticated, IsSuperAdmin]

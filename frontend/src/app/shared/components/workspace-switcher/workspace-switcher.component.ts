@@ -1,5 +1,6 @@
 import { Component, inject, signal, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { WorkspaceService } from '../../../core/services/workspace.service';
 import { WorkspaceType, Workspace } from '../../../core/models/workspace.model';
 import { AuthService } from '../../../core/services/auth.service';
@@ -28,7 +29,7 @@ const WORKSPACE_COLORS: Record<WorkspaceType, string> = {
 @Component({
   selector: 'app-workspace-switcher',
   standalone: true,
-  imports: [CommonModule, WorkspaceOnboardingModalComponent],
+  imports: [CommonModule, TranslateModule, WorkspaceOnboardingModalComponent],
   template: `
     <div class="ws-switcher" *ngIf="ws.activeWorkspace()">
 
@@ -39,7 +40,7 @@ const WORKSPACE_COLORS: Record<WorkspaceType, string> = {
       </button>
 
       <div class="ws-dropdown" *ngIf="open() && ws.workspaces().length > 1">
-        <div class="ws-dropdown-header">Changer d'espace</div>
+        <div class="ws-dropdown-header">{{ 'WS_SWITCH.CHANGE_SPACE' | translate }}</div>
         <ng-container *ngFor="let w of ws.workspaces()">
           <button
             class="ws-option"
@@ -52,7 +53,7 @@ const WORKSPACE_COLORS: Record<WorkspaceType, string> = {
             <span class="ws-opt-check" *ngIf="w.id === ws.activeWorkspace()?.id">✓</span>
           </button>
         </ng-container>
-        <div class="ws-loading" *ngIf="ws.loading()">Changement en cours...</div>
+        <div class="ws-loading" *ngIf="ws.loading()">{{ 'WS_SWITCH.SWITCHING' | translate }}</div>
       </div>
     </div>
 

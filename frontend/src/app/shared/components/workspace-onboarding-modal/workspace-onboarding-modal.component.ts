@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { WorkspaceType } from '../../../core/models/workspace.model';
 import { forkJoin, switchMap } from 'rxjs';
@@ -8,7 +9,7 @@ import { forkJoin, switchMap } from 'rxjs';
 @Component({
   selector: 'app-workspace-onboarding-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule],
   template: `
     <div class="modal-overlay" (click)="onOverlayClick($event)">
       <div class="modal-box" (click)="$event.stopPropagation()">
@@ -18,12 +19,10 @@ import { forkJoin, switchMap } from 'rxjs';
           <div class="modal-icon">{{ targetWorkspace === 'CARRIER' ? '🏢' : '🚛' }}</div>
           <div>
             <h2 class="modal-title">
-              {{ targetWorkspace === 'CARRIER' ? 'Activer le compte Transporteur' : 'Activer le compte Chauffeur' }}
+              {{ (targetWorkspace === 'CARRIER' ? 'ONBOARDING.CARRIER_TITLE' : 'ONBOARDING.DRIVER_TITLE') | translate }}
             </h2>
             <p class="modal-sub">
-              {{ targetWorkspace === 'CARRIER'
-                ? 'Renseignez les informations de votre société et au moins 2 véhicules.'
-                : 'Renseignez vos informations et au moins 1 véhicule.' }}
+              {{ (targetWorkspace === 'CARRIER' ? 'ONBOARDING.CARRIER_SUB' : 'ONBOARDING.DRIVER_SUB') | translate }}
             </p>
           </div>
           <button class="modal-close" (click)="cancel()">✕</button>
@@ -33,12 +32,12 @@ import { forkJoin, switchMap } from 'rxjs';
         <div class="steps">
           <div class="step" [class.active]="step() === 1" [class.done]="step() > 1">
             <span class="step-num">1</span>
-            <span class="step-lbl">{{ targetWorkspace === 'CARRIER' ? 'Société' : 'Identité' }}</span>
+            <span class="step-lbl">{{ (targetWorkspace === 'CARRIER' ? 'ONBOARDING.STEP1_CARRIER' : 'ONBOARDING.STEP1_DRIVER') | translate }}</span>
           </div>
           <div class="step-line"></div>
           <div class="step" [class.active]="step() === 2" [class.done]="step() > 2">
             <span class="step-num">2</span>
-            <span class="step-lbl">{{ targetWorkspace === 'CARRIER' ? 'Véhicules (min. 2)' : 'Véhicule' }}</span>
+            <span class="step-lbl">{{ (targetWorkspace === 'CARRIER' ? 'ONBOARDING.STEP2_CARRIER' : 'ONBOARDING.STEP2_DRIVER') | translate }}</span>
           </div>
         </div>
 
@@ -51,26 +50,26 @@ import { forkJoin, switchMap } from 'rxjs';
           <!-- DRIVER: identity -->
           <form *ngIf="targetWorkspace === 'DRIVER'" [formGroup]="driverIdentityForm" class="form-body">
             <div class="form-group">
-              <label>Prénom <span class="req">*</span></label>
+              <label>{{ 'ONBOARDING.FIRST_NAME' | translate }} <span class="req">*</span></label>
               <input type="text" formControlName="first_name" placeholder="Votre prénom" />
             </div>
             <div class="form-group">
-              <label>Nom <span class="req">*</span></label>
+              <label>{{ 'ONBOARDING.LAST_NAME' | translate }} <span class="req">*</span></label>
               <input type="text" formControlName="last_name" placeholder="Votre nom de famille" />
             </div>
             <div class="form-group">
-              <label>Numéro national d'identité (CNI) <span class="req">*</span></label>
+              <label>{{ 'ONBOARDING.NATIONAL_ID' | translate }} <span class="req">*</span></label>
               <input type="text" formControlName="national_id" placeholder="Ex: 1 234 567 890 1" />
             </div>
             <div class="form-group">
-              <label>Numéro de permis <span class="req">*</span></label>
+              <label>{{ 'ONBOARDING.LICENSE_NUMBER' | translate }} <span class="req">*</span></label>
               <input type="text" formControlName="license_number" placeholder="Ex: SN-DK-00123" />
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label>Catégorie permis <span class="req">*</span></label>
+                <label>{{ 'ONBOARDING.LICENSE_CLASS' | translate }} <span class="req">*</span></label>
                 <select formControlName="license_class">
-                  <option value="">Choisir...</option>
+                  <option value="">{{ 'ONBOARDING.LICENSE_CLASS_SELECT' | translate }}</option>
                   <option value="B">B — Véhicule léger</option>
                   <option value="C">C — Poids lourd</option>
                   <option value="D">D — Transport en commun</option>
@@ -78,7 +77,7 @@ import { forkJoin, switchMap } from 'rxjs';
                 </select>
               </div>
               <div class="form-group">
-                <label>Expiration permis <span class="req">*</span></label>
+                <label>{{ 'ONBOARDING.LICENSE_EXPIRY' | translate }} <span class="req">*</span></label>
                 <input type="date" formControlName="license_expiry" />
               </div>
             </div>
@@ -86,38 +85,38 @@ import { forkJoin, switchMap } from 'rxjs';
 
           <!-- CARRIER: company -->
           <form *ngIf="targetWorkspace === 'CARRIER'" [formGroup]="carrierCompanyForm" class="form-body">
-            <div class="section-title">Identité juridique</div>
+            <div class="section-title">{{ 'ONBOARDING.SECTION_LEGAL' | translate }}</div>
             <div class="form-group">
-              <label>Nom de la société <span class="req">*</span></label>
+              <label>{{ 'ONBOARDING.COMPANY_NAME' | translate }} <span class="req">*</span></label>
               <input type="text" formControlName="legal_company_name" placeholder="Ex: DIAW Transport SARL" />
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label>NINEA / Identifiant fiscal</label>
+                <label>{{ 'ONBOARDING.NINEA' | translate }}</label>
                 <input type="text" formControlName="tax_id" placeholder="Ex: 123456789 2Z3" />
               </div>
               <div class="form-group">
-                <label>Ville <span class="req">*</span></label>
+                <label>{{ 'ONBOARDING.CITY' | translate }} <span class="req">*</span></label>
                 <input type="text" formControlName="company_city" placeholder="Ex: Dakar" />
               </div>
             </div>
             <div class="form-group">
-              <label>Adresse société</label>
+              <label>{{ 'ONBOARDING.COMPANY_ADDRESS' | translate }}</label>
               <input type="text" formControlName="company_address" placeholder="Ex: Rue 10 × 23, Médina" />
             </div>
-            <div class="section-title" style="margin-top:16px">Assurance</div>
+            <div class="section-title" style="margin-top:16px">{{ 'ONBOARDING.SECTION_INSURANCE' | translate }}</div>
             <div class="form-row">
               <div class="form-group">
-                <label>Assureur <span class="req">*</span></label>
+                <label>{{ 'ONBOARDING.INSURER' | translate }} <span class="req">*</span></label>
                 <input type="text" formControlName="insurance_provider" placeholder="Ex: AMSA, Allianz..." />
               </div>
               <div class="form-group">
-                <label>N° Police <span class="req">*</span></label>
+                <label>{{ 'ONBOARDING.POLICY_NUMBER' | translate }} <span class="req">*</span></label>
                 <input type="text" formControlName="insurance_policy_number" placeholder="Ex: POL-2026-001" />
               </div>
             </div>
             <div class="form-group">
-              <label>Date d'expiration assurance <span class="req">*</span></label>
+              <label>{{ 'ONBOARDING.INSURANCE_EXPIRY' | translate }} <span class="req">*</span></label>
               <input type="date" formControlName="insurance_expiry" />
             </div>
           </form>
@@ -126,67 +125,67 @@ import { forkJoin, switchMap } from 'rxjs';
         <!-- ── STEP 2: Vehicles ── -->
         <div *ngIf="step() === 2" class="form-body">
           <div class="vehicles-header">
-            <span>Véhicules ({{ vehicleForms.length }} / min. {{ minVehicles() }})</span>
-            <button type="button" class="btn-add-vehicle" (click)="addVehicle()">+ Ajouter un véhicule</button>
+            <span>{{ 'ONBOARDING.VEHICLES_HEADER' | translate }} ({{ vehicleForms.length }} / min. {{ minVehicles() }})</span>
+            <button type="button" class="btn-add-vehicle" (click)="addVehicle()">{{ 'ONBOARDING.ADD_VEHICLE' | translate }}</button>
           </div>
 
           <div *ngFor="let vf of vehicleForms; let i = index" class="vehicle-card">
             <div class="vehicle-card-header">
-              <span>Véhicule {{ i + 1 }}</span>
+              <span>{{ 'ONBOARDING.VEHICLE_N' | translate }} {{ i + 1 }}</span>
               <button type="button" class="btn-remove" *ngIf="vehicleForms.length > minVehicles()" (click)="removeVehicle(i)">✕</button>
             </div>
             <div [formGroup]="vf">
               <div class="form-row">
                 <div class="form-group">
-                  <label>Immatriculation <span class="req">*</span></label>
+                  <label>{{ 'ONBOARDING.PLATE' | translate }} <span class="req">*</span></label>
                   <input type="text" formControlName="registration_number" placeholder="Ex: DK-1234-AA" />
                 </div>
                 <div class="form-group">
-                  <label>Marque <span class="req">*</span></label>
+                  <label>{{ 'ONBOARDING.MAKE' | translate }} <span class="req">*</span></label>
                   <input type="text" formControlName="make" placeholder="Ex: Mercedes" />
                 </div>
               </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label>Modèle</label>
+                  <label>{{ 'ONBOARDING.MODEL' | translate }}</label>
                   <input type="text" formControlName="model" placeholder="Ex: Actros" />
                 </div>
                 <div class="form-group">
-                  <label>Année</label>
+                  <label>{{ 'ONBOARDING.YEAR' | translate }}</label>
                   <input type="number" formControlName="year" placeholder="Ex: 2020" min="1990" max="2030" />
                 </div>
               </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label>Assureur <span class="req">*</span></label>
+                  <label>{{ 'ONBOARDING.INSURER' | translate }} <span class="req">*</span></label>
                   <input type="text" formControlName="insurance_provider" placeholder="Ex: AMSA" />
                 </div>
                 <div class="form-group">
-                  <label>N° Police <span class="req">*</span></label>
+                  <label>{{ 'ONBOARDING.POLICY_NUMBER' | translate }} <span class="req">*</span></label>
                   <input type="text" formControlName="insurance_policy_number" placeholder="Ex: POL-001" />
                 </div>
               </div>
               <div class="form-group">
-                <label>Expiration assurance <span class="req">*</span></label>
+                <label>{{ 'ONBOARDING.COMPANY_INSURANCE_EXPIRY' | translate }} <span class="req">*</span></label>
                 <input type="date" formControlName="insurance_expiry" />
               </div>
             </div>
           </div>
 
           <div class="vehicles-hint" *ngIf="vehicleForms.length < minVehicles()">
-            ⚠ Vous devez renseigner au moins {{ minVehicles() }} véhicule{{ minVehicles() > 1 ? 's' : '' }}.
+            ⚠ {{ (minVehicles() > 1 ? 'ONBOARDING.VEHICLES_HINT_PLURAL' : 'ONBOARDING.VEHICLES_HINT_SINGULAR') | translate:{ min: minVehicles() } }}
           </div>
         </div>
 
         <!-- Footer actions -->
         <div class="modal-footer">
-          <button class="btn-cancel" (click)="cancel()" [disabled]="saving()">Annuler</button>
+          <button class="btn-cancel" (click)="cancel()" [disabled]="saving()">{{ 'ONBOARDING.CANCEL' | translate }}</button>
           <button *ngIf="step() === 1" class="btn-primary" (click)="nextStep()">
-            Suivant →
+            {{ 'ONBOARDING.NEXT' | translate }}
           </button>
-          <button *ngIf="step() === 2" class="btn-secondary" (click)="prevStep()">← Retour</button>
+          <button *ngIf="step() === 2" class="btn-secondary" (click)="prevStep()">{{ 'ONBOARDING.BACK' | translate }}</button>
           <button *ngIf="step() === 2" class="btn-primary" (click)="submit()" [disabled]="saving() || vehicleForms.length < minVehicles()">
-            {{ saving() ? 'Enregistrement...' : 'Activer le compte' }}
+            {{ saving() ? ('ONBOARDING.SAVING' | translate) : ('ONBOARDING.ACTIVATE' | translate) }}
           </button>
         </div>
 
@@ -316,8 +315,9 @@ export class WorkspaceOnboardingModalComponent implements OnInit {
   @Output() confirmed = new EventEmitter<void>();
   @Output() cancelled = new EventEmitter<void>();
 
-  private fb   = inject(FormBuilder);
-  private api  = inject(ApiService);
+  private fb        = inject(FormBuilder);
+  private api       = inject(ApiService);
+  private translate = inject(TranslateService);
 
   step   = signal(1);
   saving = signal(false);
@@ -373,7 +373,7 @@ export class WorkspaceOnboardingModalComponent implements OnInit {
     const form = this.targetWorkspace === 'DRIVER' ? this.driverIdentityForm : this.carrierCompanyForm;
     if (form.invalid) {
       form.markAllAsTouched();
-      this.error.set('Veuillez remplir tous les champs obligatoires (*).');
+      this.error.set(this.translate.instant('ONBOARDING.VALIDATE_REQUIRED'));
       return;
     }
     this.step.set(2);
@@ -387,11 +387,14 @@ export class WorkspaceOnboardingModalComponent implements OnInit {
     const invalidVehicle = this.vehicleForms.find(f => f.invalid);
     if (invalidVehicle) {
       invalidVehicle.markAllAsTouched();
-      this.error.set('Veuillez compléter tous les véhicules (champs * obligatoires).');
+      this.error.set(this.translate.instant('ONBOARDING.VALIDATE_VEHICLES'));
       return;
     }
     if (this.vehicleForms.length < this.minVehicles()) {
-      this.error.set(`Minimum ${this.minVehicles()} véhicule(s) requis.`);
+      this.error.set(this.translate.instant(
+        this.minVehicles() > 1 ? 'ONBOARDING.VEHICLES_HINT_PLURAL' : 'ONBOARDING.VEHICLES_HINT_SINGULAR',
+        { min: this.minVehicles() }
+      ));
       return;
     }
 

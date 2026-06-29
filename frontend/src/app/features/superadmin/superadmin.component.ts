@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { environment } from '../../../environments/environment';
 
@@ -40,32 +41,48 @@ interface SystemStats {
   database: { table_count: number; active_connections: number; total_connections: number; users: number; orders: number; messages: number };
 }
 
-type Tab = 'admins' | 'system';
+interface PlatformUser {
+  id: string;
+  full_name: string;
+  phone_number: string;
+  email: string;
+  role: string;
+  is_active: boolean;
+  is_verified: boolean;
+  is_superuser: boolean;
+  date_joined: string;
+  last_login: string | null;
+}
+
+type Tab = 'admins' | 'users' | 'system';
 
 @Component({
   selector: 'app-superadmin',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
   template: `
     <div class="sa-page">
 
       <!-- ══ HERO ══ -->
       <div class="sa-hero">
         <div>
-          <div class="sa-badge">🔑 SUPER ADMIN</div>
-          <div class="sa-title">Espace Super Administrateur</div>
-          <div class="sa-sub">Gestion des administrateurs et supervision du système</div>
+          <div class="sa-badge">{{ 'SUPERADMIN.BADGE' | translate }}</div>
+          <div class="sa-title">{{ 'SUPERADMIN.TITLE' | translate }}</div>
+          <div class="sa-sub">{{ 'SUPERADMIN.SUBTITLE' | translate }}</div>
         </div>
-        <a routerLink="/admin" class="sa-back-btn">← Retour au Dashboard</a>
+        <a routerLink="/admin" class="sa-back-btn">{{ 'SUPERADMIN.BACK' | translate }}</a>
       </div>
 
       <!-- ══ TABS ══ -->
       <div class="sa-tabs">
         <button class="sa-tab" [class.active]="tab() === 'admins'" (click)="tab.set('admins')">
-          👤 Administrateurs
+          {{ 'SUPERADMIN.TAB_ADMINS' | translate }}
+        </button>
+        <button class="sa-tab" [class.active]="tab() === 'users'" (click)="openUsers()">
+          {{ 'SUPERADMIN.TAB_USERS' | translate }} ({{ totalUsers() }})
         </button>
         <button class="sa-tab" [class.active]="tab() === 'system'" (click)="loadSystem(); tab.set('system')">
-          🖥 Monitoring Système
+          {{ 'SUPERADMIN.TAB_SYSTEM' | translate }}
         </button>
       </div>
 
@@ -76,11 +93,11 @@ type Tab = 'admins' | 'system';
           <!-- Admin list -->
           <div class="panel">
             <div class="panel-header">
-              <span class="panel-title">👥 Administrateurs ({{ admins().length }})</span>
-              <button class="btn-new" (click)="openCreate()">+ Nouvel admin</button>
+              <span class="panel-title">{{ 'SUPERADMIN.ADMIN_LIST_HEADER' | translate }} ({{ admins().length }})</span>
+              <button class="btn-new" (click)="openCreate()">{{ 'SUPERADMIN.NEW_ADMIN' | translate }}</button>
             </div>
 
-            <div class="loading" *ngIf="loadingAdmins()">Chargement...</div>
+            <div class="loading" *ngIf="loadingAdmins()">{{ 'SUPERADMIN.LOADING' | translate }}</div>
 
             <div class="admin-row" *ngFor="let a of admins()" [class.selected]="selectedAdmin()?.id === a.id" (click)="selectAdmin(a)">
               <div class="admin-avatar">{{ initials(a.full_name) }}</div>
@@ -96,53 +113,53 @@ type Tab = 'admins' | 'system';
               </div>
             </div>
 
-            <div class="empty" *ngIf="!loadingAdmins() && !admins().length">Aucun administrateur</div>
+            <div class="empty" *ngIf="!loadingAdmins() && !admins().length">{{ 'SUPERADMIN.NO_ADMINS' | translate }}</div>
           </div>
 
           <!-- Right: create form OR permissions -->
           <div class="panel" *ngIf="showCreateForm()">
             <div class="panel-header">
-              <span class="panel-title">➕ Créer un administrateur</span>
+              <span class="panel-title">{{ 'SUPERADMIN.CREATE_TITLE' | translate }}</span>
               <button class="btn-close" (click)="showCreateForm.set(false)">✕</button>
             </div>
             <div class="form-grid">
               <div class="form-group">
-                <label>Prénom *</label>
+                <label>{{ 'SUPERADMIN.FIRST_NAME' | translate }}</label>
                 <input [(ngModel)]="newAdmin.first_name" placeholder="Amadou" />
               </div>
               <div class="form-group">
-                <label>Nom *</label>
+                <label>{{ 'SUPERADMIN.LAST_NAME' | translate }}</label>
                 <input [(ngModel)]="newAdmin.last_name" placeholder="Diallo" />
               </div>
               <div class="form-group">
-                <label>Téléphone *</label>
+                <label>{{ 'SUPERADMIN.PHONE' | translate }}</label>
                 <input [(ngModel)]="newAdmin.phone_number" placeholder="+221771234567" />
               </div>
               <div class="form-group">
-                <label>Email</label>
+                <label>{{ 'SUPERADMIN.EMAIL' | translate }}</label>
                 <input [(ngModel)]="newAdmin.email" placeholder="admin@yoolo.sn" type="email" />
               </div>
               <div class="form-group form-group--full">
-                <label>Mot de passe *</label>
+                <label>{{ 'SUPERADMIN.PASSWORD' | translate }}</label>
                 <input [(ngModel)]="newAdmin.password" type="password" placeholder="••••••••" />
               </div>
             </div>
             <div class="form-error" *ngIf="createError()">{{ createError() }}</div>
-            <div class="form-success" *ngIf="createSuccess()">✓ Administrateur créé !</div>
+            <div class="form-success" *ngIf="createSuccess()">{{ 'SUPERADMIN.CREATE_SUCCESS' | translate }}</div>
             <button class="btn-create" (click)="createAdmin()" [disabled]="creating()">
-              {{ creating() ? 'Création...' : 'Créer le compte admin' }}
+              {{ creating() ? ('SUPERADMIN.CREATING' | translate) : ('SUPERADMIN.CREATE_BTN' | translate) }}
             </button>
           </div>
 
           <div class="panel" *ngIf="selectedAdmin() && !showCreateForm()">
             <div class="panel-header">
-              <span class="panel-title">🔐 Permissions — {{ selectedAdmin()!.full_name }}</span>
-              <button class="btn-delete" *ngIf="!selectedAdmin()!.is_superuser" (click)="deleteAdmin(selectedAdmin()!)">🗑 Supprimer</button>
+              <span class="panel-title">{{ 'SUPERADMIN.PERMS_PANEL_TITLE' | translate }} — {{ selectedAdmin()!.full_name }}</span>
+              <button class="btn-delete" *ngIf="!selectedAdmin()!.is_superuser" (click)="deleteAdmin(selectedAdmin()!)">{{ 'SUPERADMIN.DELETE' | translate }}</button>
             </div>
 
             <div class="perm-grid" *ngIf="editPerms">
               <div class="perm-row" *ngFor="let p of permKeys">
-                <label class="perm-label">{{ p.label }}</label>
+                <label class="perm-label">{{ p.i18nKey | translate }}</label>
                 <label class="toggle">
                   <input type="checkbox" [(ngModel)]="editPerms[p.key]" />
                   <span class="toggle-track"></span>
@@ -152,18 +169,95 @@ type Tab = 'admins' | 'system';
 
             <div class="perm-actions">
               <button class="btn-save" (click)="savePermissions()" [disabled]="savingPerms()">
-                {{ savingPerms() ? 'Sauvegarde...' : '✓ Sauvegarder les permissions' }}
+                {{ savingPerms() ? ('SUPERADMIN.SAVING_PERMS' | translate) : ('SUPERADMIN.SAVE_PERMS' | translate) }}
               </button>
-              <div class="perm-success" *ngIf="permSaved()">✓ Permissions mises à jour</div>
+              <div class="perm-success" *ngIf="permSaved()">{{ 'SUPERADMIN.PERMS_SAVED' | translate }}</div>
             </div>
           </div>
         </div>
 
       </ng-container>
 
+      <!-- ══ USERS TAB ══ -->
+      <ng-container *ngIf="tab() === 'users'">
+        <div class="panel">
+          <!-- Filters -->
+          <div class="users-filters">
+            <input class="search-input" [(ngModel)]="searchQuery" (ngModelChange)="filterUsers()" [placeholder]="'SUPERADMIN.SEARCH_PLACEHOLDER' | translate" />
+            <select class="role-select" [(ngModel)]="roleFilter" (ngModelChange)="filterUsers()">
+              <option value="">{{ 'SUPERADMIN.ALL_ROLES' | translate }}</option>
+              <option value="SHIPPER">{{ 'ROLES.SHIPPER' | translate }}</option>
+              <option value="DRIVER">{{ 'ROLES.DRIVER' | translate }}</option>
+              <option value="CARRIER">{{ 'ROLES.CARRIER' | translate }}</option>
+              <option value="BROKER">{{ 'ROLES.BROKER' | translate }}</option>
+              <option value="ADMIN">{{ 'ROLES.ADMIN' | translate }}</option>
+            </select>
+            <select class="role-select" [(ngModel)]="activeFilter" (ngModelChange)="filterUsers()">
+              <option value="">{{ 'SUPERADMIN.ALL_STATUS' | translate }}</option>
+              <option value="true">{{ 'SUPERADMIN.STATUS_ACTIVE_FILTER' | translate }}</option>
+              <option value="false">{{ 'SUPERADMIN.STATUS_BLOCKED_FILTER' | translate }}</option>
+            </select>
+          </div>
+
+          <div class="loading" *ngIf="loadingUsers()">{{ 'SUPERADMIN.USERS_LOADING' | translate }}</div>
+
+          <div class="users-table-wrap" *ngIf="!loadingUsers()">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>{{ 'SUPERADMIN.COL_USER' | translate }}</th>
+                  <th>{{ 'SUPERADMIN.COL_PHONE' | translate }}</th>
+                  <th>{{ 'SUPERADMIN.COL_ROLE' | translate }}</th>
+                  <th>{{ 'SUPERADMIN.COL_VERIFIED' | translate }}</th>
+                  <th>{{ 'SUPERADMIN.COL_STATUS' | translate }}</th>
+                  <th>{{ 'SUPERADMIN.COL_DATE' | translate }}</th>
+                  <th>{{ 'SUPERADMIN.COL_ACTION' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let u of filteredUsers()" [class.row-blocked]="!u.is_active">
+                  <td>
+                    <div class="user-cell">
+                      <div class="user-avatar-sm">{{ initials(u.full_name) }}</div>
+                      <span class="user-name-cell">{{ u.full_name }}</span>
+                    </div>
+                  </td>
+                  <td class="cell-phone">{{ u.phone_number }}</td>
+                  <td><span class="role-badge role-badge--{{ u.role.toLowerCase() }}">{{ ('ROLES.' + u.role) | translate }}</span></td>
+                  <td>
+                    <span class="verif-badge" [class.verif-ok]="u.is_verified" [class.verif-no]="!u.is_verified">
+                      {{ (u.is_verified ? 'SUPERADMIN.VERIFIED' : 'SUPERADMIN.NOT_VERIFIED') | translate }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-badge" [class.status-active]="u.is_active" [class.status-blocked]="!u.is_active">
+                      {{ (u.is_active ? 'SUPERADMIN.USER_ACTIVE' : 'SUPERADMIN.USER_BLOCKED') | translate }}
+                    </span>
+                  </td>
+                  <td class="cell-date">{{ u.date_joined | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    <button *ngIf="!u.is_superuser"
+                      class="btn-toggle-block"
+                      [class.btn-block]="u.is_active"
+                      [class.btn-unblock]="!u.is_active"
+                      [disabled]="togglingId() === u.id"
+                      (click)="toggleBlock(u)">
+                      {{ togglingId() === u.id ? ('SUPERADMIN.TOGGLING' | translate) : ((u.is_active ? 'SUPERADMIN.BLOCK' : 'SUPERADMIN.UNBLOCK') | translate) }}
+                    </button>
+                    <span *ngIf="u.is_superuser" class="superuser-lock">{{ 'SUPERADMIN.SUPERADMIN_LOCK' | translate }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="empty" *ngIf="!filteredUsers().length">{{ 'SUPERADMIN.NO_USERS' | translate }}</div>
+            <div class="users-count">{{ filteredUsers().length }} {{ 'SUPERADMIN.USERS_COUNT' | translate }} {{ allPlatformUsers().length }}</div>
+          </div>
+        </div>
+      </ng-container>
+
       <!-- ══ SYSTEM TAB ══ -->
       <ng-container *ngIf="tab() === 'system'">
-        <div class="loading" *ngIf="loadingSystem()">Chargement des métriques système...</div>
+        <div class="loading" *ngIf="loadingSystem()">{{ 'SUPERADMIN.SYSTEM_LOADING' | translate }}</div>
 
         <ng-container *ngIf="systemStats()">
           <div class="sys-grid">
@@ -171,19 +265,19 @@ type Tab = 'admins' | 'system';
             <!-- CPU -->
             <div class="sys-card">
               <div class="sys-card-icon">⚡</div>
-              <div class="sys-card-title">CPU Load Average</div>
+              <div class="sys-card-title">{{ 'SUPERADMIN.CPU_TITLE' | translate }}</div>
               <div class="sys-vals">
                 <div class="sys-val-row"><span class="sys-period">1 min</span> <span class="sys-num" [class.sys-warn]="systemStats()!.cpu.load_1 > 1">{{ systemStats()!.cpu.load_1 }}</span></div>
                 <div class="sys-val-row"><span class="sys-period">5 min</span> <span class="sys-num">{{ systemStats()!.cpu.load_5 }}</span></div>
                 <div class="sys-val-row"><span class="sys-period">15 min</span> <span class="sys-num">{{ systemStats()!.cpu.load_15 }}</span></div>
               </div>
-              <div class="sys-uptime">Uptime: {{ systemStats()!.uptime_hours }}h</div>
+              <div class="sys-uptime">{{ 'SUPERADMIN.UPTIME' | translate }} {{ systemStats()!.uptime_hours }}h</div>
             </div>
 
             <!-- Memory -->
             <div class="sys-card">
               <div class="sys-card-icon">🧠</div>
-              <div class="sys-card-title">Mémoire RAM</div>
+              <div class="sys-card-title">{{ 'SUPERADMIN.RAM' | translate }}</div>
               <div class="sys-bar-wrap">
                 <div class="sys-bar">
                   <div class="sys-bar-fill" [class.sys-bar--warn]="systemStats()!.memory.pct > 80" [style.width.%]="systemStats()!.memory.pct"></div>
@@ -191,16 +285,16 @@ type Tab = 'admins' | 'system';
                 <span class="sys-bar-pct">{{ systemStats()!.memory.pct }}%</span>
               </div>
               <div class="sys-vals">
-                <div class="sys-val-row"><span class="sys-period">Utilisée</span> <span class="sys-num">{{ systemStats()!.memory.used_mb | number:'1.0-0' }} MB</span></div>
-                <div class="sys-val-row"><span class="sys-period">Libre</span> <span class="sys-num sys-ok">{{ systemStats()!.memory.free_mb | number:'1.0-0' }} MB</span></div>
-                <div class="sys-val-row"><span class="sys-period">Total</span> <span class="sys-num">{{ systemStats()!.memory.total_mb | number:'1.0-0' }} MB</span></div>
+                <div class="sys-val-row"><span class="sys-period">{{ 'SUPERADMIN.MEM_USED' | translate }}</span> <span class="sys-num">{{ systemStats()!.memory.used_mb | number:'1.0-0' }} MB</span></div>
+                <div class="sys-val-row"><span class="sys-period">{{ 'SUPERADMIN.FREE' | translate }}</span> <span class="sys-num sys-ok">{{ systemStats()!.memory.free_mb | number:'1.0-0' }} MB</span></div>
+                <div class="sys-val-row"><span class="sys-period">{{ 'SUPERADMIN.TOTAL' | translate }}</span> <span class="sys-num">{{ systemStats()!.memory.total_mb | number:'1.0-0' }} MB</span></div>
               </div>
             </div>
 
             <!-- Disk -->
             <div class="sys-card">
               <div class="sys-card-icon">💾</div>
-              <div class="sys-card-title">Disque</div>
+              <div class="sys-card-title">{{ 'SUPERADMIN.DISK' | translate }}</div>
               <div class="sys-bar-wrap">
                 <div class="sys-bar">
                   <div class="sys-bar-fill" [class.sys-bar--warn]="systemStats()!.disk.pct > 80" [style.width.%]="systemStats()!.disk.pct"></div>
@@ -208,20 +302,20 @@ type Tab = 'admins' | 'system';
                 <span class="sys-bar-pct">{{ systemStats()!.disk.pct }}%</span>
               </div>
               <div class="sys-vals">
-                <div class="sys-val-row"><span class="sys-period">Utilisé</span> <span class="sys-num">{{ systemStats()!.disk.used_gb }} GB</span></div>
-                <div class="sys-val-row"><span class="sys-period">Libre</span> <span class="sys-num sys-ok">{{ systemStats()!.disk.free_gb }} GB</span></div>
-                <div class="sys-val-row"><span class="sys-period">Total</span> <span class="sys-num">{{ systemStats()!.disk.total_gb }} GB</span></div>
+                <div class="sys-val-row"><span class="sys-period">{{ 'SUPERADMIN.DISK_USED' | translate }}</span> <span class="sys-num">{{ systemStats()!.disk.used_gb }} GB</span></div>
+                <div class="sys-val-row"><span class="sys-period">{{ 'SUPERADMIN.FREE' | translate }}</span> <span class="sys-num sys-ok">{{ systemStats()!.disk.free_gb }} GB</span></div>
+                <div class="sys-val-row"><span class="sys-period">{{ 'SUPERADMIN.TOTAL' | translate }}</span> <span class="sys-num">{{ systemStats()!.disk.total_gb }} GB</span></div>
               </div>
             </div>
 
             <!-- Database -->
             <div class="sys-card">
               <div class="sys-card-icon">🗄</div>
-              <div class="sys-card-title">Base de données</div>
+              <div class="sys-card-title">{{ 'SUPERADMIN.DB' | translate }}</div>
               <div class="sys-vals">
-                <div class="sys-val-row"><span class="sys-period">Tables</span> <span class="sys-num">{{ systemStats()!.database.table_count }}</span></div>
-                <div class="sys-val-row"><span class="sys-period">Connexions actives</span> <span class="sys-num" [class.sys-warn]="systemStats()!.database.active_connections > 10">{{ systemStats()!.database.active_connections }}</span></div>
-                <div class="sys-val-row"><span class="sys-period">Total connexions</span> <span class="sys-num">{{ systemStats()!.database.total_connections }}</span></div>
+                <div class="sys-val-row"><span class="sys-period">{{ 'SUPERADMIN.TABLES' | translate }}</span> <span class="sys-num">{{ systemStats()!.database.table_count }}</span></div>
+                <div class="sys-val-row"><span class="sys-period">{{ 'SUPERADMIN.ACTIVE_CONN' | translate }}</span> <span class="sys-num" [class.sys-warn]="systemStats()!.database.active_connections > 10">{{ systemStats()!.database.active_connections }}</span></div>
+                <div class="sys-val-row"><span class="sys-period">{{ 'SUPERADMIN.TOTAL_CONN' | translate }}</span> <span class="sys-num">{{ systemStats()!.database.total_connections }}</span></div>
               </div>
             </div>
 
@@ -230,25 +324,25 @@ type Tab = 'admins' | 'system';
           <!-- DB Row counts -->
           <div class="panel">
             <div class="panel-header">
-              <span class="panel-title">📊 Statistiques de la base de données</span>
-              <button class="btn-refresh" (click)="loadSystem()">🔄 Actualiser</button>
+              <span class="panel-title">{{ 'SUPERADMIN.DB_STATS_TITLE' | translate }}</span>
+              <button class="btn-refresh" (click)="loadSystem()">{{ 'SUPERADMIN.REFRESH' | translate }}</button>
             </div>
             <div class="db-stats-grid">
               <div class="db-stat">
                 <div class="db-stat-val">{{ systemStats()!.database.users | number }}</div>
-                <div class="db-stat-lbl">👤 Utilisateurs</div>
+                <div class="db-stat-lbl">{{ 'SUPERADMIN.DB_USERS' | translate }}</div>
               </div>
               <div class="db-stat">
                 <div class="db-stat-val">{{ systemStats()!.database.orders | number }}</div>
-                <div class="db-stat-lbl">📦 Commandes</div>
+                <div class="db-stat-lbl">{{ 'SUPERADMIN.DB_ORDERS' | translate }}</div>
               </div>
               <div class="db-stat">
                 <div class="db-stat-val">{{ systemStats()!.database.messages | number }}</div>
-                <div class="db-stat-lbl">💬 Messages</div>
+                <div class="db-stat-lbl">{{ 'SUPERADMIN.DB_MESSAGES' | translate }}</div>
               </div>
               <div class="db-stat">
                 <div class="db-stat-val">{{ systemStats()!.database.table_count }}</div>
-                <div class="db-stat-lbl">🗄 Tables DB</div>
+                <div class="db-stat-lbl">{{ 'SUPERADMIN.DB_TABLES' | translate }}</div>
               </div>
             </div>
           </div>
@@ -377,6 +471,43 @@ type Tab = 'admins' | 'system';
     .db-stat-val { font-size: 24px; font-weight: 800; color: var(--text-primary); }
     .db-stat-lbl { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-top: 4px; }
 
+    /* Users tab */
+    .users-filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 220px; padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--surface-raised); color: var(--text-primary); outline: none; }
+    .search-input:focus { border-color: #C9A227; }
+    .role-select { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--surface-raised); color: var(--text-primary); outline: none; cursor: pointer; }
+    .role-select:focus { border-color: #C9A227; }
+    .users-table-wrap { overflow-x: auto; }
+    .users-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .users-table th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid var(--border); white-space: nowrap; }
+    .users-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .users-table tr:last-child td { border-bottom: none; }
+    .users-table tr.row-blocked td { opacity: 0.55; }
+    .users-table tr:hover td { background: var(--surface-raised); }
+    .user-cell { display: flex; align-items: center; gap: 8px; }
+    .user-avatar-sm { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #C9A227, #A8861F); color: #111; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .user-name-cell { font-weight: 600; color: var(--text-primary); }
+    .cell-phone { color: var(--text-secondary); font-family: monospace; font-size: 12px; }
+    .cell-date { color: var(--text-secondary); font-size: 12px; white-space: nowrap; }
+    .role-badge { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; }
+    .role-badge--shipper  { background: rgba(201,162,39,0.15); color: #C9A227; }
+    .role-badge--driver   { background: rgba(67,160,71,0.15);  color: #43A047; }
+    .role-badge--carrier  { background: rgba(33,150,243,0.15); color: #1565C0; }
+    .role-badge--broker   { background: rgba(21,101,192,0.15); color: #1565C0; }
+    .role-badge--admin    { background: rgba(156,39,176,0.15); color: #7B1FA2; }
+    .verif-badge { font-size: 11px; font-weight: 600; }
+    .verif-ok { color: #43A047; }
+    .verif-no { color: #E53935; }
+    .status-badge { padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+    .status-active  { background: #E8F5E9; color: #2E7D32; }
+    .status-blocked { background: #FFEBEE; color: #B71C1C; }
+    .btn-toggle-block { padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; border: none; white-space: nowrap; transition: opacity .15s; }
+    .btn-block   { background: rgba(229,57,53,0.1); color: #E53935; border: 1px solid rgba(229,57,53,0.3) !important; }
+    .btn-unblock { background: rgba(67,160,71,0.1);  color: #43A047; border: 1px solid rgba(67,160,71,0.3)  !important; }
+    .btn-toggle-block:disabled { opacity: 0.5; cursor: not-allowed; }
+    .superuser-lock { font-size: 11px; color: #C9A227; font-weight: 600; }
+    .users-count { padding: 10px 0 0; font-size: 12px; color: var(--text-secondary); text-align: right; }
+
     /* Misc */
     .loading { padding: 20px; text-align: center; color: var(--text-secondary); font-size: 13px; }
     .empty   { padding: 16px; text-align: center; color: var(--text-secondary); font-size: 13px; }
@@ -389,7 +520,8 @@ type Tab = 'admins' | 'system';
   `]
 })
 export class SuperAdminComponent implements OnInit {
-  private http = inject(HttpClient);
+  private http      = inject(HttpClient);
+  private translate = inject(TranslateService);
   auth = inject(AuthService);
 
   private readonly apiBase = `${environment.apiUrl}/superadmin`;
@@ -407,18 +539,28 @@ export class SuperAdminComponent implements OnInit {
   savingPerms    = signal(false);
   permSaved      = signal(false);
 
+  // Users tab
+  allPlatformUsers = signal<PlatformUser[]>([]);
+  filteredUsers    = signal<PlatformUser[]>([]);
+  loadingUsers     = signal(false);
+  togglingId       = signal<string | null>(null);
+  totalUsers       = signal(0);
+  searchQuery      = '';
+  roleFilter       = '';
+  activeFilter     = '';
+
   newAdmin = { first_name: '', last_name: '', phone_number: '', email: '', password: '' };
   editPerms: Record<string, boolean> | null = null;
 
   permKeys = [
-    { key: 'can_manage_users',     label: 'Gestion des utilisateurs' },
-    { key: 'can_manage_fleet',     label: 'Gestion de la flotte' },
-    { key: 'can_manage_orders',    label: 'Gestion des commandes' },
-    { key: 'can_manage_finance',   label: 'Finance & Paiements' },
-    { key: 'can_manage_analytics', label: 'Analytique & KPIs' },
-    { key: 'can_manage_messaging', label: 'Messagerie' },
-    { key: 'can_manage_tracking',  label: 'Suivi & Tracking' },
-    { key: 'can_view_governance',  label: 'Gouvernance & Audit' },
+    { key: 'can_manage_users',     i18nKey: 'SUPERADMIN.PERM_USERS' },
+    { key: 'can_manage_fleet',     i18nKey: 'SUPERADMIN.PERM_FLEET' },
+    { key: 'can_manage_orders',    i18nKey: 'SUPERADMIN.PERM_ORDERS' },
+    { key: 'can_manage_finance',   i18nKey: 'SUPERADMIN.PERM_FINANCE' },
+    { key: 'can_manage_analytics', i18nKey: 'SUPERADMIN.PERM_ANALYTICS' },
+    { key: 'can_manage_messaging', i18nKey: 'SUPERADMIN.PERM_MESSAGING' },
+    { key: 'can_manage_tracking',  i18nKey: 'SUPERADMIN.PERM_TRACKING' },
+    { key: 'can_view_governance',  i18nKey: 'SUPERADMIN.PERM_GOVERNANCE' },
   ];
 
   ngOnInit(): void {
@@ -471,7 +613,7 @@ export class SuperAdminComponent implements OnInit {
 
   createAdmin(): void {
     if (!this.newAdmin.first_name || !this.newAdmin.last_name || !this.newAdmin.phone_number || !this.newAdmin.password) {
-      this.createError.set('Veuillez remplir tous les champs obligatoires.');
+      this.createError.set(this.translate.instant('SUPERADMIN.CREATE_VALIDATION'));
       return;
     }
     this.creating.set(true);
@@ -485,7 +627,7 @@ export class SuperAdminComponent implements OnInit {
       },
       error: err => {
         this.creating.set(false);
-        const msg = err.error?.phone_number?.[0] ?? err.error?.detail ?? 'Erreur lors de la création.';
+        const msg = err.error?.phone_number?.[0] ?? err.error?.detail ?? this.translate.instant('SUPERADMIN.CREATE_API_ERROR');
         this.createError.set(msg);
       },
     });
@@ -502,12 +644,58 @@ export class SuperAdminComponent implements OnInit {
   }
 
   deleteAdmin(a: AdminUser): void {
-    if (!confirm(`Supprimer l'administrateur ${a.full_name} ?`)) return;
+    if (!confirm(`${this.translate.instant('SUPERADMIN.CONFIRM_DELETE')} ${a.full_name} ?`)) return;
     this.http.delete(`${this.apiBase}/admins/${a.id}/`, { headers: this.headers() }).subscribe({
       next: () => {
         this.admins.update(list => list.filter(x => x.id !== a.id));
         this.selectedAdmin.set(null);
       },
+    });
+  }
+
+  openUsers(): void {
+    this.tab.set('users');
+    if (!this.allPlatformUsers().length) this.loadUsers();
+  }
+
+  loadUsers(): void {
+    this.loadingUsers.set(true);
+    this.http.get<{ results: PlatformUser[]; count: number }>(`${this.apiBase}/users/?limit=500`, { headers: this.headers() }).subscribe({
+      next: r => {
+        const list = r.results ?? (r as any);
+        this.allPlatformUsers.set(Array.isArray(list) ? list : []);
+        this.totalUsers.set((r as any).count ?? (Array.isArray(list) ? list.length : 0));
+        this.filteredUsers.set(this.allPlatformUsers());
+        this.loadingUsers.set(false);
+      },
+      error: () => this.loadingUsers.set(false),
+    });
+  }
+
+  filterUsers(): void {
+    let list = this.allPlatformUsers();
+    if (this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase();
+      list = list.filter(u => u.full_name.toLowerCase().includes(q) || u.phone_number.includes(q));
+    }
+    if (this.roleFilter) {
+      list = list.filter(u => u.role === this.roleFilter);
+    }
+    if (this.activeFilter !== '') {
+      list = list.filter(u => String(u.is_active) === this.activeFilter);
+    }
+    this.filteredUsers.set(list);
+  }
+
+  toggleBlock(user: PlatformUser): void {
+    this.togglingId.set(user.id);
+    this.http.patch<PlatformUser>(`${this.apiBase}/users/${user.id}/toggle-block/`, {}, { headers: this.headers() }).subscribe({
+      next: updated => {
+        this.allPlatformUsers.update(list => list.map(u => u.id === updated.id ? updated : u));
+        this.filterUsers();
+        this.togglingId.set(null);
+      },
+      error: () => this.togglingId.set(null),
     });
   }
 
