@@ -35,7 +35,7 @@ const WORKSPACE_COLORS: Record<WorkspaceType, string> = {
 
       <button class="ws-current" (click)="toggle($event)" [class.open]="open()">
         <span class="ws-icon" [style.color]="getActiveColor()">{{ getActiveIcon() }}</span>
-        <span class="ws-name">{{ ws.activeWorkspace()?.name }}</span>
+        <span class="ws-name">{{ ('WORKSPACE.' + ws.activeWorkspace()!.type) | translate }}</span>
         <span class="ws-chevron" *ngIf="ws.hasMultiple()">{{ open() ? '▲' : '▼' }}</span>
       </button>
 
@@ -49,7 +49,7 @@ const WORKSPACE_COLORS: Record<WorkspaceType, string> = {
             (click)="select(w, $event)"
           >
             <span class="ws-opt-icon" [style.color]="getColor(w.type)">{{ getIcon(w.type) }}</span>
-            <span class="ws-opt-name">{{ w.name }}</span>
+            <span class="ws-opt-name">{{ ('WORKSPACE.' + w.type) | translate }}</span>
             <span class="ws-opt-check" *ngIf="w.id === ws.activeWorkspace()?.id">✓</span>
           </button>
         </ng-container>
