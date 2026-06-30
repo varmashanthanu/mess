@@ -21,6 +21,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["role"] = user.role
         token["name"] = user.full_name
         token["phone"] = str(user.phone_number)
+        token["workspace_type"] = user.role
+        token["workspace_name"] = ""
         return token
 
 
@@ -122,10 +124,10 @@ class UserDetailSerializer(serializers.ModelSerializer):
         fields = [
             "id", "phone_number", "email", "first_name", "last_name",
             "full_name", "role", "preferred_language", "is_verified",
-            "is_identity_verified", "date_joined",
+            "is_identity_verified", "is_superuser", "date_joined",
             "shipper_profile", "driver_profile", "carrier_profile",
         ]
-        read_only_fields = ["id", "phone_number", "is_verified", "is_identity_verified", "date_joined"]
+        read_only_fields = ["id", "phone_number", "is_verified", "is_identity_verified", "is_superuser", "date_joined"]
 
     def get_shipper_profile(self, obj):
         if hasattr(obj, "shipper_profile"):
@@ -213,6 +215,8 @@ class CarrierProfileSerializer(serializers.ModelSerializer):
             "payment_method", "bank_account_name", "bank_account_number", "bank_routing_number",
             # Operational
             "preferred_lanes", "service_area", "availability_notes", "drug_testing_status",
+            # Availability
+            "is_available",
             # Compliance
             "carrier_agreement_accepted", "carrier_agreement_accepted_at",
             # Stats

@@ -7,6 +7,7 @@ export interface User {
   role: UserRole;
   is_verified: boolean;
   is_active: boolean;
+  is_superuser?: boolean;
   date_joined: string;
   driver_profile?: DriverProfile;
   shipper_profile?: ShipperProfile;
@@ -58,4 +59,6 @@ export interface JwtPayload {
   full_name: string;
   exp: number;
   iat: number;
+  workspace_type?: string;
+  workspace_name?: string;
 }

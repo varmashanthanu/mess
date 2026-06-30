@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from core.permissions import IsAdmin, IsOwnerOrAdmin
-from .models import PhoneVerification, ContactMessage
+from .models import PhoneVerification, ContactMessage, DriverProfile, CarrierProfile, ShipperProfile
 from .serializers import (
     CarrierProfileSerializer,
     CustomTokenObtainPairSerializer,
@@ -228,7 +228,8 @@ class DriverProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
     def get_object(self):
-        return self.request.user.driver_profile
+        profile, _ = DriverProfile.objects.get_or_create(user=self.request.user)
+        return profile
 
 
 class CarrierProfileView(generics.RetrieveUpdateAPIView):
@@ -236,7 +237,8 @@ class CarrierProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
     def get_object(self):
-        return self.request.user.carrier_profile
+        profile, _ = CarrierProfile.objects.get_or_create(user=self.request.user)
+        return profile
 
 
 class CarrierDriversView(generics.ListAPIView):

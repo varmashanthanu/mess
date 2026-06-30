@@ -1,8 +1,9 @@
-import { Component, inject, output, OnInit, computed } from '@angular/core';
+import { Component, inject, output, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
+import { WorkspaceService } from '../../../core/services/workspace.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { ApiService } from '../../../core/services/api.service';
@@ -27,18 +28,17 @@ import { ThemeService } from '../../../core/services/theme.service';
 
       <div class="topbar-right">
 
-        <!-- Driver availability toggle -->
-        <div class="availability-toggle" *ngIf="auth.role() === 'DRIVER'">
+        <!-- Driver / Carrier availability toggle -->
+        <div class="availability-toggle" *ngIf="activeRole() === 'DRIVER' || activeRole() === 'CARRIER'">
           <span class="status-dot"
-            [class.status-dot--online]="isAvailable"
-            [class.status-dot--offline]="!isAvailable"></span>
+            [class.status-dot--online]="isAvailable()"
+            [class.status-dot--offline]="!isAvailable()"></span>
           <span class="avail-label">
-            {{ (isAvailable ? 'TOPBAR.AVAILABLE' : 'TOPBAR.UNAVAILABLE') | translate }}
+            {{ (isAvailable() ? 'TOPBAR.AVAILABLE' : 'TOPBAR.UNAVAILABLE') | translate }}
           </span>
-          <label class="toggle-switch">
-            <input type="checkbox" [checked]="isAvailable" (change)="toggleAvailability()">
-            <span class="slider slider--green"></span>
-          </label>
+          <button class="toggle-btn" [class.toggle-btn--on]="isAvailable()" (click)="toggleAvailability()" type="button">
+            <span class="toggle-knob"></span>
+          </button>
         </div>
 
         <!-- Language picker -->
@@ -100,12 +100,18 @@ import { ThemeService } from '../../../core/services/theme.service';
       .lang-code, .lang-chevron { display: none; }
       .topbar-right { gap: 4px; }
     }
-    .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
-    .toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; inset: 0; background: var(--border, #BDBDBD); border-radius: 22px; transition: .3s; }
-    .slider:before { position: absolute; content: ''; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
-    input:checked + .slider--green { background: #43A047; }
-    input:checked + .slider--green:before { transform: translateX(18px); }
+    .toggle-btn {
+      position: relative; display: inline-block; width: 40px; height: 22px;
+      background: var(--border, #BDBDBD); border-radius: 22px;
+      border: none; cursor: pointer; transition: background .3s; padding: 0; flex-shrink: 0;
+    }
+    .toggle-btn--on { background: #43A047; }
+    .toggle-knob {
+      position: absolute; top: 3px; left: 3px;
+      width: 16px; height: 16px; background: white; border-radius: 50%;
+      transition: transform .3s;
+    }
+    .toggle-btn--on .toggle-knob { transform: translateX(18px); }
     .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
     .status-dot--online { background: #43A047; }
     .status-dot--offline { background: #9E9E9E; }
@@ -174,14 +180,18 @@ import { ThemeService } from '../../../core/services/theme.service';
 })
 export class TopbarComponent implements OnInit {
   toggleSidebar = output<void>();
-  auth = inject(AuthService);
+  auth     = inject(AuthService);
+  private wsService = inject(WorkspaceService);
   notifSvc = inject(NotificationService);
-  langSvc = inject(LanguageService);
+  langSvc  = inject(LanguageService);
   themeSvc = inject(ThemeService);
   private api = inject(ApiService);
 
-  isAvailable = false;
+  isAvailable = signal(false);
   langOpen = false;
+
+  /** Workspace actif (type JWT) ou rôle DB en fallback */
+  activeRole = computed(() => this.wsService.activeWorkspace()?.type || this.auth.role() || '');
 
   initials = computed(() => {
     const name = this.auth.user()?.full_name ?? '';
@@ -190,16 +200,25 @@ export class TopbarComponent implements OnInit {
 
   roleKey = computed(() => {
     const roleMap: Record<string, string> = {
-      SHIPPER: 'PROFILE.ROLES.SHIPPER',
-      DRIVER: 'PROFILE.ROLES.DRIVER',
-      CARRIER: 'PROFILE.ROLES.CARRIER',
-      ADMIN: 'PROFILE.ROLES.ADMIN',
+      SHIPPER:    'PROFILE.ROLES.SHIPPER',
+      DRIVER:     'PROFILE.ROLES.DRIVER',
+      CARRIER:    'PROFILE.ROLES.CARRIER',
+      BROKER:     'PROFILE.ROLES.BROKER',
+      ADMIN:      'PROFILE.ROLES.ADMIN',
+      SUPERADMIN: 'PROFILE.ROLES.SUPERADMIN',
+      PERSONAL:   'PROFILE.ROLES.PERSONAL',
     };
-    return roleMap[this.auth.user()?.role ?? ''] ?? '';
+    return roleMap[this.activeRole()] ?? '';
   });
 
   ngOnInit(): void {
-    this.isAvailable = this.auth.user()?.driver_profile?.is_available ?? false;
+    const role = this.activeRole();
+    const u = this.auth.user() as any;
+    if (role === 'DRIVER') {
+      this.isAvailable.set(u?.driver_profile?.is_available ?? false);
+    } else if (role === 'CARRIER') {
+      this.isAvailable.set(u?.carrier_profile?.is_available ?? false);
+    }
   }
 
   selectLang(code: string): void {
@@ -208,15 +227,32 @@ export class TopbarComponent implements OnInit {
   }
 
   toggleAvailability(): void {
-    const next = !this.isAvailable;
-    this.api.updateDriverAvailability(next).subscribe({
-      next: (driverProfile) => {
-        this.isAvailable = driverProfile.is_available;
-        // Keep the auth user signal in sync so ngOnInit reads correctly on re-mount
-        const u = this.auth.user();
-        if (u && u.driver_profile) {
-          this.auth.updateProfile({ ...u, driver_profile: { ...u.driver_profile, is_available: driverProfile.is_available } });
+    const next = !this.isAvailable();
+    const role = this.activeRole();
+
+    console.log('[toggle] role=', role, 'next=', next);
+    this.isAvailable.set(next);
+
+    const update$ = role === 'CARRIER'
+      ? this.api.updateCarrierProfile({ is_available: next })
+      : this.api.updateDriverProfile({ is_available: next });
+
+    update$.subscribe({
+      next: (profile) => {
+        console.log('[toggle] API success, profile.is_available=', profile.is_available);
+        this.isAvailable.set(profile.is_available ?? next);
+        const u = this.auth.user() as any;
+        if (u) {
+          if (role === 'DRIVER' && u.driver_profile) {
+            this.auth.updateProfile({ ...u, driver_profile: { ...u.driver_profile, is_available: profile.is_available } });
+          } else if (role === 'CARRIER' && u.carrier_profile) {
+            this.auth.updateProfile({ ...u, carrier_profile: { ...u.carrier_profile, is_available: profile.is_available } });
+          }
         }
+      },
+      error: (err) => {
+        console.error('[toggle] API error:', err);
+        this.isAvailable.set(!next);
       },
     });
   }

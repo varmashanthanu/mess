@@ -5,6 +5,7 @@ import { Observable, tap, catchError, throwError, of } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User, AuthTokens, JwtPayload, UserRole } from '../models/user.model';
+import { WorkspaceService } from './workspace.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -14,10 +15,11 @@ export class AuthService {
 
   private _user = signal<User | null>(null);
   readonly user = this._user.asReadonly();
-  readonly isLoggedIn = computed(() => !!this._user());
-  readonly role = computed(() => this._user()?.role ?? null);
+  readonly isLoggedIn    = computed(() => !!this._user());
+  readonly role          = computed(() => this._user()?.role ?? null);
+  readonly isSuperAdmin  = computed(() => this._user()?.role === 'ADMIN' && !!this._user()?.is_superuser);
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private workspaceService: WorkspaceService) {}
 
   /**
    * Called by APP_INITIALIZER — restores the logged-in user before Angular
@@ -37,7 +39,16 @@ export class AuthService {
 
     return firstValueFrom(
       this.http.get<User>(`${this.apiUrl}/accounts/me/`).pipe(
-        tap((user) => this._user.set(user)),
+        tap((user) => {
+          this._user.set(user);
+          const access = this.getAccessToken();
+          if (access) {
+            const payload = this.decodeToken(access);
+            if (payload?.workspace_type) {
+              this.workspaceService.setFromJwt(payload.workspace_type, payload.workspace_name ?? "");
+            }
+          }
+        }),
         catchError(() => {
           // /accounts/me/ failed even after a refresh attempt — clear state
           this.clearTokens();
@@ -107,6 +118,7 @@ export class AuthService {
     }
     this.clearTokens();
     this._user.set(null);
+    this.workspaceService.reset();
     this.router.navigate(['/auth/login']);
   }
 

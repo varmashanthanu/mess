@@ -83,6 +83,10 @@ export const routes: Routes = [
         path: 'admin',
         loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent),
       },
+      {
+        path: 'superadmin',
+        loadComponent: () => import('./features/superadmin/superadmin.component').then(m => m.SuperAdminComponent),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

@@ -12,6 +12,17 @@ class IsAdmin(BasePermission):
         return bool(request.user and request.user.is_authenticated and request.user.role == UserRole.ADMIN)
 
 
+class IsSuperAdmin(BasePermission):
+    """Only superadmins (role=ADMIN + is_superuser=True)."""
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.role == UserRole.ADMIN
+            and request.user.is_superuser
+        )
+
+
 class IsShipper(BasePermission):
     """Only shippers (freight senders)."""
     def has_permission(self, request, view):

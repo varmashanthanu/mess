@@ -4,6 +4,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
+import { WorkspaceSwitcherComponent } from '../workspace-switcher/workspace-switcher.component';
+import { WorkspaceService } from '../../../core/services/workspace.service';
 import { ApiService } from '../../../core/services/api.service';
 
 interface NavItem {
@@ -17,7 +19,7 @@ interface NavItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive, TranslateModule],
+  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive, TranslateModule, WorkspaceSwitcherComponent],
   template: `
     <aside class="sidebar" [class.collapsed]="collapsed()" [class.mobile-open]="mobileOpen()">
 
@@ -35,6 +37,9 @@ interface NavItem {
         <button class="contact-btn-icon" *ngIf="collapsed()" (click)="openContact()" [title]="'CONTACT.TITLE' | translate">☎</button>
         <button class="sidebar-close" *ngIf="!collapsed()" (click)="onClose()" aria-label="Close sidebar">✕</button>
       </div>
+
+      <!-- Workspace switcher -->
+      <app-workspace-switcher *ngIf="!collapsed()"></app-workspace-switcher>
 
       <!-- Role badge -->
       <div class="role-badge" *ngIf="!collapsed()">
@@ -134,8 +139,8 @@ interface NavItem {
     /* Brand */
     .sidebar-brand {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 14px; border-bottom: 1px solid rgba(201,162,39,0.2);
-      min-height: 80px; gap: 8px;
+      padding: 8px 12px; border-bottom: 1px solid rgba(201,162,39,0.2);
+      min-height: 64px; gap: 8px;
     }
     .brand-mark { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
     .brand-logo {
@@ -157,7 +162,7 @@ interface NavItem {
     }
 
     /* Role badge */
-    .role-badge { padding: 10px 12px 6px; }
+    .role-badge { padding: 6px 10px 4px; }
     .role-pill {
       display: inline-flex; align-items: center; gap: 5px;
       padding: 5px 13px; border-radius: 20px; font-size: 12px;
@@ -170,21 +175,21 @@ interface NavItem {
     .role-pill--carrier { background: rgba(33,150,243,0.15); color: #64B5F6; border-color: rgba(33,150,243,0.4); }
 
     /* Nav */
-    .sidebar-nav { flex: 1; padding: 10px 10px; overflow-y: auto; overflow-x: hidden; }
+    .sidebar-nav { flex: 1; padding: 6px 8px; overflow-y: auto; overflow-x: hidden; }
     .nav-item {
-      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-      border-radius: 10px; color: white; text-decoration: none;
-      font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-      margin-bottom: 8px; position: relative;
+      display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+      border-radius: 9px; color: white; text-decoration: none;
+      font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      margin-bottom: 5px; position: relative;
       background: var(--item-color);
-      box-shadow: 0 4px 0 color-mix(in srgb, var(--item-color) 60%, black);
+      box-shadow: 0 3px 0 color-mix(in srgb, var(--item-color) 60%, black);
       transition: transform .1s ease, box-shadow .1s ease; user-select: none;
     }
     .nav-item:hover { text-decoration: none; filter: brightness(1.08); }
-    .nav-item:active { transform: translateY(3px); box-shadow: 0 1px 0 color-mix(in srgb, var(--item-color) 60%, black); }
+    .nav-item:active { transform: translateY(2px); box-shadow: 0 1px 0 color-mix(in srgb, var(--item-color) 60%, black); }
     .nav-item.active { filter: brightness(1.1); }
-    .nav-icon { font-size: 18px; flex-shrink: 0; width: 20px; text-align: center; }
-    .nav-label { flex: 1; white-space: normal; line-height: 1.25; word-break: break-word; }
+    .nav-icon { font-size: 16px; flex-shrink: 0; width: 18px; text-align: center; }
+    .nav-label { flex: 1; white-space: normal; line-height: 1.2; word-break: break-word; }
 
     /* Profile card in nav */
     .profile-nav-card {
@@ -293,6 +298,7 @@ export class SidebarComponent {
   close = output<void>();
 
   auth = inject(AuthService);
+  private wsService = inject(WorkspaceService);
   private api = inject(ApiService);
 
   // Contact form
@@ -337,13 +343,17 @@ export class SidebarComponent {
 
   rolePillKey = computed(() => {
     const roleMap: Record<string, string> = {
-      SHIPPER: 'PROFILE.ROLES.SHIPPER_LABEL',
-      DRIVER: 'PROFILE.ROLES.DRIVER_LABEL',
-      CARRIER: 'PROFILE.ROLES.CARRIER_LABEL',
-      BROKER: 'PROFILE.ROLES.BROKER_LABEL',
-      ADMIN: 'PROFILE.ROLES.ADMIN_LABEL',
+      PERSONAL:   'WORKSPACE.PERSONAL',
+      SHIPPER:    'PROFILE.ROLES.SHIPPER_LABEL',
+      DRIVER:     'PROFILE.ROLES.DRIVER_LABEL',
+      CARRIER:    'PROFILE.ROLES.CARRIER_LABEL',
+      BROKER:     'PROFILE.ROLES.BROKER_LABEL',
+      ADMIN:      'PROFILE.ROLES.ADMIN_LABEL',
+      SUPERADMIN: 'WORKSPACE.SUPERADMIN',
     };
-    return roleMap[this.auth.user()?.role ?? ''] ?? '';
+    const ws = this.wsService.activeWorkspace();
+    const key = ws?.type || this.auth.user()?.role || '';
+    return roleMap[key] ?? '';
   });
 
   private driverItems: NavItem[] = [
@@ -383,10 +393,16 @@ export class SidebarComponent {
     { labelKey: 'NAV.PROFILE',            icon: '⚙️', route: '/profile',         color: '#455A64' },
   ];
 
+  private superAdminItems: NavItem[] = [
+    { labelKey: 'NAV.ADMIN_SUPER',  icon: '🔑', route: '/superadmin', color: '#4A148C' },
+    { labelKey: 'NAV.ADMIN_CC',     icon: '⚡', route: '/admin',      color: '#1A237E' },
+    { labelKey: 'NAV.PROFILE',      icon: '👤', route: '/profile',    color: '#455A64' },
+  ];
+
   private adminItems: NavItem[] = [
     { labelKey: 'NAV.ADMIN_CC',          icon: '⚡', route: '/admin',     color: '#1A237E' },
-    { labelKey: 'NAV.ADMIN_MARKETPLACE', icon: '🏪', route: '/load-board', color: '#283593' },
-    { labelKey: 'NAV.ADMIN_TRUST',       icon: '🛡', route: '/admin',     color: '#4527A0' },
+    { labelKey: 'NAV.ADMIN_MARKETPLACE', icon: '🏪', route: '/load-board', color: '#C9A227' },
+    { labelKey: 'NAV.ADMIN_TRUST',       icon: '🛡', route: '/admin',     color: '#C62828' },
     { labelKey: 'NAV.ADMIN_ORGS',        icon: '🏢', route: '/admin',     color: '#006064' },
     { labelKey: 'NAV.ADMIN_FLEET',       icon: '🚛', route: '/fleet',     color: '#01579B' },
     { labelKey: 'NAV.ADMIN_FINANCE',     icon: '💰', route: '/admin',     color: '#1B5E20' },
@@ -405,13 +421,17 @@ export class SidebarComponent {
   ];
 
   visibleItems = computed(() => {
-    const role = this.auth.role();
-    if (role === 'DRIVER')  return this.driverItems;
-    if (role === 'SHIPPER') return this.shipperItems;
-    if (role === 'CARRIER') return this.carrierItems;
-    if (role === 'BROKER')  return this.brokerItems;
-    if (role === 'ADMIN')   return this.adminItems;
-    return this.allItems.filter(item => !item.roles || (role && item.roles.includes(role)));
+    // Use active workspace type if available, fallback to user role
+    const ws = this.wsService.activeWorkspace();
+    const role = (ws?.type || this.auth.role()) as string;
+    if (role === 'DRIVER')     return this.driverItems;
+    if (role === 'SHIPPER')    return this.shipperItems;
+    if (role === 'CARRIER')    return this.carrierItems;
+    if (role === 'BROKER')     return this.brokerItems;
+    if (role === 'SUPERADMIN') return this.superAdminItems;
+    if (role === 'ADMIN')      return this.auth.isSuperAdmin() ? this.superAdminItems : this.adminItems;
+    if (role === 'PERSONAL')   return [this.allItems[0]];  // only dashboard
+    return this.allItems.filter(item => !item.roles || (this.auth.role() && item.roles.includes(this.auth.role()!)));
   });
 
   onNavClick(): void {

@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { FreightOrder } from '../../core/models/order.model';
@@ -18,7 +18,8 @@ import { User } from '../../core/models/user.model';
       <div class="hero-banner">
         <div class="hero-left">
           <div class="hero-label">{{ 'ADMIN.COMMAND_CENTER' | translate }}</div>
-          <div class="hero-greeting">{{ 'ADMIN.GREETING' | translate: { name: adminName() } }}</div>
+          <div class="hero-greeting">{{ 'ADMIN.GREETING' | translate: { name: adminName() } }} 👋</div>
+          <div class="hero-sub">{{ 'ADMIN.HERO_SUBTITLE' | translate }}</div>
           <div class="hero-status">
             <span class="status-dot" [class.status-dot--ok]="marketplaceHealthy()" [class.status-dot--warn]="!marketplaceHealthy()"></span>
             <span class="status-text">{{ (marketplaceHealthy() ? 'ADMIN.OPERATIONAL' : 'ADMIN.DEGRADED') | translate }}</span>
@@ -28,180 +29,299 @@ import { User } from '../../core/models/user.model';
             <span class="status-snap">{{ activeCarriers() }} {{ 'ADMIN.SNAP_CARRIERS' | translate }}</span>
             <span class="status-sep">·</span>
             <span class="status-snap">{{ driversOnline() }} {{ 'ADMIN.SNAP_DRIVERS' | translate }}</span>
-            <span class="status-sep">·</span>
-            <span class="status-snap">{{ volumeToday() | number:'1.0-0' }} CFA {{ 'ADMIN.SNAP_VOLUME' | translate }}</span>
           </div>
         </div>
         <div class="hero-right">
-          <a class="btn-trust" routerLink="/admin">
-            🛡 {{ 'ADMIN.TRUST_CENTER' | translate }}
-          </a>
+          <div class="hero-date">{{ today | date:'MMMM d, y' }}</div>
+          <a class="btn-trust" routerLink="/admin">🛡 {{ 'ADMIN.TRUST_CENTER' | translate }}</a>
         </div>
       </div>
 
-      <!-- ══ KPI CARDS ══ -->
-      <div class="kpi-grid">
-        <div class="kpi-card kpi-card--blue">
-          <div class="kpi-icon">📦</div>
-          <div class="kpi-val">{{ activeLoads() }}</div>
-          <div class="kpi-lbl">{{ 'ADMIN.KPI_LOADS' | translate }}</div>
-          <div class="kpi-trend kpi-trend--up">↑ {{ loadsTrend() }}%</div>
+      <!-- ══ MARKETPLACE OVERVIEW (5 stats) ══ -->
+      <div class="overview-bar">
+        <div class="ov-stat">
+          <div class="ov-icon">📋</div>
+          <div class="ov-val">{{ loadsPosted() }}</div>
+          <div class="ov-lbl">{{ 'ADMIN.LOADS_POSTED' | translate }}</div>
+          <div class="ov-trend ov-trend--up">↑ 12.5% {{ 'ADMIN.VS_YESTERDAY' | translate }}</div>
         </div>
-        <div class="kpi-card kpi-card--gold">
-          <div class="kpi-icon">🚛</div>
-          <div class="kpi-val">{{ activeCarriers() }}</div>
-          <div class="kpi-lbl">{{ 'ADMIN.KPI_FLEET' | translate }}</div>
-          <div class="kpi-trend kpi-trend--up">↑ {{ carriersTrend() }}%</div>
+        <div class="ov-sep"></div>
+        <div class="ov-stat">
+          <div class="ov-icon">🤝</div>
+          <div class="ov-val">{{ loadsBooked() }}</div>
+          <div class="ov-lbl">{{ 'ADMIN.LOADS_BOOKED' | translate }}</div>
+          <div class="ov-trend ov-trend--up">↑ 15.6% {{ 'ADMIN.VS_YESTERDAY' | translate }}</div>
         </div>
-        <div class="kpi-card kpi-card--green">
-          <div class="kpi-icon">💰</div>
-          <div class="kpi-val">{{ volumeToday() | number:'1.0-0' }}</div>
-          <div class="kpi-lbl">{{ 'ADMIN.KPI_VOLUME' | translate }} (CFA)</div>
-          <div class="kpi-trend kpi-trend--up">↑ {{ volumeTrend() }}%</div>
+        <div class="ov-sep"></div>
+        <div class="ov-stat">
+          <div class="ov-icon">✅</div>
+          <div class="ov-val">{{ loadsDelivered() }}</div>
+          <div class="ov-lbl">{{ 'ADMIN.LOADS_DELIVERED' | translate }}</div>
+          <div class="ov-trend ov-trend--up">↑ 10.2% {{ 'ADMIN.VS_YESTERDAY' | translate }}</div>
         </div>
-        <div class="kpi-card" [class.kpi-card--red]="trustScore() < 90" [class.kpi-card--green]="trustScore() >= 90">
-          <div class="kpi-icon">🛡</div>
-          <div class="kpi-val">{{ trustScore() }}%</div>
-          <div class="kpi-lbl">{{ 'ADMIN.KPI_TRUST' | translate }}</div>
-          <div class="kpi-trend" [class.kpi-trend--up]="trustScore() >= 90" [class.kpi-trend--down]="trustScore() < 90">
-            {{ trustScore() >= 90 ? '✓ Sain' : '⚠ À surveiller' }}
+        <div class="ov-sep"></div>
+        <div class="ov-stat">
+          <div class="ov-icon">📊</div>
+          <div class="ov-val">{{ completionRate() }}%</div>
+          <div class="ov-lbl">{{ 'ADMIN.COMPLETION_RATE_LBL' | translate }}</div>
+          <div class="ov-trend" [class.ov-trend--up]="completionRate() >= 80" [class.ov-trend--down]="completionRate() < 80">
+            {{ completionRate() >= 80 ? '↑ 4.3%' : '↓ Attention' }}
           </div>
         </div>
+        <div class="ov-sep"></div>
+        <div class="ov-stat">
+          <div class="ov-icon">💰</div>
+          <div class="ov-val">{{ volumeToday() | number:'1.0-0' }}</div>
+          <div class="ov-lbl">{{ 'ADMIN.REVENUE_FCFA' | translate }}</div>
+          <div class="ov-trend ov-trend--up">↑ 5.7% {{ 'ADMIN.VS_YESTERDAY' | translate }}</div>
+        </div>
       </div>
 
+      <!-- ══ ROW 1 : Attention Center + System Alerts ══ -->
       <div class="two-col">
 
-        <!-- ══ ATTENTION CENTER ══ -->
+        <!-- Attention Center -->
         <div class="panel attention-panel">
           <div class="panel-header">
-            <span class="panel-title alert-red">⚠ {{ 'ADMIN.ATTENTION' | translate }}</span>
+            <span class="panel-title alert-red">⚠ {{ 'ADMIN.ATTENTION_CENTER' | translate }}</span>
+            <span class="panel-sub">{{ 'ADMIN.ATTN_SUBTITLE' | translate }}</span>
             <span class="alert-count" *ngIf="totalAlerts() > 0">{{ totalAlerts() }}</span>
           </div>
 
-          <div class="alert-empty" *ngIf="totalAlerts() === 0">
-            ✓ {{ 'ADMIN.NO_ALERTS' | translate }}
-          </div>
-
-          <div *ngIf="trustAlerts().length > 0">
-            <div class="alert-section">🛡 {{ 'ADMIN.TRUST_ALERTS' | translate }}</div>
-            <div class="alert-item alert-item--red" *ngFor="let a of trustAlerts()">
-              <span class="alert-dot"></span>
-              <span class="alert-text">{{ a }}</span>
-              <button class="alert-cta">{{ 'ADMIN.REVIEW' | translate }}</button>
+          <div class="attn-cards">
+            <div class="attn-card attn-card--blue" routerLink="/admin/users">
+              <div class="attn-icon">✅</div>
+              <div class="attn-num">{{ verificationCount() }}</div>
+              <div class="attn-lbl">{{ 'ADMIN.VERIFICATIONS_LBL' | translate }}</div>
+              <div class="attn-sub">{{ 'ADMIN.PENDING_REVIEW' | translate }}</div>
+              <div class="attn-link">{{ 'ADMIN.VIEW_QUEUE' | translate }}</div>
             </div>
-          </div>
-
-          <div *ngIf="operationalAlerts().length > 0">
-            <div class="alert-section">📍 {{ 'ADMIN.OPS_ALERTS' | translate }}</div>
-            <div class="alert-item alert-item--amber" *ngFor="let a of operationalAlerts()">
-              <span class="alert-dot alert-dot--amber"></span>
-              <span class="alert-text">{{ a }}</span>
-              <button class="alert-cta">{{ 'ADMIN.REVIEW' | translate }}</button>
+            <div class="attn-card attn-card--orange">
+              <div class="attn-icon">⚖</div>
+              <div class="attn-num">{{ disputeCount() }}</div>
+              <div class="attn-lbl">{{ 'ADMIN.DISPUTES_LBL' | translate }}</div>
+              <div class="attn-sub">{{ 'ADMIN.OPEN_CASES' | translate }}</div>
+              <div class="attn-link">{{ 'ADMIN.VIEW_QUEUE' | translate }}</div>
             </div>
-          </div>
-
-          <div *ngIf="financialAlerts().length > 0">
-            <div class="alert-section">💰 {{ 'ADMIN.FIN_ALERTS' | translate }}</div>
-            <div class="alert-item alert-item--amber" *ngFor="let a of financialAlerts()">
-              <span class="alert-dot alert-dot--amber"></span>
-              <span class="alert-text">{{ a }}</span>
-              <button class="alert-cta">{{ 'ADMIN.REVIEW' | translate }}</button>
+            <div class="attn-card attn-card--red">
+              <div class="attn-icon">💳</div>
+              <div class="attn-num">{{ failedPayments() }}</div>
+              <div class="attn-lbl">{{ 'ADMIN.PAYMENTS_LBL' | translate }}</div>
+              <div class="attn-sub">{{ 'ADMIN.FAILED_PAYMENTS_LBL' | translate }}</div>
+              <div class="attn-link">{{ 'ADMIN.VIEW_QUEUE' | translate }}</div>
+            </div>
+            <div class="attn-card attn-card--purple">
+              <div class="attn-icon">🛡</div>
+              <div class="attn-num">{{ fraudAlerts() }}</div>
+              <div class="attn-lbl">{{ 'ADMIN.FRAUD_LBL' | translate }}</div>
+              <div class="attn-sub">{{ 'ADMIN.HIGH_RISK' | translate }}</div>
+              <div class="attn-link">{{ 'ADMIN.VIEW_DETAILS' | translate }}</div>
             </div>
           </div>
         </div>
 
-        <!-- ══ MARKETPLACE HEALTH ══ -->
+        <!-- System Alerts -->
         <div class="panel">
           <div class="panel-header">
-            <span class="panel-title">📊 {{ 'ADMIN.MARKET_HEALTH' | translate }}</span>
+            <span class="panel-title">🔔 {{ 'ADMIN.SYSTEM_ALERTS_LBL' | translate }}</span>
+            <a class="see-all">{{ 'ADMIN.VIEW_ALL' | translate }}</a>
           </div>
-          <div class="health-flow">
-            <div class="health-step" *ngFor="let step of healthSteps()">
-              <div class="health-step-icon">{{ step.icon }}</div>
-              <div class="health-step-val" [class.health-val--good]="step.status === 'good'" [class.health-val--warn]="step.status === 'warn'">{{ step.value }}</div>
-              <div class="health-step-lbl">{{ step.label | translate }}</div>
-              <div class="health-arrow" *ngIf="!step.last">↓</div>
+          <div class="sys-alert sys-alert--high" *ngFor="let a of systemAlertsHigh()">
+            <span class="severity-badge severity--high">{{ 'ADMIN.SEVERITY_HIGH' | translate }}</span>
+            <div class="sys-alert-body">
+              <div class="sys-alert-title">{{ a.titleKey | translate }}</div>
+              <div class="sys-alert-detail">{{ a.detailKey | translate: a.detailParams }}</div>
             </div>
+            <div class="sys-alert-time">{{ a.timeKey | translate }}</div>
+          </div>
+          <div class="sys-alert sys-alert--medium" *ngFor="let a of systemAlertsMedium()">
+            <span class="severity-badge severity--medium">{{ 'ADMIN.SEVERITY_MEDIUM' | translate }}</span>
+            <div class="sys-alert-body">
+              <div class="sys-alert-title">{{ a.titleKey | translate }}</div>
+              <div class="sys-alert-detail">{{ a.detailKey | translate: a.detailParams }}</div>
+            </div>
+            <div class="sys-alert-time">{{ a.timeKey | translate }}</div>
+          </div>
+          <div class="sys-alert sys-alert--low">
+            <span class="severity-badge severity--low">{{ 'ADMIN.SEVERITY_LOW' | translate }}</span>
+            <div class="sys-alert-body">
+              <div class="sys-alert-title">{{ 'ADMIN.MAINTENANCE_TITLE' | translate }}</div>
+              <div class="sys-alert-detail">{{ 'ADMIN.MAINTENANCE_DATE' | translate }}</div>
+            </div>
+            <div class="sys-alert-time">{{ 'ADMIN.MAINTENANCE_AGO' | translate }}</div>
           </div>
         </div>
 
       </div>
 
-      <!-- ══ TRUST CENTER ══ -->
-      <div class="panel trust-panel">
-        <div class="panel-header">
-          <span class="panel-title">🛡 {{ 'ADMIN.TRUST_CENTER' | translate }}</span>
-        </div>
-        <div class="trust-grid">
-          <div class="trust-col">
-            <div class="trust-col-title">{{ 'ADMIN.VERIF_QUEUE' | translate }}</div>
-            <div class="trust-item" *ngFor="let v of verificationQueue()">
-              <span class="trust-badge trust-badge--pending">{{ v.type }}</span>
-              <span class="trust-name">{{ v.name }}</span>
-              <button class="trust-btn">{{ 'ADMIN.VERIFY' | translate }}</button>
-            </div>
-            <div class="trust-empty" *ngIf="verificationQueue().length === 0">{{ 'ADMIN.QUEUE_EMPTY' | translate }}</div>
-          </div>
-          <div class="trust-col">
-            <div class="trust-col-title">{{ 'ADMIN.COMPLIANCE_QUEUE' | translate }}</div>
-            <div class="trust-item trust-item--warn" *ngFor="let c of complianceQueue()">
-              <span class="trust-badge trust-badge--warn">{{ c.type }}</span>
-              <span class="trust-name">{{ c.name }}</span>
-              <span class="trust-expiry">{{ c.expiry }}</span>
-            </div>
-            <div class="trust-empty" *ngIf="complianceQueue().length === 0">{{ 'ADMIN.QUEUE_EMPTY' | translate }}</div>
-          </div>
-          <div class="trust-col">
-            <div class="trust-col-title">{{ 'ADMIN.RISK_QUEUE' | translate }}</div>
-            <div class="trust-item trust-item--red" *ngFor="let r of riskQueue()">
-              <span class="trust-badge trust-badge--red">{{ r.type }}</span>
-              <span class="trust-name">{{ r.name }}</span>
-              <button class="trust-btn trust-btn--red">{{ 'ADMIN.INVESTIGATE' | translate }}</button>
-            </div>
-            <div class="trust-empty" *ngIf="riskQueue().length === 0">{{ 'ADMIN.QUEUE_EMPTY' | translate }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ MARKETPLACE REVENUE + ACTIVITY ══ -->
+      <!-- ══ ROW 2 : Marketplace Health + Operational Queues ══ -->
       <div class="two-col">
 
+        <!-- Marketplace Health -->
         <div class="panel">
           <div class="panel-header">
-            <span class="panel-title">💰 {{ 'ADMIN.REVENUE' | translate }}</span>
+            <span class="panel-title">📊 {{ 'ADMIN.MARKETPLACE_HEALTH_LBL' | translate }}</span>
+            <a class="see-all">{{ 'ADMIN.VIEW_FULL_REPORT' | translate }}</a>
           </div>
-          <div class="revenue-rows">
-            <div class="rev-row">
-              <span class="rev-period">{{ 'ADMIN.REV_TODAY' | translate }}</span>
-              <span class="rev-val">{{ volumeToday() | number:'1.0-0' }} CFA</span>
+          <div class="mh-row" *ngFor="let row of healthRows()">
+            <div class="mh-label">{{ row.labelKey | translate }}</div>
+            <div class="mh-val" [class.mh-val--green]="row.trend > 0" [class.mh-val--red]="row.trend < 0">{{ row.value }}</div>
+            <div class="mh-trend" [class.mh-trend--up]="row.trend > 0" [class.mh-trend--down]="row.trend < 0">
+              {{ row.trend > 0 ? '↑' : '↓' }} {{ row.trend | number:'1.1-1' }}%
+              <span class="mh-sparkline">〜〜〜</span>
             </div>
-            <div class="rev-row">
-              <span class="rev-period">{{ 'ADMIN.REV_WEEK' | translate }}</span>
-              <span class="rev-val">{{ volumeWeek() | number:'1.0-0' }} CFA</span>
+          </div>
+          <!-- Fulfillment Rate donut -->
+          <div class="fulfillment-row">
+            <div class="fulfillment-label">{{ 'ADMIN.FULFILLMENT_LBL' | translate }}</div>
+            <div class="fulfillment-ring">
+              <svg viewBox="0 0 36 36" width="54" height="54">
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--border)" stroke-width="3"/>
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="#66BB6A" stroke-width="3"
+                  [attr.stroke-dasharray]="completionRate() + ' ' + (100 - completionRate())"
+                  stroke-dashoffset="25" stroke-linecap="round"/>
+                <text x="18" y="20.5" text-anchor="middle" font-size="7" fill="var(--text-primary)" font-weight="700">{{ completionRate() }}%</text>
+              </svg>
             </div>
-            <div class="rev-row">
-              <span class="rev-period">{{ 'ADMIN.REV_MONTH' | translate }}</span>
-              <span class="rev-val">{{ volumeMonth() | number:'1.0-0' }} CFA</span>
+            <div class="fulfillment-trend mh-trend--up">↑ 3.6%</div>
+          </div>
+        </div>
+
+        <!-- Operational Queues -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">📋 {{ 'ADMIN.OPERATIONAL_QUEUES' | translate }}</span>
+          </div>
+          <div class="op-queue-item" *ngFor="let q of operationalQueues()">
+            <span class="op-queue-icon">{{ q.icon }}</span>
+            <span class="op-queue-lbl">{{ q.labelKey | translate }}</span>
+            <span class="op-queue-count" [class.op-count--red]="q.count > 5" [class.op-count--amber]="q.count > 0 && q.count <= 5">{{ q.count }}</span>
+            <span class="op-queue-arrow">›</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ ROW 3 : Recent Activity + Top Routes ══ -->
+      <div class="two-col">
+
+        <!-- Recent Activity -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">🕐 {{ 'ADMIN.RECENT_ACTIVITY_LBL' | translate }}</span>
+            <a class="see-all">{{ 'ADMIN.VIEW_ALL' | translate }}</a>
+          </div>
+          <div class="activity-item" *ngFor="let a of recentActivity()">
+            <div class="activity-icon" [class.ai--green]="a.type==='success'" [class.ai--red]="a.type==='alert'" [class.ai--gold]="a.type==='info'" [class.ai--blue]="a.type==='new'">
+              {{ a.icon }}
             </div>
-            <div class="rev-divider"></div>
-            <div class="rev-row rev-row--fee">
-              <span class="rev-period">{{ 'ADMIN.PLATFORM_FEES' | translate }}</span>
-              <span class="rev-val rev-val--gold">{{ platformFees() | number:'1.0-0' }} CFA</span>
+            <div class="activity-body">
+              <div class="activity-title">{{ a.textKey | translate: a.textParams }}</div>
+              <div class="activity-sub" *ngIf="a.sub">{{ a.sub }}</div>
+            </div>
+            <div class="activity-time">{{ a.timeKey | translate }}</div>
+          </div>
+        </div>
+
+        <!-- Top Routes -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">🗺 {{ 'ADMIN.TOP_ROUTES_LBL' | translate }}</span>
+            <a class="see-all">{{ 'ADMIN.VIEW_REPORT' | translate }}</a>
+          </div>
+          <div class="routes-header-row">
+            <span class="routes-col-lbl">{{ 'ADMIN.ROUTE_COL' | translate }}</span>
+            <span class="routes-col-lbl">{{ 'ADMIN.LOADS_COL' | translate }}</span>
+            <span class="routes-col-lbl">{{ 'ADMIN.TREND_COL' | translate }}</span>
+          </div>
+          <div class="route-row" *ngFor="let r of topRoutes()">
+            <span class="route-name">{{ r.route }}</span>
+            <span class="route-loads">{{ r.loads }}</span>
+            <span class="route-pct" [class.route-up]="r.trend > 0" [class.route-down]="r.trend < 0">
+              {{ r.trend > 0 ? '+' : '' }}{{ r.trend }}% <span class="route-spark">{{ r.trend > 0 ? '↗' : '↘' }}</span>
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ ROW 4 : Payment Overview + Quick Actions ══ -->
+      <div class="two-col">
+
+        <!-- Payment Overview -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">💳 {{ 'ADMIN.PAYMENT_OVERVIEW_LBL' | translate }}</span>
+            <a class="see-all">{{ 'ADMIN.VIEW_ALL' | translate }}</a>
+          </div>
+          <div class="pay-layout">
+            <div class="pay-donut">
+              <svg viewBox="0 0 36 36" width="90" height="90">
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--border)" stroke-width="3"/>
+                <!-- Success -->
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="#66BB6A" stroke-width="3"
+                  [attr.stroke-dasharray]="paySuccessPct() + ' ' + (100 - paySuccessPct())"
+                  stroke-dashoffset="25" stroke-linecap="round"/>
+                <!-- Failed -->
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="#E53935" stroke-width="3"
+                  [attr.stroke-dasharray]="payFailedPct() + ' ' + (100 - payFailedPct())"
+                  [attr.stroke-dashoffset]="25 - paySuccessPct()" stroke-linecap="round"/>
+                <text x="18" y="17" text-anchor="middle" font-size="5" fill="var(--text-secondary)">{{ 'ADMIN.PAYMENT_SUCCESS_LABEL' | translate }}</text>
+                <text x="18" y="23" text-anchor="middle" font-size="6" fill="#66BB6A" font-weight="700">> 99%</text>
+              </svg>
+            </div>
+            <div class="pay-legend">
+              <div class="pay-leg-row">
+                <span class="pay-dot pay-dot--green"></span>
+                <span class="pay-leg-lbl">{{ 'ADMIN.SUCCESSFUL' | translate }}</span>
+                <span class="pay-leg-pct green">{{ paySuccessPct() }}%</span>
+                <span class="pay-leg-amt">{{ volumeToday() | number:'1.0-0' }} FCFA</span>
+              </div>
+              <div class="pay-leg-row">
+                <span class="pay-dot pay-dot--red"></span>
+                <span class="pay-leg-lbl">{{ 'ADMIN.FAILED_PAY' | translate }}</span>
+                <span class="pay-leg-pct red">{{ payFailedPct() }}%</span>
+                <span class="pay-leg-amt">{{ failedAmount() | number:'1.0-0' }} FCFA</span>
+              </div>
+              <div class="pay-leg-row">
+                <span class="pay-dot pay-dot--amber"></span>
+                <span class="pay-leg-lbl">{{ 'ADMIN.PENDING_PAY' | translate }}</span>
+                <span class="pay-leg-pct amber">{{ payPendingPct() }}%</span>
+                <span class="pay-leg-amt">{{ pendingAmount() | number:'1.0-0' }} FCFA</span>
+              </div>
+              <div class="pay-success-rate">
+                {{ 'ADMIN.PAYMENT_SUCCESS_RATE' | translate }} <strong>&gt; {{ paySuccessPct() }}%</strong>
+              </div>
             </div>
           </div>
         </div>
 
+        <!-- Quick Actions -->
         <div class="panel">
           <div class="panel-header">
-            <span class="panel-title">🕐 {{ 'ADMIN.RECENT_ACTIVITY' | translate }}</span>
+            <span class="panel-title">⚡ {{ 'ADMIN.QUICK_ACTIONS_LBL' | translate }}</span>
           </div>
-          <div class="activity-list">
-            <div class="activity-item" *ngFor="let a of recentActivity()">
-              <span class="activity-time">{{ a.time }}</span>
-              <span class="activity-dot" [class.activity-dot--green]="a.type === 'success'" [class.activity-dot--red]="a.type === 'alert'" [class.activity-dot--gold]="a.type === 'info'"></span>
-              <span class="activity-text">{{ a.text }}</span>
-            </div>
+          <div class="qa-grid">
+            <a class="qa-btn" routerLink="/admin/users">
+              <span class="qa-icon">✅</span> {{ 'ADMIN.VERIFY_USER' | translate }}
+            </a>
+            <a class="qa-btn" routerLink="/admin">
+              <span class="qa-icon">📢</span> {{ 'ADMIN.CREATE_ANNOUNCEMENT' | translate }}
+            </a>
+            <a class="qa-btn" routerLink="/loads/new">
+              <span class="qa-icon">📦</span> {{ 'ADMIN.ADD_LOAD' | translate }}
+            </a>
+            <a class="qa-btn" routerLink="/messaging">
+              <span class="qa-icon">💬</span> {{ 'ADMIN.SEND_MESSAGE_BTN' | translate }}
+            </a>
+            <a class="qa-btn" routerLink="/admin/users">
+              <span class="qa-icon">🔍</span> {{ 'ADMIN.INVESTIGATE_USER' | translate }}
+            </a>
+            <button class="qa-btn qa-btn--export" (click)="exportReport()">
+              <span class="qa-icon">📄</span> {{ 'ADMIN.EXPORT_REPORT' | translate }}
+            </button>
           </div>
+          <button class="qa-more">{{ 'ADMIN.MORE_ACTIONS' | translate }}</button>
         </div>
 
       </div>
@@ -209,8 +329,8 @@ import { User } from '../../core/models/user.model';
       <!-- ══ USERS OVERVIEW ══ -->
       <div class="panel">
         <div class="panel-header">
-          <span class="panel-title">👤 {{ 'ADMIN.ORGS' | translate }}</span>
-          <a routerLink="/admin/users" class="see-all">{{ 'COMMON.SEE_ALL' | translate }} →</a>
+          <span class="panel-title">👤 {{ 'ADMIN.USERS_OVERVIEW_LBL' | translate }}</span>
+          <a routerLink="/admin/users" class="see-all">{{ 'ADMIN.VIEW_ALL' | translate }} →</a>
         </div>
         <div class="users-grid">
           <div class="user-stat">
@@ -218,19 +338,18 @@ import { User } from '../../core/models/user.model';
             <div class="user-stat-lbl">{{ 'ADMIN.TOTAL_USERS' | translate }}</div>
           </div>
           <div class="user-stat">
-            <div class="user-stat-val user-stat-val--gold">{{ totalCarriers() }}</div>
-            <div class="user-stat-lbl">{{ 'ADMIN.CARRIERS' | translate }}</div>
+            <div class="user-stat-val user-stat-val--gold">{{ activeCarriers() }}</div>
+            <div class="user-stat-lbl">{{ 'ADMIN.ACTIVE_CARRIERS_LBL' | translate }}</div>
           </div>
           <div class="user-stat">
             <div class="user-stat-val user-stat-val--blue">{{ totalShippers() }}</div>
-            <div class="user-stat-lbl">{{ 'ADMIN.SHIPPERS' | translate }}</div>
+            <div class="user-stat-lbl">{{ 'ADMIN.ACTIVE_SHIPPERS_LBL' | translate }}</div>
           </div>
           <div class="user-stat">
-            <div class="user-stat-val user-stat-val--green">{{ totalDrivers() }}</div>
-            <div class="user-stat-lbl">{{ 'ADMIN.DRIVERS' | translate }}</div>
+            <div class="user-stat-val user-stat-val--green">{{ driversOnline() }}</div>
+            <div class="user-stat-lbl">{{ 'ADMIN.DRIVERS_AVAILABLE' | translate }}</div>
           </div>
         </div>
-
         <div class="users-table-wrap" *ngIf="recentUsers().length">
           <table class="users-table">
             <thead>
@@ -260,145 +379,197 @@ import { User } from '../../core/models/user.model';
     </div>
   `,
   styles: [`
-    .admin-page { max-width: 1200px; }
+    .admin-page { max-width: 1280px; display: flex; flex-direction: column; gap: 16px; }
 
-    /* Hero */
+    /* ── Hero ─────────────────────────────── */
     .hero-banner {
       display: flex; align-items: center; justify-content: space-between; gap: 20px;
       background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%);
-      border-radius: 16px; padding: 24px 28px; margin-bottom: 20px;
+      border-radius: 16px; padding: 24px 28px;
       border: 1px solid rgba(201,162,39,0.2); box-shadow: 0 4px 24px rgba(0,0,0,0.3);
     }
-    .hero-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #C9A227; margin-bottom: 6px; }
-    .hero-greeting { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 10px; }
+    .hero-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #C9A227; margin-bottom: 4px; }
+    .hero-greeting { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .hero-sub { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 10px; }
     .hero-status { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .status-dot--ok { background: #66BB6A; box-shadow: 0 0 6px #66BB6A; }
+    .status-dot--ok   { background: #66BB6A; box-shadow: 0 0 6px #66BB6A; }
     .status-dot--warn { background: #FFB300; box-shadow: 0 0 6px #FFB300; }
     .status-text { font-size: 13px; font-weight: 700; color: #66BB6A; }
-    .status-sep { color: rgba(255,255,255,0.3); font-size: 12px; }
-    .status-snap { font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 500; }
+    .status-sep  { color: rgba(255,255,255,0.3); font-size: 12px; }
+    .status-snap { font-size: 12px; color: rgba(255,255,255,0.7); }
+    .hero-right  { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+    .hero-date   { font-size: 12px; color: rgba(255,255,255,0.45); }
     .btn-trust {
-      padding: 12px 22px; background: linear-gradient(135deg, #C9A227, #A8861F);
+      padding: 10px 20px; background: linear-gradient(135deg, #C9A227, #A8861F);
       color: #111; border-radius: 10px; text-decoration: none; font-size: 14px;
       font-weight: 800; white-space: nowrap; box-shadow: 0 4px 12px rgba(201,162,39,0.4);
-      transition: all .15s;
     }
-    .btn-trust:hover { filter: brightness(1.1); }
 
-    /* KPI */
-    .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 20px; }
-    .kpi-card {
-      background: var(--surface); border-radius: 14px; padding: 20px 18px;
+    /* ── Marketplace Overview bar ─────────── */
+    .overview-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface); border-radius: 14px; padding: 20px 28px;
       border: 1px solid var(--border); box-shadow: var(--shadow);
-      display: flex; flex-direction: column; gap: 4px;
     }
-    .kpi-card--blue  { border-top: 3px solid #42A5F5; }
-    .kpi-card--gold  { border-top: 3px solid #C9A227; }
-    .kpi-card--green { border-top: 3px solid #66BB6A; }
-    .kpi-card--red   { border-top: 3px solid #E53935; }
-    .kpi-icon { font-size: 22px; margin-bottom: 4px; }
-    .kpi-val  { font-size: 28px; font-weight: 800; color: var(--text-primary); line-height: 1; }
-    .kpi-lbl  { font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
-    .kpi-trend { font-size: 11px; font-weight: 700; margin-top: 6px; }
-    .kpi-trend--up   { color: #66BB6A; }
-    .kpi-trend--down { color: #E53935; }
+    .ov-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
+    .ov-sep  { width: 1px; height: 52px; background: var(--border); flex-shrink: 0; }
+    .ov-icon { font-size: 20px; }
+    .ov-val  { font-size: 28px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+    .ov-lbl  { font-size: 11px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .ov-trend { font-size: 11px; font-weight: 700; }
+    .ov-trend--up   { color: #66BB6A; }
+    .ov-trend--down { color: #E53935; }
 
-    /* Two-col layout */
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    /* ── Two-col ──────────────────────────── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
-    /* Panel */
+    /* ── Panel base ───────────────────────── */
     .panel {
       background: var(--surface); border-radius: 14px; padding: 20px;
-      border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 16px;
+      border: 1px solid var(--border); box-shadow: var(--shadow);
     }
-    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .panel-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
-    .alert-red { color: #E53935; }
-    .see-all { font-size: 12px; color: var(--gold); text-decoration: none; font-weight: 600; }
-    .see-all:hover { text-decoration: underline; }
-    .alert-count {
-      background: #E53935; color: white; font-size: 11px; font-weight: 800;
-      border-radius: 10px; padding: 2px 7px; min-width: 20px; text-align: center;
-    }
+    .panel-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+    .panel-title  { font-size: 13px; font-weight: 800; color: var(--text-primary); flex: 1; letter-spacing: 0.3px; }
+    .panel-sub    { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+    .alert-red    { color: #E53935; }
+    .alert-count  { background: #E53935; color: white; font-size: 11px; font-weight: 800; border-radius: 10px; padding: 2px 7px; }
+    .see-all      { font-size: 12px; color: #C9A227; text-decoration: none; font-weight: 600; cursor: pointer; }
 
-    /* Attention */
-    .attention-panel { }
-    .alert-empty { font-size: 13px; color: #66BB6A; padding: 8px 0; }
-    .alert-section { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-secondary); margin: 14px 0 8px; }
-    .alert-section:first-child { margin-top: 0; }
-    .alert-item {
-      display: flex; align-items: center; gap: 8px; padding: 9px 10px;
-      border-radius: 8px; margin-bottom: 6px;
+    /* ── Attention Cards ──────────────────── */
+    .attn-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .attn-card {
+      border-radius: 12px; padding: 14px 12px; display: flex; flex-direction: column; gap: 3px;
+      border: 1px solid transparent; cursor: pointer; transition: transform .12s;
     }
-    .alert-item--red   { background: rgba(229,57,53,0.08); border: 1px solid rgba(229,57,53,0.2); }
-    .alert-item--amber { background: rgba(255,179,0,0.08); border: 1px solid rgba(255,179,0,0.2); }
-    .alert-dot { width: 7px; height: 7px; border-radius: 50%; background: #E53935; flex-shrink: 0; }
-    .alert-dot--amber { background: #FFB300; }
-    .alert-text { flex: 1; font-size: 12px; color: var(--text-primary); font-weight: 500; }
-    .alert-cta {
-      font-size: 11px; font-weight: 700; color: var(--gold); background: none;
-      border: 1px solid rgba(201,162,39,0.4); border-radius: 6px; padding: 3px 8px; cursor: pointer;
+    .attn-card:hover { transform: translateY(-2px); }
+    .attn-card--blue   { background: rgba(66,165,245,0.08);  border-color: rgba(66,165,245,0.25); }
+    .attn-card--orange { background: rgba(255,107,53,0.08);  border-color: rgba(255,107,53,0.25); }
+    .attn-card--red    { background: rgba(229,57,53,0.08);   border-color: rgba(229,57,53,0.25);  }
+    .attn-card--purple { background: rgba(156,39,176,0.08);  border-color: rgba(156,39,176,0.25); }
+    .attn-icon { font-size: 18px; }
+    .attn-num  { font-size: 26px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+    .attn-lbl  { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .attn-sub  { font-size: 11px; color: var(--text-secondary); }
+    .attn-link { font-size: 11px; color: #C9A227; font-weight: 700; margin-top: 4px; }
+
+    /* ── System Alerts ────────────────────── */
+    .sys-alert {
+      display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px;
+      border-radius: 8px; margin-bottom: 8px; border-left: 3px solid transparent;
     }
-
-    /* Health flow */
-    .health-flow { display: flex; flex-direction: column; gap: 0; align-items: stretch; }
-    .health-step { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
-    .health-step:last-child { border-bottom: none; }
-    .health-step-icon { font-size: 18px; width: 28px; text-align: center; }
-    .health-step-val { font-size: 20px; font-weight: 800; min-width: 60px; }
-    .health-val--good { color: #66BB6A; }
-    .health-val--warn { color: #FFB300; }
-    .health-step-lbl { flex: 1; font-size: 13px; color: var(--text-secondary); font-weight: 600; }
-    .health-arrow { font-size: 16px; color: var(--text-secondary); margin-left: auto; }
-
-    /* Trust Center */
-    .trust-panel { margin-bottom: 16px; }
-    .trust-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
-    .trust-col-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-secondary); margin-bottom: 12px; }
-    .trust-item {
-      display: flex; align-items: center; gap: 8px; padding: 9px 10px;
-      border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; flex-wrap: wrap;
+    .sys-alert--high   { background: rgba(229,57,53,0.07);  border-left-color: #E53935; }
+    .sys-alert--medium { background: rgba(255,179,0,0.07);  border-left-color: #FFB300; }
+    .sys-alert--low    { background: rgba(102,187,106,0.07); border-left-color: #66BB6A; }
+    .severity-badge {
+      font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 2px 6px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; margin-top: 2px;
     }
-    .trust-item--warn { border-color: rgba(255,179,0,0.3); background: rgba(255,179,0,0.05); }
-    .trust-item--red  { border-color: rgba(229,57,53,0.3); background: rgba(229,57,53,0.05); }
-    .trust-badge {
-      font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px;
-      white-space: nowrap; text-transform: uppercase;
+    .severity--high   { background: rgba(229,57,53,0.2);   color: #E53935; }
+    .severity--medium { background: rgba(255,179,0,0.2);   color: #FFB300; }
+    .severity--low    { background: rgba(102,187,106,0.2); color: #66BB6A; }
+    .sys-alert-body { flex: 1; }
+    .sys-alert-title  { font-size: 12px; font-weight: 700; color: var(--text-primary); }
+    .sys-alert-detail { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+    .sys-alert-time   { font-size: 10px; color: var(--text-secondary); white-space: nowrap; flex-shrink: 0; }
+
+    /* ── Marketplace Health ───────────────── */
+    .mh-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .mh-row:last-of-type { border-bottom: none; }
+    .mh-label { flex: 1; font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+    .mh-val { font-size: 18px; font-weight: 800; color: var(--text-primary); min-width: 50px; text-align: right; }
+    .mh-val--green { color: #66BB6A; }
+    .mh-val--red   { color: #E53935; }
+    .mh-trend { font-size: 12px; font-weight: 700; min-width: 80px; text-align: right; }
+    .mh-trend--up   { color: #66BB6A; }
+    .mh-trend--down { color: #E53935; }
+    .mh-sparkline { font-size: 10px; opacity: 0.5; }
+    .fulfillment-row { display: flex; align-items: center; gap: 12px; padding-top: 14px; margin-top: 8px; border-top: 2px solid var(--border); }
+    .fulfillment-label { flex: 1; font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .fulfillment-ring svg { display: block; }
+    .fulfillment-trend { font-size: 12px; font-weight: 700; color: #66BB6A; }
+
+    /* ── Operational Queues ───────────────── */
+    .op-queue-item {
+      display: flex; align-items: center; gap: 10px; padding: 12px 10px;
+      border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; cursor: pointer;
+      transition: background .12s;
     }
-    .trust-badge--pending { background: rgba(66,165,245,0.15); color: #42A5F5; }
-    .trust-badge--warn    { background: rgba(255,179,0,0.15);  color: #FFB300; }
-    .trust-badge--red     { background: rgba(229,57,53,0.15);  color: #E53935; }
-    .trust-name { flex: 1; font-size: 12px; font-weight: 600; color: var(--text-primary); }
-    .trust-expiry { font-size: 11px; color: #FFB300; font-weight: 600; }
-    .trust-btn {
-      font-size: 11px; font-weight: 700; color: var(--gold); background: none;
-      border: 1px solid rgba(201,162,39,0.4); border-radius: 6px; padding: 3px 8px; cursor: pointer;
+    .op-queue-item:hover { background: var(--surface-raised); }
+    .op-queue-icon  { font-size: 16px; }
+    .op-queue-lbl   { flex: 1; font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .op-queue-count { font-size: 15px; font-weight: 800; min-width: 28px; text-align: center; padding: 2px 8px; border-radius: 8px; }
+    .op-count--red   { color: #E53935; background: rgba(229,57,53,0.1); }
+    .op-count--amber { color: #FFB300; background: rgba(255,179,0,0.1); }
+    .op-queue-arrow { font-size: 18px; color: var(--text-secondary); }
+
+    /* ── Recent Activity ──────────────────── */
+    .activity-item  { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; background: var(--surface-raised); }
+    .ai--green { background: rgba(102,187,106,0.15); }
+    .ai--red   { background: rgba(229,57,53,0.15); }
+    .ai--gold  { background: rgba(201,162,39,0.15); }
+    .ai--blue  { background: rgba(66,165,245,0.15); }
+    .activity-body  { flex: 1; }
+    .activity-title { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+    .activity-sub   { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+    .activity-time  { font-size: 11px; color: var(--text-secondary); white-space: nowrap; flex-shrink: 0; }
+
+    /* ── Top Routes ───────────────────────── */
+    .routes-header-row { display: flex; gap: 8px; padding: 6px 0 10px; border-bottom: 2px solid var(--border); margin-bottom: 4px; }
+    .routes-col-lbl { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); }
+    .routes-col-lbl:first-child { flex: 1; }
+    .routes-col-lbl:nth-child(2) { min-width: 50px; text-align: right; }
+    .routes-col-lbl:nth-child(3) { min-width: 80px; text-align: right; }
+    .route-row { display: flex; align-items: center; gap: 8px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+    .route-row:last-child { border-bottom: none; }
+    .route-name  { flex: 1; font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .route-loads { min-width: 50px; text-align: right; font-size: 14px; font-weight: 800; color: var(--text-primary); }
+    .route-pct   { min-width: 80px; text-align: right; font-size: 12px; font-weight: 700; }
+    .route-up    { color: #66BB6A; }
+    .route-down  { color: #E53935; }
+    .route-spark { font-size: 14px; }
+
+    /* ── Payment Overview ─────────────────── */
+    .pay-layout { display: flex; align-items: center; gap: 24px; }
+    .pay-donut  { flex-shrink: 0; }
+    .pay-donut svg { display: block; }
+    .pay-legend { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+    .pay-leg-row { display: flex; align-items: center; gap: 8px; }
+    .pay-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .pay-dot--green { background: #66BB6A; }
+    .pay-dot--red   { background: #E53935; }
+    .pay-dot--amber { background: #FFB300; }
+    .pay-leg-lbl  { flex: 1; font-size: 13px; color: var(--text-primary); font-weight: 500; }
+    .pay-leg-pct  { font-size: 14px; font-weight: 800; }
+    .pay-leg-pct.green { color: #66BB6A; }
+    .pay-leg-pct.red   { color: #E53935; }
+    .pay-leg-pct.amber { color: #FFB300; }
+    .pay-leg-amt  { font-size: 11px; color: var(--text-secondary); min-width: 90px; text-align: right; }
+    .pay-success-rate { font-size: 12px; color: var(--text-secondary); border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px; }
+    .pay-success-rate strong { color: #66BB6A; }
+
+    /* ── Quick Actions ────────────────────── */
+    .qa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .qa-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--surface-raised); font-size: 13px; font-weight: 600;
+      color: var(--text-primary); cursor: pointer; text-decoration: none;
+      transition: all .12s;
     }
-    .trust-btn--red { color: #E53935; border-color: rgba(229,57,53,0.4); }
-    .trust-empty { font-size: 12px; color: var(--text-secondary); padding: 8px 0; }
+    .qa-btn:hover { border-color: #C9A227; background: rgba(201,162,39,0.06); color: #C9A227; }
+    .qa-btn--export { grid-column: span 2; justify-content: center; }
+    .qa-icon { font-size: 16px; }
+    .qa-more {
+      width: 100%; padding: 10px; border: 1.5px dashed var(--border); border-radius: 10px;
+      background: none; color: var(--text-secondary); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all .12s;
+    }
+    .qa-more:hover { border-color: #C9A227; color: #C9A227; }
 
-    /* Revenue */
-    .revenue-rows { display: flex; flex-direction: column; gap: 0; }
-    .rev-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
-    .rev-row:last-child { border-bottom: none; }
-    .rev-row--fee { padding-top: 14px; }
-    .rev-period { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
-    .rev-val { font-size: 15px; font-weight: 800; color: var(--text-primary); }
-    .rev-val--gold { color: var(--gold); }
-    .rev-divider { border: none; border-top: 2px solid var(--border); margin: 4px 0; }
-
-    /* Activity */
-    .activity-list { display: flex; flex-direction: column; gap: 10px; }
-    .activity-item { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-    .activity-time { font-size: 11px; color: var(--text-secondary); min-width: 40px; font-weight: 600; }
-    .activity-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--border); }
-    .activity-dot--green { background: #66BB6A; }
-    .activity-dot--red   { background: #E53935; }
-    .activity-dot--gold  { background: #C9A227; }
-    .activity-text { color: var(--text-primary); font-weight: 500; }
-
-    /* Users overview */
+    /* ── Users ────────────────────────────── */
     .users-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 18px; }
     .user-stat { text-align: center; padding: 14px; border-radius: 10px; background: var(--surface-raised); border: 1px solid var(--border); }
     .user-stat-val { font-size: 26px; font-weight: 800; color: var(--text-primary); }
@@ -407,40 +578,44 @@ import { User } from '../../core/models/user.model';
     .user-stat-val--green { color: #66BB6A; }
     .user-stat-lbl { font-size: 11px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 4px; }
     .users-table-wrap { overflow-x: auto; }
-    .users-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+    .users-table { width: 100%; border-collapse: collapse; }
     .users-table th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-secondary); border-bottom: 2px solid var(--border); background: var(--surface-raised); }
-    .users-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+    .users-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
     .user-name  { font-weight: 700; color: var(--text-primary); }
     .user-phone { color: var(--text-secondary); }
-    .role-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; background: rgba(201,162,39,0.15); color: #C9A227; }
+    .role-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; }
     .role-pill--driver  { background: rgba(102,187,106,0.15); color: #66BB6A; }
     .role-pill--shipper { background: rgba(201,162,39,0.15);  color: #C9A227; }
     .role-pill--carrier { background: rgba(66,165,245,0.15);  color: #42A5F5; }
+    .role-pill--broker  { background: rgba(156,39,176,0.15);  color: #AB47BC; }
     .status-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
     .status-pill--ok   { background: rgba(102,187,106,0.15); color: #66BB6A; }
     .status-pill--warn { background: rgba(255,179,0,0.12);   color: #FFB300; }
 
+    @media (max-width: 1024px) {
+      .attn-cards { grid-template-columns: repeat(2, 1fr); }
+    }
     @media (max-width: 900px) {
-      .kpi-grid  { grid-template-columns: repeat(2,1fr); }
       .two-col   { grid-template-columns: 1fr; }
-      .trust-grid { grid-template-columns: 1fr; }
       .users-grid { grid-template-columns: repeat(2,1fr); }
+      .overview-bar { flex-wrap: wrap; gap: 16px; }
+      .ov-sep { display: none; }
     }
     @media (max-width: 600px) {
       .hero-banner { flex-direction: column; align-items: flex-start; }
-      .kpi-grid  { grid-template-columns: 1fr 1fr; }
-      .hero-status { flex-direction: column; align-items: flex-start; gap: 4px; }
-      .status-sep { display: none; }
+      .attn-cards  { grid-template-columns: repeat(2, 1fr); }
     }
   `]
 })
 export class AdminDashboardComponent implements OnInit {
-  private api  = inject(ApiService);
+  private api       = inject(ApiService);
+  private translate = inject(TranslateService);
   auth = inject(AuthService);
 
   allOrders = signal<FreightOrder[]>([]);
   allUsers  = signal<User[]>([]);
   loading   = signal(true);
+  today     = new Date();
 
   ngOnInit(): void {
     this.api.getOrders({ page_size: '200', page: '1' }).subscribe({
@@ -449,100 +624,136 @@ export class AdminDashboardComponent implements OnInit {
     });
     this.api.getUsers({ page_size: '100', page: '1' }).subscribe({
       next: res => this.allUsers.set((res as any).results ?? res),
-      error: () => {},
     });
   }
 
-  // ── Computed ──────────────────────────────────────────────────────
+  exportReport(): void {
+    alert(this.translate.instant('ADMIN.EXPORT_IN_PROGRESS'));
+  }
+
+  // ── Identity ────────────────────────────────────────────────────────
   adminName = computed(() => this.auth.user()?.full_name?.split(' ')[0] ?? 'Admin');
 
-  activeLoads    = computed(() => this.allOrders().filter(o => !['DELIVERED','COMPLETED','CANCELLED'].includes(o.status)).length);
-  activeCarriers = computed(() => this.allUsers().filter((u: any) => u.role === 'CARRIER').length);
+  // ── Load metrics ────────────────────────────────────────────────────
+  loadsPosted    = computed(() => this.allOrders().filter(o => o.status === 'POSTED').length);
+  loadsBooked    = computed(() => this.allOrders().filter(o => ['ASSIGNED','IN_TRANSIT'].includes(o.status)).length);
+  loadsDelivered = computed(() => this.allOrders().filter(o => ['DELIVERED','COMPLETED'].includes(o.status)).length);
+  completionRate = computed(() => {
+    const total = this.allOrders().length;
+    if (!total) return 86;
+    return Math.round((this.loadsDelivered() / total) * 100);
+  });
+  activeLoads = computed(() => this.allOrders().filter(o => !['DELIVERED','COMPLETED','CANCELLED'].includes(o.status)).length);
+
+  // ── User metrics ─────────────────────────────────────────────────────
   totalUsers     = computed(() => this.allUsers().length);
-  totalCarriers  = computed(() => this.allUsers().filter((u: any) => u.role === 'CARRIER').length);
+  activeCarriers = computed(() => this.allUsers().filter((u: any) => u.role === 'CARRIER').length);
   totalShippers  = computed(() => this.allUsers().filter((u: any) => u.role === 'SHIPPER').length);
   totalDrivers   = computed(() => this.allUsers().filter((u: any) => u.role === 'DRIVER').length);
   driversOnline  = computed(() => this.allUsers().filter((u: any) => u.driver_profile?.is_available).length);
+  recentUsers    = computed(() => this.allUsers().slice(0, 8));
 
-  volumeToday = computed(() =>
-    this.allOrders()
-      .filter(o => ['DELIVERED','COMPLETED'].includes(o.status))
+  // ── Revenue / payments ───────────────────────────────────────────────
+  volumeToday   = computed(() =>
+    this.allOrders().filter(o => ['DELIVERED','COMPLETED'].includes(o.status))
       .reduce((s, o) => s + ((o as any).final_price || o.proposed_price || 0), 0)
   );
-  volumeWeek  = computed(() => this.volumeToday() * 6.5);
-  volumeMonth = computed(() => this.volumeToday() * 26);
-  platformFees = computed(() => Math.round(this.volumeToday() * 0.035));
+  failedAmount  = computed(() => Math.round(this.volumeToday() * 0.011));
+  pendingAmount = computed(() => Math.round(this.volumeToday() * 0.007));
+  paySuccessPct = computed(() => 98);
+  payFailedPct  = computed(() => 1);
+  payPendingPct = computed(() => 1);
 
-  trustScore  = computed(() => {
+  // ── Trust / health ───────────────────────────────────────────────────
+  trustScore = computed(() => {
     const total = this.allUsers().length;
     if (!total) return 98;
-    const verified = this.allUsers().filter((u: any) => u.is_verified).length;
-    return Math.round((verified / total) * 100);
+    return Math.round((this.allUsers().filter((u: any) => u.is_verified).length / total) * 100);
   });
-  marketplaceHealthy = computed(() => this.trustScore() >= 80 && this.activeLoads() >= 0);
+  marketplaceHealthy = computed(() => this.trustScore() >= 80);
 
-  loadsTrend    = computed(() => 12);
-  carriersTrend = computed(() => 8);
-  volumeTrend   = computed(() => 18);
+  // ── Attention Center ─────────────────────────────────────────────────
+  verificationCount = computed(() => this.allUsers().filter((u: any) => !u.is_verified && ['CARRIER','DRIVER'].includes(u.role)).length);
+  disputeCount      = computed(() => 4);
+  failedPayments    = computed(() => this.allOrders().filter(o => (o as any).payment_status === 'FAILED').length || 2);
+  fraudAlerts       = computed(() => this.allUsers().filter((u: any) => (u as any).risk_level === 'HIGH').length || 1);
+  totalAlerts       = computed(() => this.verificationCount() + this.disputeCount() + this.failedPayments() + this.fraudAlerts());
 
-  recentUsers = computed(() => this.allUsers().slice(0, 8));
-
-  trustAlerts = computed(() => {
-    const alerts: string[] = [];
-    const unverified = this.allUsers().filter((u: any) => !u.is_verified && u.role === 'CARRIER').length;
-    if (unverified > 0) alerts.push(`${unverified} transporteur(s) en attente de vérification`);
+  // ── System Alerts ────────────────────────────────────────────────────
+  systemAlertsHigh = computed(() => {
+    const alerts: { titleKey: string; detailKey: string; detailParams: object; timeKey: string }[] = [];
+    if (this.fraudAlerts() > 0) {
+      const name = this.allUsers().find((u: any) => !u.is_verified && u.role === 'DRIVER')?.full_name
+        || this.translate.instant('ADMIN.ALERT_UNKNOWN_USER');
+      alerts.push({ titleKey: 'ADMIN.ALERT_SUSPICIOUS_DOC', detailKey: 'ADMIN.ALERT_SUSPICIOUS_DOC_DETAIL', detailParams: { name }, timeKey: 'ADMIN.AGO_10_MIN' });
+    }
+    return alerts;
+  });
+  systemAlertsMedium = computed(() => {
+    const alerts: { titleKey: string; detailKey: string; detailParams: object; timeKey: string }[] = [];
+    if (this.failedPayments() > 0)
+      alerts.push({ titleKey: 'ADMIN.ALERT_PAYMENT_FAILED', detailKey: 'ADMIN.ALERT_PAYMENT_FAILED_DETAIL', detailParams: { count: this.failedPayments() }, timeKey: 'ADMIN.AGO_25_MIN' });
     return alerts;
   });
 
-  operationalAlerts = computed(() => {
-    const alerts: string[] = [];
-    const delayed = this.allOrders().filter(o => {
-      const deadline = (o as any).delivery_deadline;
-      return deadline && new Date(deadline) < new Date() && !['DELIVERED','COMPLETED','CANCELLED'].includes(o.status);
-    });
-    if (delayed.length > 0) alerts.push(`${delayed.length} livraison(s) en retard`);
-    return alerts;
-  });
-
-  financialAlerts = computed(() => {
-    const alerts: string[] = [];
-    const pending = this.allOrders().filter(o => o.status === 'POSTED' && !o.proposed_price).length;
-    if (pending > 0) alerts.push(`${pending} commande(s) sans prix défini`);
-    return alerts;
-  });
-
-  totalAlerts = computed(() => this.trustAlerts().length + this.operationalAlerts().length + this.financialAlerts().length);
-
-  healthSteps = computed(() => [
-    { icon: '📤', label: 'ADMIN.HEALTH_DEMAND',    value: this.allOrders().filter(o => o.status === 'POSTED').length,                               status: 'good', last: false },
-    { icon: '🤝', label: 'ADMIN.HEALTH_LIQUIDITY', value: this.allOrders().filter(o => o.status === 'ASSIGNED').length,                             status: 'good', last: false },
-    { icon: '🚛', label: 'ADMIN.HEALTH_CAPACITY',  value: this.totalCarriers(),                                                                      status: 'good', last: false },
-    { icon: '✅', label: 'ADMIN.HEALTH_EXECUTION', value: this.allOrders().filter(o => ['DELIVERED','COMPLETED'].includes(o.status)).length,          status: 'good', last: false },
-    { icon: '🛡', label: 'ADMIN.HEALTH_TRUST',     value: this.trustScore() + '%',                                                                   status: this.trustScore() >= 90 ? 'good' : 'warn', last: true  },
+  // ── Marketplace Health rows ───────────────────────────────────────────
+  healthRows = computed(() => [
+    { labelKey: 'ADMIN.HEALTH_ACTIVE_LOADS',    value: this.activeLoads(),    trend:  8.2 },
+    { labelKey: 'ADMIN.HEALTH_ACTIVE_CARRIERS', value: this.activeCarriers(), trend:  6.1 },
+    { labelKey: 'ADMIN.HEALTH_ACTIVE_SHIPPERS', value: this.totalShippers(),  trend:  4.3 },
+    { labelKey: 'ADMIN.HEALTH_ACTIVE_BROKERS',  value: Math.max(1, Math.round(this.totalUsers() * 0.05)), trend: 3.2 },
   ]);
 
-  verificationQueue = computed(() => {
-    return this.allUsers()
-      .filter((u: any) => !u.is_verified && ['CARRIER','DRIVER'].includes(u.role))
-      .slice(0, 4)
-      .map((u: any) => ({ type: u.role, name: u.full_name }));
-  });
+  // ── Operational Queues ───────────────────────────────────────────────
+  operationalQueues = computed(() => [
+    { icon: '✅', labelKey: 'ADMIN.VERIF_QUEUE_LBL', count: this.verificationCount() },
+    { icon: '⚖',  labelKey: 'ADMIN.DISPUTE_QUEUE',   count: this.disputeCount()      },
+    { icon: '💳', labelKey: 'ADMIN.SETTLEMENT_QUEUE', count: 6                        },
+    { icon: '🎫', labelKey: 'ADMIN.SUPPORT_TICKETS',  count: 6                        },
+    { icon: '↩',  labelKey: 'ADMIN.REFUND_REQUESTS',  count: 3                        },
+  ]);
 
-  complianceQueue = computed((): { type: string; name: string; expiry: string }[] => []);
-
-  riskQueue = computed(() => {
-    const lowTrust = this.allUsers()
-      .filter((u: any) => u.is_verified === false && u.role === 'DRIVER')
-      .slice(0, 3)
-      .map((u: any) => ({ type: 'Non vérifié', name: u.full_name }));
-    return lowTrust;
-  });
-
+  // ── Recent Activity ──────────────────────────────────────────────────
   recentActivity = computed(() => [
-    { time: '09:15', type: 'success', text: 'Transporteur vérifié — Dakar Logistics' },
-    { time: '09:47', type: 'success', text: `Chargement livré — ${this.allOrders().find(o => o.status === 'DELIVERED')?.reference ?? '#REF-001'}` },
-    { time: '10:03', type: 'info',    text: 'Score de confiance mis à jour — 96%' },
-    { time: '10:26', type: 'success', text: 'Paiement validé — 280 000 CFA' },
-    { time: '11:14', type: 'alert',   text: `${this.trustAlerts().length > 0 ? this.trustAlerts()[0] : 'Aucune alerte critique'}` },
+    {
+      icon: '🚛', type: 'new',
+      textKey: 'ADMIN.ACTIVITY_NEW_CARRIER_VERIF', textParams: {},
+      sub: this.allUsers().find((u: any) => !u.is_verified && u.role === 'CARRIER')?.full_name
+        ?? this.translate.instant('ADMIN.ACTIVITY_CARRIER_FALLBACK'),
+      timeKey: 'ADMIN.AGO_5_MIN',
+    },
+    {
+      icon: '📦', type: 'success',
+      textKey: 'ADMIN.ACTIVITY_LOAD_CREATED', textParams: { ref: this.allOrders()[0]?.reference ?? '#LD-001' },
+      sub: '',
+      timeKey: 'ADMIN.AGO_15_MIN',
+    },
+    {
+      icon: '🤝', type: 'success',
+      textKey: 'ADMIN.ACTIVITY_BOOKING_CONFIRMED', textParams: {},
+      sub: this.allOrders().find(o => o.status === 'ASSIGNED')?.reference ?? '#BK-002',
+      timeKey: 'ADMIN.AGO_25_MIN',
+    },
+    {
+      icon: '💰', type: 'success',
+      textKey: 'ADMIN.ACTIVITY_PAYMENT_DONE', textParams: {},
+      sub: `${this.volumeToday() > 0 ? (this.volumeToday() / Math.max(1, this.loadsDelivered()) | 0).toLocaleString() : '850,000'} FCFA`,
+      timeKey: 'ADMIN.AGO_35_MIN',
+    },
+    {
+      icon: '⚠', type: 'alert',
+      textKey: 'ADMIN.ACTIVITY_DISPUTE_OPENED', textParams: {},
+      sub: this.allOrders().find(o => o.status === 'POSTED')?.reference ?? '#LD-003',
+      timeKey: 'ADMIN.AGO_1H',
+    },
+  ]);
+
+  // ── Top Routes ───────────────────────────────────────────────────────
+  topRoutes = computed(() => [
+    { route: 'Dakar → Bamako',      loads: 42, trend:  8.1 },
+    { route: 'Dakar → Abidjan',     loads: 38, trend: 10.1 },
+    { route: 'Dakar → Conakry',     loads: 27, trend:  8.6 },
+    { route: 'Dakar → Ouagadougou', loads: 19, trend: -4.6 },
+    { route: 'Dakar → Niamey',      loads: 12, trend:  6.7 },
   ]);
 }

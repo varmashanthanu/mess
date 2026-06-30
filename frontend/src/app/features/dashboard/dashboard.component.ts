@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
+import { WorkspaceService } from '../../core/services/workspace.service';
 import { FreightOrder } from '../../core/models/order.model';
 
 type StatFilter = 'open' | 'assigned' | 'in_transit' | 'delivered' | 'completed' | null;
@@ -610,6 +611,7 @@ interface StatCard { label: string; value: string | number; icon: string; color:
 })
 export class DashboardComponent implements OnInit {
   auth = inject(AuthService);
+  private wsService = inject(WorkspaceService);
   private api = inject(ApiService);
   private router = inject(Router);
 
@@ -618,9 +620,9 @@ export class DashboardComponent implements OnInit {
   activeFilter = signal<StatFilter>(null);
 
   firstName = computed(() => (this.auth.user()?.full_name || '').split(' ')[0]);
-  isDriver  = computed(() => this.auth.role() === 'DRIVER');
-  isShipper = computed(() => this.auth.role() === 'SHIPPER' || this.auth.role() === 'ADMIN');
-  isCarrier = computed(() => this.auth.role() === 'CARRIER');
+  isDriver  = computed(() => (this.wsService.activeWorkspace()?.type || this.auth.role()) === 'DRIVER');
+  isShipper = computed(() => { const ws = this.wsService.activeWorkspace()?.type || this.auth.role(); return ws === 'SHIPPER' || ws === 'ADMIN'; });
+  isCarrier = computed(() => (this.wsService.activeWorkspace()?.type || this.auth.role()) === 'CARRIER');
 
   // Carrier-specific signals
   carrierVehicles = signal<any[]>([]);
@@ -769,7 +771,8 @@ export class DashboardComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    if (this.auth.role() === 'BROKER') {
+    const ws = this.wsService.activeWorkspace()?.type || this.auth.role();
+    if (ws === 'BROKER') {
       this.router.navigate(['/broker-dashboard']);
       return;
     }
@@ -777,7 +780,7 @@ export class DashboardComponent implements OnInit {
       next: (res) => { this.recentOrders.set(res.results); this.loading.set(false); },
       error: () => this.loading.set(false),
     });
-    if (this.auth.role() === 'CARRIER') {
+    if (ws === 'CARRIER') {
       this.api.getVehicles().subscribe({ next: (res: any) => this.carrierVehicles.set(res.results ?? res) });
       this.api.getMyDrivers().subscribe({ next: (drivers) => this.carrierDrivers.set(drivers) });
       this.api.getOrders({ page_size: '5', status: 'POSTED' }).subscribe({ next: (res) => this.nearbyLoads.set(res.results) });

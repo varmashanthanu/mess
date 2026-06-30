@@ -3,6 +3,7 @@ MESS Platform — Accounts Models
 Phone-number-based user authentication with role differentiation.
 """
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+import uuid
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -257,6 +258,9 @@ class CarrierProfile(BaseModel):
     bank_account_number = models.CharField(max_length=100, blank=True)
     bank_routing_number = models.CharField(max_length=100, blank=True)
 
+    # Availability
+    is_available = models.BooleanField(default=False, db_index=True)
+
     # Operational
     preferred_lanes = models.TextField(blank=True)
     service_area = models.TextField(blank=True)
@@ -311,6 +315,28 @@ class BrokerProfile(BaseModel):
         return f"Broker: {self.company_name or self.user.full_name}"
 
 
+class AdminPermission(BaseModel):
+    """Granular permissions for admin users (set by superadmin)."""
+    user = models.OneToOneField(
+        "accounts.User", on_delete=models.CASCADE, related_name="admin_permissions"
+    )
+    can_manage_users     = models.BooleanField(default=True)
+    can_manage_fleet     = models.BooleanField(default=True)
+    can_manage_orders    = models.BooleanField(default=True)
+    can_manage_finance   = models.BooleanField(default=True)
+    can_manage_analytics = models.BooleanField(default=True)
+    can_manage_messaging = models.BooleanField(default=True)
+    can_manage_tracking  = models.BooleanField(default=True)
+    can_view_governance  = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Admin Permission"
+        verbose_name_plural = "Admin Permissions"
+
+    def __str__(self):
+        return f"Permissions — {self.user.full_name}"
+
+
 class ContactMessage(BaseModel):
     """Message sent via the contact form."""
     first_name = models.CharField(max_length=100)
@@ -328,3 +354,20 @@ class ContactMessage(BaseModel):
 
     def __str__(self):
         return f"{self.first_name} — {self.subject}"
+
+
+class WorkspaceSwitchLog(models.Model):
+    """Audit log for every workspace switch."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workspace_switches')
+    from_workspace = models.CharField(max_length=20, null=True, blank=True)
+    to_workspace = models.CharField(max_length=20)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user} | {self.from_workspace} → {self.to_workspace}'

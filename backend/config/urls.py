@@ -17,6 +17,8 @@ api_v1_urlpatterns = [
     path("payments/", include("apps.payments.urls")),
     path("messaging/", include("apps.messaging.urls")),
     path("notifications/", include("apps.notifications.urls")),
+    path("superadmin/", include("apps.accounts.urls.superadmin")),
+    path("", include("apps.accounts.urls.workspaces")),
 ]
 
 urlpatterns = [

@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
+import { WorkspaceService } from '../../core/services/workspace.service';
 import { User } from '../../core/models/user.model';
 import { Vehicle, VehicleType } from '../../core/models/fleet.model';
 
@@ -21,7 +22,7 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
         <div class="avatar">{{ initials() }}</div>
         <div class="header-info">
           <h2>{{ auth.user()?.full_name }}</h2>
-          <div class="role-chip role-chip--{{ auth.role()?.toLowerCase() }}">
+          <div class="role-chip role-chip--{{ activeRole().toLowerCase() }}">
             {{ roleLabel() | translate }}
           </div>
           <div class="phone-line">{{ auth.user()?.phone_number }}</div>
@@ -36,22 +37,22 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
         <button class="tab" [class.active]="tab() === 'info'" (click)="tab.set('info')">
           {{ 'PROFILE.TABS.INFO' | translate }}
         </button>
-        <button class="tab" [class.active]="tab() === 'role'" (click)="tab.set('role')" *ngIf="auth.role() === 'SHIPPER'">
+        <button class="tab" [class.active]="tab() === 'role'" (click)="tab.set('role')" *ngIf="activeRole() === 'SHIPPER'">
           {{ 'PROFILE.TABS.COMPANY_SHIPPER' | translate }}
         </button>
-        <button class="tab" [class.active]="tab() === 'role'" (click)="tab.set('role')" *ngIf="auth.role() === 'DRIVER'">
+        <button class="tab" [class.active]="tab() === 'role'" (click)="tab.set('role')" *ngIf="activeRole() === 'DRIVER'">
           {{ 'PROFILE.TABS.LICENSE' | translate }}
         </button>
-        <button class="tab" [class.active]="tab() === 'vehicle'" (click)="tab.set('vehicle')" *ngIf="auth.role() === 'DRIVER'">
+        <button class="tab" [class.active]="tab() === 'vehicle'" (click)="tab.set('vehicle')" *ngIf="activeRole() === 'DRIVER'">
           {{ 'PROFILE.TABS.VEHICLE' | translate }}
         </button>
-        <button class="tab" [class.active]="tab() === 'role'" (click)="tab.set('role')" *ngIf="auth.role() === 'CARRIER'">
+        <button class="tab" [class.active]="tab() === 'role'" (click)="tab.set('role')" *ngIf="activeRole() === 'CARRIER'">
           {{ 'PROFILE.TABS.COMPANY' | translate }}
         </button>
-        <button class="tab" [class.active]="tab() === 'fleet'" (click)="loadFleet(); tab.set('fleet')" *ngIf="auth.role() === 'CARRIER'">
+        <button class="tab" [class.active]="tab() === 'fleet'" (click)="loadFleet(); tab.set('fleet')" *ngIf="activeRole() === 'CARRIER'">
           {{ 'PROFILE.TABS.FLEET' | translate }}
         </button>
-        <button class="tab" [class.active]="tab() === 'drivers'" (click)="loadDrivers(); tab.set('drivers')" *ngIf="auth.role() === 'CARRIER'">
+        <button class="tab" [class.active]="tab() === 'drivers'" (click)="loadDrivers(); tab.set('drivers')" *ngIf="activeRole() === 'CARRIER'">
           {{ 'PROFILE.TABS.DRIVERS' | translate }}
         </button>
       </div>
@@ -81,7 +82,7 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
               <label>{{ 'PROFILE.PHONE' | translate }}</label>
               <input type="tel" formControlName="phone_number" placeholder="+221 77 000 00 00" />
             </div>
-            <div class="form-group" *ngIf="auth.role() === 'DRIVER'">
+            <div class="form-group" *ngIf="activeRole() === 'DRIVER'">
               <label>{{ 'PROFILE.NATIONAL_ID' | translate }}</label>
               <input type="text" formControlName="national_id" placeholder="XXXXXXXXXXXXX" />
             </div>
@@ -97,7 +98,7 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       </div>
 
       <!-- ── TAB: Shipper – Company info ── -->
-      <div class="card" *ngIf="tab() === 'role' && auth.role() === 'SHIPPER'">
+      <div class="card" *ngIf="tab() === 'role' && activeRole() === 'SHIPPER'">
         <h3>{{ 'PROFILE.TABS.COMPANY_SHIPPER' | translate }}</h3>
         <div class="alert-success" *ngIf="saved()">{{ 'PROFILE.SAVED' | translate }}</div>
         <div class="alert-error" *ngIf="error()">{{ error() }}</div>
@@ -187,7 +188,7 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       </div>
 
       <!-- ── TAB: Driver – License & Compliance ── -->
-      <div class="card" *ngIf="tab() === 'role' && auth.role() === 'DRIVER'">
+      <div class="card" *ngIf="tab() === 'role' && activeRole() === 'DRIVER'">
         <h3>{{ 'PROFILE.TABS.LICENSE' | translate }}</h3>
         <div class="alert-success" *ngIf="saved()">{{ 'PROFILE.SAVED' | translate }}</div>
         <div class="alert-error" *ngIf="error()">{{ error() }}</div>
@@ -292,7 +293,7 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       </div>
 
       <!-- ── TAB: Driver – Vehicle ── -->
-      <div class="card" *ngIf="tab() === 'vehicle' && auth.role() === 'DRIVER'">
+      <div class="card" *ngIf="tab() === 'vehicle' && activeRole() === 'DRIVER'">
         <h3>{{ 'PROFILE.TABS.VEHICLE' | translate }}</h3>
         <div class="alert-success" *ngIf="saved()">{{ 'PROFILE.SAVED' | translate }}</div>
         <div class="alert-error" *ngIf="error()">{{ error() }}</div>
@@ -383,7 +384,7 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       </div>
 
       <!-- ── TAB: Carrier – Company info ── -->
-      <div class="card" *ngIf="tab() === 'role' && auth.role() === 'CARRIER'">
+      <div class="card" *ngIf="tab() === 'role' && activeRole() === 'CARRIER'">
         <h3>{{ 'PROFILE.TABS.COMPANY' | translate }}</h3>
         <div class="alert-success" *ngIf="saved()">{{ 'PROFILE.SAVED' | translate }}</div>
         <div class="alert-error" *ngIf="error()">{{ error() }}</div>
@@ -506,7 +507,7 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       </div>
 
       <!-- ── TAB: Carrier – Fleet ── -->
-      <div class="card" *ngIf="tab() === 'fleet' && auth.role() === 'CARRIER'">
+      <div class="card" *ngIf="tab() === 'fleet' && activeRole() === 'CARRIER'">
         <div class="card-header">
           <h3>{{ 'PROFILE.TABS.FLEET' | translate }}</h3>
           <button class="btn-outline" (click)="showAddVehicle.set(!showAddVehicle())">
@@ -613,7 +614,7 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
       </div>
 
       <!-- ── TAB: Carrier – Drivers ── -->
-      <div class="card" *ngIf="tab() === 'drivers' && auth.role() === 'CARRIER'">
+      <div class="card" *ngIf="tab() === 'drivers' && activeRole() === 'CARRIER'">
         <div class="card-header">
           <h3>{{ 'PROFILE.TABS.DRIVERS' | translate }}</h3>
           <div class="header-actions">
@@ -836,9 +837,13 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
 })
 export class ProfileComponent implements OnInit {
   auth = inject(AuthService);
-  private api = inject(ApiService);
-  private fb = inject(FormBuilder);
-  private route = inject(ActivatedRoute);
+  private api     = inject(ApiService);
+  private fb      = inject(FormBuilder);
+  private route   = inject(ActivatedRoute);
+  private wsService = inject(WorkspaceService);
+
+  /** Role actif = workspace type si switché, sinon rôle DB */
+  activeRole = computed(() => this.wsService.activeWorkspace()?.type || this.auth.role() || '');
 
   tab = signal<string>('info');
   saving = signal(false);
@@ -993,7 +998,7 @@ export class ProfileComponent implements OnInit {
     this.api.getVehicleTypes().subscribe(types => this.vehicleTypes.set(types));
 
     // Pre-load driver's vehicle
-    if (this.auth.role() === 'DRIVER') {
+    if (this.activeRole() === 'DRIVER') {
       this.loadFleet();
     }
   }
@@ -1010,7 +1015,7 @@ export class ProfileComponent implements OnInit {
       CARRIER: 'PROFILE.ROLES.CARRIER_LABEL',
       ADMIN: 'PROFILE.ROLES.ADMIN_LABEL',
     };
-    return map[this.auth.role() ?? ''] ?? '';
+    return map[this.activeRole() ?? ''] ?? '';
   }
 
   driverInitials(u: User): string {
@@ -1024,7 +1029,7 @@ export class ProfileComponent implements OnInit {
       next: (res) => {
         const vehicles = (res as any).results ?? res;
         this.myVehicles.set(vehicles);
-        if (this.auth.role() === 'DRIVER' && vehicles.length > 0) {
+        if (this.activeRole() === 'DRIVER' && vehicles.length > 0) {
           this.existingVehicleId.set(vehicles[0].id);
           this.vehicleForm.patchValue({ ...vehicles[0], vehicle_type: vehicles[0].vehicle_type });
         }
@@ -1052,7 +1057,7 @@ export class ProfileComponent implements OnInit {
     this.api.updateMe(meFields as any).subscribe({
       next: (u) => {
         this.auth.updateProfile(u);
-        if (this.auth.role() === 'DRIVER') {
+        if (this.activeRole() === 'DRIVER') {
           this.api.updateDriverProfile({ national_id } as any).subscribe({
             next: () => { this.saved.set(true); this.saving.set(false); },
             error: () => { this.saved.set(true); this.saving.set(false); },
