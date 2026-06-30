@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { FreightOrder } from '../../core/models/order.model';
@@ -24,11 +24,11 @@ import { User } from '../../core/models/user.model';
             <span class="status-dot" [class.status-dot--ok]="marketplaceHealthy()" [class.status-dot--warn]="!marketplaceHealthy()"></span>
             <span class="status-text">{{ (marketplaceHealthy() ? 'ADMIN.OPERATIONAL' : 'ADMIN.DEGRADED') | translate }}</span>
             <span class="status-sep">·</span>
-            <span class="status-snap">{{ activeLoads() }} loads actifs</span>
+            <span class="status-snap">{{ activeLoads() }} {{ 'ADMIN.SNAP_LOADS' | translate }}</span>
             <span class="status-sep">·</span>
-            <span class="status-snap">{{ activeCarriers() }} transporteurs</span>
+            <span class="status-snap">{{ activeCarriers() }} {{ 'ADMIN.SNAP_CARRIERS' | translate }}</span>
             <span class="status-sep">·</span>
-            <span class="status-snap">{{ driversOnline() }} conducteurs disponibles</span>
+            <span class="status-snap">{{ driversOnline() }} {{ 'ADMIN.SNAP_DRIVERS' | translate }}</span>
           </div>
         </div>
         <div class="hero-right">
@@ -127,28 +127,28 @@ import { User } from '../../core/models/user.model';
             <a class="see-all">{{ 'ADMIN.VIEW_ALL' | translate }}</a>
           </div>
           <div class="sys-alert sys-alert--high" *ngFor="let a of systemAlertsHigh()">
-            <span class="severity-badge severity--high">Élevé</span>
+            <span class="severity-badge severity--high">{{ 'ADMIN.SEVERITY_HIGH' | translate }}</span>
             <div class="sys-alert-body">
-              <div class="sys-alert-title">{{ a.title }}</div>
-              <div class="sys-alert-detail">{{ a.detail }}</div>
+              <div class="sys-alert-title">{{ a.titleKey | translate }}</div>
+              <div class="sys-alert-detail">{{ a.detailKey | translate: a.detailParams }}</div>
             </div>
-            <div class="sys-alert-time">{{ a.time }}</div>
+            <div class="sys-alert-time">{{ a.timeKey | translate }}</div>
           </div>
           <div class="sys-alert sys-alert--medium" *ngFor="let a of systemAlertsMedium()">
-            <span class="severity-badge severity--medium">Moyen</span>
+            <span class="severity-badge severity--medium">{{ 'ADMIN.SEVERITY_MEDIUM' | translate }}</span>
             <div class="sys-alert-body">
-              <div class="sys-alert-title">{{ a.title }}</div>
-              <div class="sys-alert-detail">{{ a.detail }}</div>
+              <div class="sys-alert-title">{{ a.titleKey | translate }}</div>
+              <div class="sys-alert-detail">{{ a.detailKey | translate: a.detailParams }}</div>
             </div>
-            <div class="sys-alert-time">{{ a.time }}</div>
+            <div class="sys-alert-time">{{ a.timeKey | translate }}</div>
           </div>
           <div class="sys-alert sys-alert--low">
-            <span class="severity-badge severity--low">Faible</span>
+            <span class="severity-badge severity--low">{{ 'ADMIN.SEVERITY_LOW' | translate }}</span>
             <div class="sys-alert-body">
-              <div class="sys-alert-title">Maintenance système planifiée</div>
-              <div class="sys-alert-detail">22 mai 2025 à 02h00</div>
+              <div class="sys-alert-title">{{ 'ADMIN.MAINTENANCE_TITLE' | translate }}</div>
+              <div class="sys-alert-detail">{{ 'ADMIN.MAINTENANCE_DATE' | translate }}</div>
             </div>
-            <div class="sys-alert-time">Il y a 2h</div>
+            <div class="sys-alert-time">{{ 'ADMIN.MAINTENANCE_AGO' | translate }}</div>
           </div>
         </div>
 
@@ -164,7 +164,7 @@ import { User } from '../../core/models/user.model';
             <a class="see-all">{{ 'ADMIN.VIEW_FULL_REPORT' | translate }}</a>
           </div>
           <div class="mh-row" *ngFor="let row of healthRows()">
-            <div class="mh-label">{{ row.label }}</div>
+            <div class="mh-label">{{ row.labelKey | translate }}</div>
             <div class="mh-val" [class.mh-val--green]="row.trend > 0" [class.mh-val--red]="row.trend < 0">{{ row.value }}</div>
             <div class="mh-trend" [class.mh-trend--up]="row.trend > 0" [class.mh-trend--down]="row.trend < 0">
               {{ row.trend > 0 ? '↑' : '↓' }} {{ row.trend | number:'1.1-1' }}%
@@ -216,10 +216,10 @@ import { User } from '../../core/models/user.model';
               {{ a.icon }}
             </div>
             <div class="activity-body">
-              <div class="activity-title">{{ a.text }}</div>
+              <div class="activity-title">{{ a.textKey | translate: a.textParams }}</div>
               <div class="activity-sub" *ngIf="a.sub">{{ a.sub }}</div>
             </div>
-            <div class="activity-time">{{ a.time }}</div>
+            <div class="activity-time">{{ a.timeKey | translate }}</div>
           </div>
         </div>
 
@@ -266,7 +266,7 @@ import { User } from '../../core/models/user.model';
                 <circle cx="18" cy="18" r="15.9" fill="none" stroke="#E53935" stroke-width="3"
                   [attr.stroke-dasharray]="payFailedPct() + ' ' + (100 - payFailedPct())"
                   [attr.stroke-dashoffset]="25 - paySuccessPct()" stroke-linecap="round"/>
-                <text x="18" y="17" text-anchor="middle" font-size="5" fill="var(--text-secondary)">Succès</text>
+                <text x="18" y="17" text-anchor="middle" font-size="5" fill="var(--text-secondary)">{{ 'ADMIN.PAYMENT_SUCCESS_LABEL' | translate }}</text>
                 <text x="18" y="23" text-anchor="middle" font-size="6" fill="#66BB6A" font-weight="700">> 99%</text>
               </svg>
             </div>
@@ -354,10 +354,10 @@ import { User } from '../../core/models/user.model';
           <table class="users-table">
             <thead>
               <tr>
-                <th>Nom</th>
-                <th>Rôle</th>
-                <th>Téléphone</th>
-                <th>Statut</th>
+                <th>{{ 'ADMIN.COL_NAME' | translate }}</th>
+                <th>{{ 'ADMIN.COL_ROLE' | translate }}</th>
+                <th>{{ 'ADMIN.COL_PHONE' | translate }}</th>
+                <th>{{ 'ADMIN.COL_STATUS' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -608,7 +608,8 @@ import { User } from '../../core/models/user.model';
   `]
 })
 export class AdminDashboardComponent implements OnInit {
-  private api  = inject(ApiService);
+  private api       = inject(ApiService);
+  private translate = inject(TranslateService);
   auth = inject(AuthService);
 
   allOrders = signal<FreightOrder[]>([]);
@@ -627,7 +628,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   exportReport(): void {
-    alert('Export en cours de développement.');
+    alert(this.translate.instant('ADMIN.EXPORT_IN_PROGRESS'));
   }
 
   // ── Identity ────────────────────────────────────────────────────────
@@ -680,24 +681,27 @@ export class AdminDashboardComponent implements OnInit {
 
   // ── System Alerts ────────────────────────────────────────────────────
   systemAlertsHigh = computed(() => {
-    const alerts = [];
-    if (this.fraudAlerts() > 0)
-      alerts.push({ title: 'Document suspect détecté', detail: `ID Chauffeur — ${this.allUsers().find((u: any) => !u.is_verified && u.role === 'DRIVER')?.full_name ?? 'Utilisateur inconnu'}`, time: 'Il y a 10 min' });
+    const alerts: { titleKey: string; detailKey: string; detailParams: object; timeKey: string }[] = [];
+    if (this.fraudAlerts() > 0) {
+      const name = this.allUsers().find((u: any) => !u.is_verified && u.role === 'DRIVER')?.full_name
+        || this.translate.instant('ADMIN.ALERT_UNKNOWN_USER');
+      alerts.push({ titleKey: 'ADMIN.ALERT_SUSPICIOUS_DOC', detailKey: 'ADMIN.ALERT_SUSPICIOUS_DOC_DETAIL', detailParams: { name }, timeKey: 'ADMIN.AGO_10_MIN' });
+    }
     return alerts;
   });
   systemAlertsMedium = computed(() => {
-    const alerts = [];
+    const alerts: { titleKey: string; detailKey: string; detailParams: object; timeKey: string }[] = [];
     if (this.failedPayments() > 0)
-      alerts.push({ title: 'Échec de paiement', detail: `${this.failedPayments()} paiement(s) échoué(s) — action requise`, time: 'Il y a 25 min' });
+      alerts.push({ titleKey: 'ADMIN.ALERT_PAYMENT_FAILED', detailKey: 'ADMIN.ALERT_PAYMENT_FAILED_DETAIL', detailParams: { count: this.failedPayments() }, timeKey: 'ADMIN.AGO_25_MIN' });
     return alerts;
   });
 
   // ── Marketplace Health rows ───────────────────────────────────────────
   healthRows = computed(() => [
-    { label: 'Chargements actifs',   value: this.activeLoads(),    trend:  8.2 },
-    { label: 'Transporteurs actifs', value: this.activeCarriers(), trend:  6.1 },
-    { label: 'Expéditeurs actifs',   value: this.totalShippers(),  trend:  4.3 },
-    { label: 'Courtiers actifs',     value: Math.max(1, Math.round(this.totalUsers() * 0.05)), trend: 3.2 },
+    { labelKey: 'ADMIN.HEALTH_ACTIVE_LOADS',    value: this.activeLoads(),    trend:  8.2 },
+    { labelKey: 'ADMIN.HEALTH_ACTIVE_CARRIERS', value: this.activeCarriers(), trend:  6.1 },
+    { labelKey: 'ADMIN.HEALTH_ACTIVE_SHIPPERS', value: this.totalShippers(),  trend:  4.3 },
+    { labelKey: 'ADMIN.HEALTH_ACTIVE_BROKERS',  value: Math.max(1, Math.round(this.totalUsers() * 0.05)), trend: 3.2 },
   ]);
 
   // ── Operational Queues ───────────────────────────────────────────────
@@ -710,16 +714,39 @@ export class AdminDashboardComponent implements OnInit {
   ]);
 
   // ── Recent Activity ──────────────────────────────────────────────────
-  recentActivity = computed(() => {
-    const items = [
-      { icon: '🚛', type: 'new',     text: 'Nouvelle demande de vérification transporteur', sub: this.allUsers().find((u: any) => !u.is_verified && u.role === 'CARRIER')?.full_name ?? 'Transporteur', time: 'Il y a 5 min' },
-      { icon: '📦', type: 'success', text: `Chargement ${this.allOrders()[0]?.reference ?? '#LD-001'} créé`, sub: '', time: 'Il y a 15 min' },
-      { icon: '🤝', type: 'success', text: 'Réservation confirmée', sub: `${this.allOrders().find(o => o.status === 'ASSIGNED')?.reference ?? '#BK-002'}`, time: 'Il y a 25 min' },
-      { icon: '💰', type: 'success', text: 'Paiement effectué', sub: `${this.volumeToday() > 0 ? (this.volumeToday() / Math.max(1, this.loadsDelivered()) | 0).toLocaleString() : '850,000'} FCFA`, time: 'Il y a 35 min' },
-      { icon: '⚠',  type: 'alert',   text: 'Litige ouvert', sub: this.allOrders().find(o => o.status === 'POSTED')?.reference ?? '#LD-003', time: 'Il y a 1h' },
-    ];
-    return items;
-  });
+  recentActivity = computed(() => [
+    {
+      icon: '🚛', type: 'new',
+      textKey: 'ADMIN.ACTIVITY_NEW_CARRIER_VERIF', textParams: {},
+      sub: this.allUsers().find((u: any) => !u.is_verified && u.role === 'CARRIER')?.full_name
+        ?? this.translate.instant('ADMIN.ACTIVITY_CARRIER_FALLBACK'),
+      timeKey: 'ADMIN.AGO_5_MIN',
+    },
+    {
+      icon: '📦', type: 'success',
+      textKey: 'ADMIN.ACTIVITY_LOAD_CREATED', textParams: { ref: this.allOrders()[0]?.reference ?? '#LD-001' },
+      sub: '',
+      timeKey: 'ADMIN.AGO_15_MIN',
+    },
+    {
+      icon: '🤝', type: 'success',
+      textKey: 'ADMIN.ACTIVITY_BOOKING_CONFIRMED', textParams: {},
+      sub: this.allOrders().find(o => o.status === 'ASSIGNED')?.reference ?? '#BK-002',
+      timeKey: 'ADMIN.AGO_25_MIN',
+    },
+    {
+      icon: '💰', type: 'success',
+      textKey: 'ADMIN.ACTIVITY_PAYMENT_DONE', textParams: {},
+      sub: `${this.volumeToday() > 0 ? (this.volumeToday() / Math.max(1, this.loadsDelivered()) | 0).toLocaleString() : '850,000'} FCFA`,
+      timeKey: 'ADMIN.AGO_35_MIN',
+    },
+    {
+      icon: '⚠', type: 'alert',
+      textKey: 'ADMIN.ACTIVITY_DISPUTE_OPENED', textParams: {},
+      sub: this.allOrders().find(o => o.status === 'POSTED')?.reference ?? '#LD-003',
+      timeKey: 'ADMIN.AGO_1H',
+    },
+  ]);
 
   // ── Top Routes ───────────────────────────────────────────────────────
   topRoutes = computed(() => [
