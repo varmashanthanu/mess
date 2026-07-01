@@ -8,11 +8,13 @@
       "resources": {
         "files": [
           "/favicon.ico",
-          "/index.csr.html",
           "/index.html",
           "/manifest.webmanifest",
           "/*.css",
-          "/*.js"
+          "/*.js",
+          "!/ngsw-worker.js",
+          "!/safety-worker.js",
+          "!/worker-basic.min.js"
         ]
       }
     },
