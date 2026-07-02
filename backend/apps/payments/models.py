@@ -15,6 +15,7 @@ class PaytechGatewayMode(models.TextChoices):
 class PaytechConfig(models.Model):
     """Singleton row — PayTech online payment gateway configuration."""
 
+    id                  = models.BigAutoField(primary_key=True)
     is_enabled          = models.BooleanField(default=False)
     mode                = models.CharField(max_length=20, choices=PaytechGatewayMode.choices, default=PaytechGatewayMode.TEST)
     test_api_key        = models.CharField(max_length=512, blank=True)
