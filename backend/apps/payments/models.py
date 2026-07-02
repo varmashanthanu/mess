@@ -7,6 +7,38 @@ from django.db import models
 from core.models import BaseModel
 
 
+class PaytechGatewayMode(models.TextChoices):
+    TEST       = "TEST",       "Test"
+    PRODUCTION = "PRODUCTION", "Production"
+
+
+class PaytechConfig(models.Model):
+    """Singleton row — PayTech online payment gateway configuration."""
+
+    is_enabled          = models.BooleanField(default=False)
+    mode                = models.CharField(max_length=20, choices=PaytechGatewayMode.choices, default=PaytechGatewayMode.TEST)
+    test_api_key        = models.CharField(max_length=512, blank=True)
+    test_api_secret     = models.CharField(max_length=512, blank=True)
+    production_api_key  = models.CharField(max_length=512, blank=True)
+    production_api_secret = models.CharField(max_length=512, blank=True)
+    updated_at          = models.DateTimeField(auto_now=True)
+    updated_by          = models.ForeignKey(
+        "accounts.User", null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="paytech_updates"
+    )
+
+    class Meta:
+        verbose_name = "PayTech Gateway Config"
+
+    def __str__(self):
+        return f"PayTech {'ENABLED' if self.is_enabled else 'DISABLED'} [{self.mode}]"
+
+    @classmethod
+    def get_instance(cls):
+        obj, _ = cls.objects.get_or_create(id=1)
+        return obj
+
+
 class PaymentProvider(models.TextChoices):
     WAVE = "WAVE", "Wave"
     ORANGE_MONEY = "ORANGE_MONEY", "Orange Money"

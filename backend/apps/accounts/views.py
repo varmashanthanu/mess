@@ -117,6 +117,42 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 #         return Response({"message": "Phone number verified successfully."})
 
 
+class CompanyDriverLoginView(APIView):
+    """
+    POST /auth/company-driver/login/
+    Login for company drivers: phone_number + company_code (no personal password needed).
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        phone = request.data.get("phone_number", "").strip()
+        company_code = request.data.get("company_code", "").strip().upper()
+
+        if not phone or not company_code:
+            return Response(
+                {"detail": "Numéro de téléphone et code société requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user = User.objects.get(phone_number=phone, role="COMPANY_DRIVER")
+        except User.DoesNotExist:
+            return Response({"detail": "Identifiants incorrects."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not user.is_active:
+            return Response({"detail": "Compte désactivé."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            employer = user.driver_profile.employer
+            if not employer or employer.company_code != company_code:
+                return Response({"detail": "Code société incorrect."}, status=status.HTTP_401_UNAUTHORIZED)
+        except Exception:
+            return Response({"detail": "Profil chauffeur introuvable."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        tokens = _get_tokens(user)
+        return Response({"user": UserDetailSerializer(user).data, **tokens})
+
+
 class LogoutView(APIView):
     """Blacklist the refresh token (logout)."""
     permission_classes = [permissions.IsAuthenticated]
@@ -311,7 +347,7 @@ class CarrierCreateDriverView(generics.CreateAPIView):
             phone_number=phone,
             first_name=first_name,
             last_name=last_name,
-            role="DRIVER",
+            role="COMPANY_DRIVER",
             city=city,
             password=password,
             is_verified=True,

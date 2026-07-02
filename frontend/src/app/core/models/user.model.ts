@@ -1,4 +1,4 @@
-export type UserRole = 'SHIPPER' | 'DRIVER' | 'CARRIER' | 'BROKER' | 'ADMIN';
+export type UserRole = 'SHIPPER' | 'DRIVER' | 'COMPANY_DRIVER' | 'CARRIER' | 'BROKER' | 'ADMIN';
 
 export interface User {
   id: string;
@@ -45,6 +45,7 @@ export interface CarrierProfile {
   carrier_agreement_accepted: boolean;
   rating: number;
   total_loads: number;
+  company_code: string;
 }
 
 export interface AuthTokens {

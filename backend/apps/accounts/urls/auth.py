@@ -3,6 +3,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from apps.accounts.views import (
+    CompanyDriverLoginView,
     CustomTokenObtainPairView,
     LogoutView,
     RegisterView,
@@ -14,6 +15,7 @@ from apps.accounts.views import (
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="auth-register"),
     path("login/", CustomTokenObtainPairView.as_view(), name="auth-login"),
+    path("company-driver/login/", CompanyDriverLoginView.as_view(), name="auth-company-driver-login"),
     path("token/refresh/", TokenRefreshView.as_view(), name="auth-token-refresh"),
     path("logout/", LogoutView.as_view(), name="auth-logout"),
     # SMS verification disabled — no SMS provider configured

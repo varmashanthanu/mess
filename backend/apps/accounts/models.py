@@ -3,6 +3,8 @@ MESS Platform — Accounts Models
 Phone-number-based user authentication with role differentiation.
 """
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+import random
+import string
 import uuid
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
@@ -258,6 +260,9 @@ class CarrierProfile(BaseModel):
     bank_account_number = models.CharField(max_length=100, blank=True)
     bank_routing_number = models.CharField(max_length=100, blank=True)
 
+    # Company code — unique short code used by company drivers to log in
+    company_code = models.CharField(max_length=20, unique=True, blank=True, db_index=True)
+
     # Availability
     is_available = models.BooleanField(default=False, db_index=True)
 
@@ -284,6 +289,18 @@ class CarrierProfile(BaseModel):
 
     def __str__(self):
         return f"Carrier: {self.legal_company_name or self.user.full_name}"
+
+    def save(self, *args, **kwargs):
+        if not self.company_code:
+            self.company_code = self._generate_unique_code()
+        super().save(*args, **kwargs)
+
+    @staticmethod
+    def _generate_unique_code():
+        while True:
+            code = "YOO-" + "".join(random.choices(string.digits, k=4))
+            if not CarrierProfile.objects.filter(company_code=code).exists():
+                return code
 
     def update_rating(self, new_score: int):
         total = self.rating * self.total_ratings + new_score

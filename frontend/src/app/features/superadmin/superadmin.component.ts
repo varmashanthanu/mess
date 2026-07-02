@@ -54,7 +54,17 @@ interface PlatformUser {
   last_login: string | null;
 }
 
-type Tab = 'admins' | 'users' | 'system';
+interface PaytechConfig {
+  is_enabled: boolean;
+  mode: 'TEST' | 'PRODUCTION';
+  test_api_key: string;
+  test_api_secret: string;
+  production_api_key: string;
+  production_api_secret: string;
+  updated_at: string | null;
+}
+
+type Tab = 'admins' | 'users' | 'system' | 'payment';
 
 @Component({
   selector: 'app-superadmin',
@@ -83,6 +93,9 @@ type Tab = 'admins' | 'users' | 'system';
         </button>
         <button class="sa-tab" [class.active]="tab() === 'system'" (click)="loadSystem(); tab.set('system')">
           {{ 'SUPERADMIN.TAB_SYSTEM' | translate }}
+        </button>
+        <button class="sa-tab" [class.active]="tab() === 'payment'" (click)="openPayment()">
+          {{ 'SUPERADMIN.TAB_PAYMENT' | translate }}
         </button>
       </div>
 
@@ -351,6 +364,101 @@ type Tab = 'admins' | 'users' | 'system';
 
       </ng-container>
 
+      <!-- ══ PAYMENT TAB ══ -->
+      <ng-container *ngIf="tab() === 'payment'">
+        <div class="loading" *ngIf="loadingPaytech()">{{ 'SUPERADMIN.LOADING' | translate }}</div>
+
+        <ng-container *ngIf="!loadingPaytech() && paytechForm">
+
+          <!-- Status banner -->
+          <div class="pt-status-banner" [class.pt-enabled]="paytechForm.is_enabled" [class.pt-disabled]="!paytechForm.is_enabled">
+            <div class="pt-status-dot"></div>
+            <span>{{ paytechForm.is_enabled ? ('SUPERADMIN.PT_STATUS_ACTIVE' | translate) : ('SUPERADMIN.PT_STATUS_INACTIVE' | translate) }}</span>
+            <span class="pt-mode-chip">{{ paytechForm.mode === 'PRODUCTION' ? ('SUPERADMIN.PT_MODE_PROD' | translate) : ('SUPERADMIN.PT_MODE_TEST' | translate) }}</span>
+          </div>
+
+          <div class="two-col">
+
+            <!-- Left: Enable + Mode -->
+            <div class="panel">
+              <div class="panel-header">
+                <span class="panel-title">{{ 'SUPERADMIN.PT_SETTINGS_TITLE' | translate }}</span>
+              </div>
+
+              <div class="pt-row">
+                <div>
+                  <div class="pt-label">{{ 'SUPERADMIN.PT_ENABLE_LABEL' | translate }}</div>
+                  <div class="pt-hint">{{ 'SUPERADMIN.PT_ENABLE_HINT' | translate }}</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" [(ngModel)]="paytechForm.is_enabled" />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+
+              <div class="pt-field" style="margin-top:20px;">
+                <label class="pt-label">{{ 'SUPERADMIN.PT_MODE_LABEL' | translate }}</label>
+                <div class="pt-mode-btns">
+                  <button class="pt-mode-btn" [class.pt-mode-active]="paytechForm.mode === 'TEST'" (click)="paytechForm.mode = 'TEST'">
+                    {{ 'SUPERADMIN.PT_MODE_TEST' | translate }}
+                  </button>
+                  <button class="pt-mode-btn" [class.pt-mode-active]="paytechForm.mode === 'PRODUCTION'" (click)="paytechForm.mode = 'PRODUCTION'">
+                    {{ 'SUPERADMIN.PT_MODE_PROD' | translate }}
+                  </button>
+                </div>
+                <div class="pt-mode-warn" *ngIf="paytechForm.mode === 'PRODUCTION'">
+                  ⚠️ {{ 'SUPERADMIN.PT_PROD_WARN' | translate }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: API Keys -->
+            <div class="panel">
+              <div class="panel-header">
+                <span class="panel-title">{{ 'SUPERADMIN.PT_KEYS_TITLE' | translate }}</span>
+              </div>
+
+              <!-- Test keys -->
+              <div class="pt-section-label">{{ 'SUPERADMIN.PT_TEST_KEYS' | translate }}</div>
+              <div class="pt-field">
+                <label>{{ 'SUPERADMIN.PT_API_KEY' | translate }}</label>
+                <input [(ngModel)]="paytechForm.test_api_key" [placeholder]="'SUPERADMIN.PT_KEY_PLACEHOLDER' | translate" type="password" autocomplete="off" />
+              </div>
+              <div class="pt-field">
+                <label>{{ 'SUPERADMIN.PT_API_SECRET' | translate }}</label>
+                <input [(ngModel)]="paytechForm.test_api_secret" [placeholder]="'SUPERADMIN.PT_SECRET_PLACEHOLDER' | translate" type="password" autocomplete="off" />
+              </div>
+
+              <!-- Production keys -->
+              <div class="pt-section-label" style="margin-top:20px;">{{ 'SUPERADMIN.PT_PROD_KEYS' | translate }}</div>
+              <div class="pt-field">
+                <label>{{ 'SUPERADMIN.PT_API_KEY' | translate }}</label>
+                <input [(ngModel)]="paytechForm.production_api_key" [placeholder]="'SUPERADMIN.PT_KEY_PLACEHOLDER' | translate" type="password" autocomplete="off" />
+              </div>
+              <div class="pt-field">
+                <label>{{ 'SUPERADMIN.PT_API_SECRET' | translate }}</label>
+                <input [(ngModel)]="paytechForm.production_api_secret" [placeholder]="'SUPERADMIN.PT_SECRET_PLACEHOLDER' | translate" type="password" autocomplete="off" />
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Save bar -->
+          <div class="pt-save-bar">
+            <div class="pt-updated" *ngIf="paytechForm.updated_at">
+              {{ 'SUPERADMIN.PT_LAST_UPDATED' | translate }} {{ paytechForm.updated_at | date:'dd/MM/yyyy HH:mm' }}
+            </div>
+            <div class="pt-save-actions">
+              <div class="form-success" *ngIf="paytechSaved()">{{ 'SUPERADMIN.PT_SAVED' | translate }}</div>
+              <button class="btn-save" (click)="savePaytechConfig()" [disabled]="savingPaytech()">
+                {{ (savingPaytech() ? 'SUPERADMIN.SAVING_PERMS' : 'SUPERADMIN.PT_SAVE_BTN') | translate }}
+              </button>
+            </div>
+          </div>
+
+        </ng-container>
+      </ng-container>
+
     </div>
   `,
   styles: [`
@@ -512,6 +620,60 @@ type Tab = 'admins' | 'users' | 'system';
     .loading { padding: 20px; text-align: center; color: var(--text-secondary); font-size: 13px; }
     .empty   { padding: 16px; text-align: center; color: var(--text-secondary); font-size: 13px; }
 
+    /* PayTech tab */
+    .pt-status-banner {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 20px; border-radius: 12px; font-size: 13px; font-weight: 700;
+      border: 1.5px solid;
+    }
+    .pt-enabled  { background: rgba(67,160,71,0.08);  border-color: rgba(67,160,71,0.3);  color: #2E7D32; }
+    .pt-disabled { background: rgba(158,154,147,0.08); border-color: var(--border); color: var(--text-secondary); }
+    .pt-status-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .pt-enabled .pt-status-dot  { background: #43A047; box-shadow: 0 0 0 3px rgba(67,160,71,0.25); }
+    .pt-disabled .pt-status-dot { background: #9E9A93; }
+    .pt-mode-chip {
+      margin-left: auto; padding: 3px 10px; border-radius: 20px;
+      font-size: 10px; letter-spacing: 0.5px; font-weight: 800;
+      background: rgba(0,0,0,0.06); color: inherit;
+    }
+    .pt-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border);
+    }
+    .pt-label { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+    .pt-hint  { font-size: 11px; color: var(--text-secondary); }
+    .pt-section-label {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase;
+      color: var(--text-secondary); margin-bottom: 10px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .pt-field { margin-bottom: 12px; }
+    .pt-field label { display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
+    .pt-field input {
+      width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 13px; background: var(--surface-raised); color: var(--text-primary);
+      outline: none; font-family: monospace; box-sizing: border-box;
+    }
+    .pt-field input:focus { border-color: #C9A227; }
+    .pt-mode-btns { display: flex; gap: 8px; }
+    .pt-mode-btn {
+      flex: 1; padding: 10px 16px; border: 1.5px solid var(--border); border-radius: 8px;
+      background: var(--surface-raised); color: var(--text-secondary);
+      font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s;
+    }
+    .pt-mode-btn:hover { border-color: #C9A227; color: #C9A227; }
+    .pt-mode-active { border-color: #C9A227 !important; color: #C9A227 !important; background: rgba(201,162,39,0.08) !important; }
+    .pt-mode-warn { margin-top: 8px; font-size: 12px; color: #E65100; font-weight: 600; }
+    .pt-save-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      background: var(--surface); border-radius: 12px; padding: 14px 20px;
+      border: 1px solid var(--border);
+    }
+    .pt-save-actions { display: flex; align-items: center; gap: 12px; }
+    .pt-updated { font-size: 11px; color: var(--text-secondary); }
+
     @media (max-width: 900px) {
       .two-col { grid-template-columns: 1fr; }
       .sys-grid { grid-template-columns: repeat(2,1fr); }
@@ -551,6 +713,13 @@ export class SuperAdminComponent implements OnInit {
 
   newAdmin = { first_name: '', last_name: '', phone_number: '', email: '', password: '' };
   editPerms: Record<string, boolean> | null = null;
+
+  // Payment tab
+  paytechConfig   = signal<PaytechConfig | null>(null);
+  loadingPaytech  = signal(false);
+  savingPaytech   = signal(false);
+  paytechSaved    = signal(false);
+  paytechForm: PaytechConfig = { is_enabled: false, mode: 'TEST', test_api_key: '', test_api_secret: '', production_api_key: '', production_api_secret: '', updated_at: null };
 
   permKeys = [
     { key: 'can_manage_users',     i18nKey: 'SUPERADMIN.PERM_USERS' },
@@ -696,6 +865,38 @@ export class SuperAdminComponent implements OnInit {
         this.togglingId.set(null);
       },
       error: () => this.togglingId.set(null),
+    });
+  }
+
+  openPayment(): void {
+    this.tab.set('payment');
+    if (!this.paytechConfig()) this.loadPaytechConfig();
+  }
+
+  loadPaytechConfig(): void {
+    this.loadingPaytech.set(true);
+    this.http.get<PaytechConfig>(`${this.apiBase}/payment-config/`, { headers: this.headers() }).subscribe({
+      next: cfg => {
+        this.paytechConfig.set(cfg);
+        this.paytechForm = { ...cfg };
+        this.loadingPaytech.set(false);
+      },
+      error: () => this.loadingPaytech.set(false),
+    });
+  }
+
+  savePaytechConfig(): void {
+    this.savingPaytech.set(true);
+    this.paytechSaved.set(false);
+    this.http.patch<PaytechConfig>(`${this.apiBase}/payment-config/`, this.paytechForm, { headers: this.headers() }).subscribe({
+      next: cfg => {
+        this.paytechConfig.set(cfg);
+        this.paytechForm = { ...cfg };
+        this.savingPaytech.set(false);
+        this.paytechSaved.set(true);
+        setTimeout(() => this.paytechSaved.set(false), 3000);
+      },
+      error: () => this.savingPaytech.set(false),
     });
   }
 

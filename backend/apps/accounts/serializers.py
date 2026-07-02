@@ -49,9 +49,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     def validate_role(self, value):
-        # Prevent self-registration as ADMIN
-        if value == UserRole.ADMIN:
-            raise serializers.ValidationError("Cannot register as admin.")
+        if value in (UserRole.ADMIN, UserRole.COMPANY_DRIVER):
+            raise serializers.ValidationError("Cannot self-register with this role.")
         return value
 
     def create(self, validated_data):
@@ -221,8 +220,10 @@ class CarrierProfileSerializer(serializers.ModelSerializer):
             "carrier_agreement_accepted", "carrier_agreement_accepted_at",
             # Stats
             "rating", "total_loads",
+            # Company code (for company driver login)
+            "company_code",
         ]
-        read_only_fields = ["rating", "total_loads", "carrier_agreement_accepted_at"]
+        read_only_fields = ["rating", "total_loads", "carrier_agreement_accepted_at", "company_code"]
 
 
 class DriverAvailabilitySerializer(serializers.Serializer):

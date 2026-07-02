@@ -33,3 +33,19 @@ export const publicGuard: CanActivateFn = () => {
   router.navigate(['/dashboard']);
   return false;
 };
+
+// Blocks COMPANY_DRIVER from accessing the loadboard
+export const noCompanyDriverGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  if (!auth.isLoggedIn()) {
+    router.navigate(['/auth/login']);
+    return false;
+  }
+  if (auth.role() === 'COMPANY_DRIVER') {
+    router.navigate(['/dashboard']);
+    return false;
+  }
+  return true;
+};

@@ -152,6 +152,37 @@ class PlatformUserToggleBlockView(APIView):
         return Response(PlatformUserSerializer(user).data)
 
 
+class PaytechConfigSerializer(serializers.Serializer):
+    is_enabled           = serializers.BooleanField(required=False)
+    mode                 = serializers.ChoiceField(choices=["TEST", "PRODUCTION"], required=False)
+    test_api_key         = serializers.CharField(required=False, allow_blank=True, max_length=512)
+    test_api_secret      = serializers.CharField(required=False, allow_blank=True, max_length=512)
+    production_api_key   = serializers.CharField(required=False, allow_blank=True, max_length=512)
+    production_api_secret = serializers.CharField(required=False, allow_blank=True, max_length=512)
+    updated_at           = serializers.DateTimeField(read_only=True)
+
+
+class PaytechConfigView(APIView):
+    """GET / PATCH the PayTech gateway configuration (superadmin only)."""
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+
+    def get(self, request):
+        from apps.payments.models import PaytechConfig
+        config = PaytechConfig.get_instance()
+        return Response(PaytechConfigSerializer(config).data)
+
+    def patch(self, request):
+        from apps.payments.models import PaytechConfig
+        config = PaytechConfig.get_instance()
+        serializer = PaytechConfigSerializer(config, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        for field, value in serializer.validated_data.items():
+            setattr(config, field, value)
+        config.updated_by = request.user
+        config.save()
+        return Response(PaytechConfigSerializer(config).data)
+
+
 class SystemStatsView(APIView):
     """System monitoring — DB, disk, process stats (superadmin only)."""
     permission_classes = [IsAuthenticated, IsSuperAdmin]

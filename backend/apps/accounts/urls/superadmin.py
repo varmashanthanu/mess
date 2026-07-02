@@ -9,4 +9,5 @@ urlpatterns = [
     path("users/",               v.PlatformUserListView.as_view(),     name="superadmin-users"),
     path("users/<uuid:pk>/toggle-block/", v.PlatformUserToggleBlockView.as_view(), name="superadmin-user-toggle-block"),
     path("system/",              v.SystemStatsView.as_view(),          name="superadmin-system"),
+    path("payment-config/",      v.PaytechConfigView.as_view(),        name="superadmin-payment-config"),
 ]

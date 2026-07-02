@@ -70,8 +70,17 @@ class FreightOrderListCreateView(generics.ListCreateAPIView):
         if user.role == "SHIPPER":
             return qs.filter(shipper=user)
         if user.role == "DRIVER":
-            # Drivers see posted orders + their own assigned ones
+            # Independent owner operators: see loadboard + their own assigned orders
             return qs.filter(status=OrderStatus.POSTED) | qs.filter(assignment__driver=user)
+        if user.role == "COMPANY_DRIVER":
+            # Company drivers: only see their employer's orders (no loadboard)
+            try:
+                employer = user.driver_profile.employer
+                if not employer:
+                    return qs.none()
+                return qs.filter(assignment__vehicle__owner=employer.user) | qs.filter(assignment__driver=user)
+            except Exception:
+                return qs.none()
         if user.role == "ADMIN":
             return qs.all()
         return qs.none()
@@ -166,8 +175,8 @@ class AcceptOrderView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
-        if request.user.role != "DRIVER":
-            raise BusinessLogicError("Only drivers can accept orders.")
+        if request.user.role not in ("DRIVER",):
+            raise BusinessLogicError("Only independent owner operators can accept orders from the loadboard.")
 
         order = FreightOrder.objects.get(pk=pk)
         if order.status != OrderStatus.POSTED:

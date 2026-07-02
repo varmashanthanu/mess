@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { ShellComponent } from './shared/components/shell/shell.component';
-import { authGuard, publicGuard } from './core/guards/auth.guard';
+import { authGuard, noCompanyDriverGuard, publicGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   // Auth routes (no shell)
@@ -57,6 +57,7 @@ export const routes: Routes = [
       },
       {
         path: 'load-board',
+        canActivate: [noCompanyDriverGuard],
         loadComponent: () => import('./features/load-board/load-board.component').then(m => m.LoadBoardComponent),
       },
       {

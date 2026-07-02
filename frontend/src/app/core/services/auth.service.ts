@@ -89,6 +89,17 @@ export class AuthService {
     );
   }
 
+  companyDriverLogin(phone_number: string, company_code: string): Observable<AuthTokens & { user: User }> {
+    return this.http.post<AuthTokens & { user: User }>(
+      `${this.apiUrl}/auth/company-driver/login/`, { phone_number, company_code }
+    ).pipe(
+      tap((res) => {
+        this.storeTokens(res.access, res.refresh);
+        this._user.set(res.user);
+      })
+    );
+  }
+
   requestOtp(phone_number: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(
       `${this.apiUrl}/auth/otp/request/`, { phone_number }

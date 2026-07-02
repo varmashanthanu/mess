@@ -6,7 +6,8 @@ from django.db import models
 
 class UserRole(models.TextChoices):
     SHIPPER = "SHIPPER", "Shipper"
-    DRIVER = "DRIVER", "Driver"
+    DRIVER = "DRIVER", "Owner Operator"
+    COMPANY_DRIVER = "COMPANY_DRIVER", "Company Driver"
     CARRIER = "CARRIER", "Carrier"
     BROKER = "BROKER", "Broker"
     ADMIN = "ADMIN", "Admin"

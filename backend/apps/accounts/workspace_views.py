@@ -13,23 +13,25 @@ from .models import (
 )
 
 WORKSPACE_PERMISSIONS = {
-    "PERSONAL":   [],
-    "SHIPPER":    ["orders.create", "orders.view", "tracking.view", "messaging.use"],
-    "DRIVER":     ["orders.view", "tracking.update", "messaging.use"],
-    "CARRIER":    ["fleet.manage", "drivers.manage", "loads.view", "orders.view", "messaging.use"],
-    "BROKER":     ["orders.view", "loads.view", "orders.match", "messaging.use"],
-    "ADMIN":      ["admin.all", "users.manage", "orders.all", "fleet.all"],
-    "SUPERADMIN": ["superadmin.all", "admin.all"],
+    "PERSONAL":       [],
+    "SHIPPER":        ["orders.create", "orders.view", "tracking.view", "messaging.use"],
+    "DRIVER":         ["orders.view", "tracking.update", "messaging.use"],
+    "COMPANY_DRIVER": ["orders.view", "tracking.update", "messaging.use"],
+    "CARRIER":        ["fleet.manage", "drivers.manage", "loads.view", "orders.view", "messaging.use"],
+    "BROKER":         ["orders.view", "loads.view", "orders.match", "messaging.use"],
+    "ADMIN":          ["admin.all", "users.manage", "orders.all", "fleet.all"],
+    "SUPERADMIN":     ["superadmin.all", "admin.all"],
 }
 
 WORKSPACE_NAV = {
-    "PERSONAL":   ["dashboard", "profile", "notifications"],
-    "SHIPPER":    ["dashboard", "orders", "tracking", "messaging", "notifications", "profile"],
-    "DRIVER":     ["dashboard", "orders", "tracking", "messaging", "notifications", "profile"],
-    "CARRIER":    ["dashboard", "fleet", "orders", "load-board", "messaging", "notifications", "profile"],
-    "BROKER":     ["broker-dashboard", "load-board", "orders", "messaging", "notifications", "profile"],
-    "ADMIN":      ["admin", "orders", "fleet", "notifications", "profile"],
-    "SUPERADMIN": ["superadmin", "admin", "orders", "fleet", "notifications", "profile"],
+    "PERSONAL":       ["dashboard", "profile", "notifications"],
+    "SHIPPER":        ["dashboard", "orders", "tracking", "messaging", "notifications", "profile"],
+    "DRIVER":         ["dashboard", "orders", "tracking", "messaging", "notifications", "profile"],
+    "COMPANY_DRIVER": ["dashboard", "orders", "tracking", "messaging", "notifications", "profile"],
+    "CARRIER":        ["dashboard", "fleet", "orders", "load-board", "messaging", "notifications", "profile"],
+    "BROKER":         ["broker-dashboard", "load-board", "orders", "messaging", "notifications", "profile"],
+    "ADMIN":          ["admin", "orders", "fleet", "notifications", "profile"],
+    "SUPERADMIN":     ["superadmin", "admin", "orders", "fleet", "notifications", "profile"],
 }
 
 
