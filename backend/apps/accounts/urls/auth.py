@@ -3,6 +3,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from apps.accounts.views import (
+    AccountTypesPublicView,
     CompanyDriverLoginView,
     CustomTokenObtainPairView,
     LogoutView,
@@ -13,6 +14,7 @@ from apps.accounts.views import (
 )
 
 urlpatterns = [
+    path("account-types/", AccountTypesPublicView.as_view(), name="auth-account-types"),
     path("register/", RegisterView.as_view(), name="auth-register"),
     path("login/", CustomTokenObtainPairView.as_view(), name="auth-login"),
     path("company-driver/login/", CompanyDriverLoginView.as_view(), name="auth-company-driver-login"),

@@ -373,6 +373,48 @@ class ContactMessage(BaseModel):
         return f"{self.first_name} — {self.subject}"
 
 
+class AccountTypeConfig(models.Model):
+    """Singleton — which account types are open for registration and login."""
+    id                     = models.BigAutoField(primary_key=True)
+    shipper_enabled        = models.BooleanField(default=True)
+    driver_enabled         = models.BooleanField(default=True)
+    carrier_enabled        = models.BooleanField(default=True)
+    broker_enabled         = models.BooleanField(default=True)
+    company_driver_enabled = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        "accounts.User", null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="account_type_updates"
+    )
+
+    class Meta:
+        verbose_name = "Account Type Config"
+
+    @classmethod
+    def get_instance(cls):
+        obj, _ = cls.objects.get_or_create(id=1)
+        return obj
+
+    def is_role_enabled(self, role: str) -> bool:
+        return {
+            "SHIPPER":        self.shipper_enabled,
+            "DRIVER":         self.driver_enabled,
+            "CARRIER":        self.carrier_enabled,
+            "BROKER":         self.broker_enabled,
+            "COMPANY_DRIVER": self.company_driver_enabled,
+        }.get(role, True)
+
+    def as_dict(self):
+        return {
+            "shipper_enabled":        self.shipper_enabled,
+            "driver_enabled":         self.driver_enabled,
+            "carrier_enabled":        self.carrier_enabled,
+            "broker_enabled":         self.broker_enabled,
+            "company_driver_enabled": self.company_driver_enabled,
+            "updated_at":             self.updated_at,
+        }
+
+
 class WorkspaceSwitchLog(models.Model):
     """Audit log for every workspace switch."""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

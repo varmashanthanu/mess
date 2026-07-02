@@ -1,11 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserRole } from '../../../core/models/user.model';
 import { LanguageService } from '../../../core/services/language.service';
+import { environment } from '../../../../environments/environment';
 
 function passwordsMatch(group: AbstractControl): ValidationErrors | null {
   const pw  = group.get('password')?.value;
@@ -16,7 +18,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule, HttpClientModule],
   template: `
     <div class="auth-page">
       <div class="auth-card">
@@ -70,22 +72,22 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
           <div class="form-group">
             <label>{{ 'AUTH.REGISTER.ROLE' | translate }}</label>
             <div class="role-selector">
-              <div class="role-card" [class.role-card--active]="f['role'].value === 'CARRIER'" (click)="f['role'].setValue('CARRIER')">
+              <div class="role-card" *ngIf="isRoleEnabled('CARRIER')" [class.role-card--active]="f['role'].value === 'CARRIER'" (click)="f['role'].setValue('CARRIER')">
                 <span class="role-emoji">🏢</span>
                 <span class="role-name">{{ 'AUTH.REGISTER.ROLE_CARRIER' | translate }}</span>
                 <span class="role-desc">{{ 'AUTH.REGISTER.ROLE_CARRIER_DESC' | translate }}</span>
               </div>
-              <div class="role-card" [class.role-card--active]="f['role'].value === 'SHIPPER'" (click)="f['role'].setValue('SHIPPER')">
+              <div class="role-card" *ngIf="isRoleEnabled('SHIPPER')" [class.role-card--active]="f['role'].value === 'SHIPPER'" (click)="f['role'].setValue('SHIPPER')">
                 <span class="role-emoji">📦</span>
                 <span class="role-name">{{ 'AUTH.REGISTER.ROLE_SHIPPER' | translate }}</span>
                 <span class="role-desc">{{ 'AUTH.REGISTER.ROLE_SHIPPER_DESC' | translate }}</span>
               </div>
-              <div class="role-card" [class.role-card--active]="f['role'].value === 'DRIVER'" (click)="f['role'].setValue('DRIVER')">
+              <div class="role-card" *ngIf="isRoleEnabled('DRIVER')" [class.role-card--active]="f['role'].value === 'DRIVER'" (click)="f['role'].setValue('DRIVER')">
                 <span class="role-emoji">🚚</span>
                 <span class="role-name">{{ 'AUTH.REGISTER.ROLE_DRIVER' | translate }}</span>
                 <span class="role-desc">{{ 'AUTH.REGISTER.ROLE_DRIVER_DESC' | translate }}</span>
               </div>
-              <div class="role-card" [class.role-card--active]="f['role'].value === 'BROKER'" (click)="f['role'].setValue('BROKER')">
+              <div class="role-card" *ngIf="isRoleEnabled('BROKER')" [class.role-card--active]="f['role'].value === 'BROKER'" (click)="f['role'].setValue('BROKER')">
                 <span class="role-emoji">🤝</span>
                 <span class="role-name">{{ 'AUTH.REGISTER.ROLE_BROKER' | translate }}</span>
                 <span class="role-desc">{{ 'AUTH.REGISTER.ROLE_BROKER_DESC' | translate }}</span>
@@ -217,7 +219,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
     .mt-3 { margin-top: 24px; } .text-center { text-align: center; }
   `]
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   form: FormGroup;
   loading = false;
   submitted = false;
@@ -225,8 +227,9 @@ export class RegisterComponent {
   success = '';
   showPwd = false;
   showPwdConfirm = false;
-
   langOpen = false;
+
+  private enabledRoles: Set<string> = new Set(['SHIPPER', 'DRIVER', 'CARRIER', 'BROKER']);
 
   constructor(
     private fb: FormBuilder,
@@ -234,6 +237,7 @@ export class RegisterComponent {
     public langSvc: LanguageService,
     private router: Router,
     private translate: TranslateService,
+    private http: HttpClient,
   ) {
     this.form = this.fb.group({
       full_name:        ['', Validators.required],
@@ -242,6 +246,32 @@ export class RegisterComponent {
       password:         ['', [Validators.required, Validators.minLength(8)]],
       password_confirm: ['', Validators.required],
     }, { validators: passwordsMatch });
+  }
+
+  ngOnInit(): void {
+    this.http.get<Record<string, boolean>>(`${environment.apiUrl}/auth/account-types/`).subscribe({
+      next: cfg => {
+        const map: Record<string, string> = {
+          shipper_enabled: 'SHIPPER',
+          driver_enabled: 'DRIVER',
+          carrier_enabled: 'CARRIER',
+          broker_enabled: 'BROKER',
+        };
+        this.enabledRoles = new Set(
+          Object.entries(map)
+            .filter(([key]) => cfg[key] !== false)
+            .map(([, role]) => role)
+        );
+        const current = this.f['role'].value;
+        if (current && !this.enabledRoles.has(current)) {
+          this.f['role'].setValue('');
+        }
+      },
+    });
+  }
+
+  isRoleEnabled(role: string): boolean {
+    return this.enabledRoles.has(role);
   }
 
   selectLang(code: string): void { this.langSvc.use(code); this.langOpen = false; }

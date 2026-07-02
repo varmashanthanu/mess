@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.constants import UserRole
-from apps.accounts.models import AdminPermission
+from apps.accounts.models import AccountTypeConfig, AdminPermission
 from core.permissions import IsSuperAdmin
 
 User = get_user_model()
@@ -181,6 +181,34 @@ class PaytechConfigView(APIView):
         config.updated_by = request.user
         config.save()
         return Response(PaytechConfigSerializer(config).data)
+
+
+class AccountTypeConfigSerializer(serializers.Serializer):
+    shipper_enabled        = serializers.BooleanField(required=False)
+    driver_enabled         = serializers.BooleanField(required=False)
+    carrier_enabled        = serializers.BooleanField(required=False)
+    broker_enabled         = serializers.BooleanField(required=False)
+    company_driver_enabled = serializers.BooleanField(required=False)
+    updated_at             = serializers.DateTimeField(read_only=True)
+
+
+class AccountTypeConfigView(APIView):
+    """GET / PATCH account type enable/disable config (superadmin only)."""
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
+
+    def get(self, request):
+        config = AccountTypeConfig.get_instance()
+        return Response(AccountTypeConfigSerializer(config).data)
+
+    def patch(self, request):
+        config = AccountTypeConfig.get_instance()
+        serializer = AccountTypeConfigSerializer(config, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        for field, value in serializer.validated_data.items():
+            setattr(config, field, value)
+        config.updated_by = request.user
+        config.save()
+        return Response(AccountTypeConfigSerializer(config).data)
 
 
 class SystemStatsView(APIView):

@@ -362,6 +362,31 @@ type Tab = 'admins' | 'users' | 'system' | 'payment';
 
         </ng-container>
 
+        <!-- Account Types Panel -->
+        <div class="panel" *ngIf="accountTypesForm">
+          <div class="panel-header">
+            <span class="panel-title">{{ 'SUPERADMIN.AT_TITLE' | translate }}</span>
+          </div>
+          <p class="at-subtitle">{{ 'SUPERADMIN.AT_SUBTITLE' | translate }}</p>
+          <div class="at-grid">
+            <label class="at-row" *ngFor="let t of accountTypesList">
+              <input type="checkbox" [(ngModel)]="accountTypesForm[t.key]" [disabled]="savingAccountTypes()" />
+              <span class="at-icon">{{ t.icon }}</span>
+              <div class="at-info">
+                <span class="at-name">{{ t.nameKey | translate }}</span>
+              </div>
+              <span class="at-badge at-on" *ngIf="accountTypesForm[t.key]">{{ 'SUPERADMIN.AT_ON' | translate }}</span>
+              <span class="at-badge at-off" *ngIf="!accountTypesForm[t.key]">{{ 'SUPERADMIN.AT_OFF' | translate }}</span>
+            </label>
+          </div>
+          <div class="pt-save-bar">
+            <span class="form-success" *ngIf="accountTypesSaved()">{{ 'SUPERADMIN.AT_SAVED' | translate }}</span>
+            <button class="btn-save" (click)="saveAccountTypes()" [disabled]="savingAccountTypes()">
+              {{ (savingAccountTypes() ? 'SUPERADMIN.AT_SAVING' : 'SUPERADMIN.AT_SAVE') | translate }}
+            </button>
+          </div>
+        </div>
+
       </ng-container>
 
       <!-- ══ PAYMENT TAB ══ -->
@@ -620,6 +645,27 @@ type Tab = 'admins' | 'users' | 'system' | 'payment';
     .loading { padding: 20px; text-align: center; color: var(--text-secondary); font-size: 13px; }
     .empty   { padding: 16px; text-align: center; color: var(--text-secondary); font-size: 13px; }
 
+    /* Account Types panel */
+    .at-subtitle { font-size: 12px; color: var(--text-secondary); margin: 0 0 14px; padding: 0 4px; }
+    .at-grid { display: flex; flex-direction: column; gap: 8px; }
+    .at-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; border-radius: 10px; cursor: pointer;
+      border: 1.5px solid var(--border); background: var(--surface);
+      transition: border-color .15s;
+    }
+    .at-row:hover { border-color: var(--gold); }
+    .at-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--gold); cursor: pointer; }
+    .at-icon { font-size: 18px; flex-shrink: 0; }
+    .at-info { flex: 1; }
+    .at-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .at-badge {
+      font-size: 10px; font-weight: 700; padding: 3px 8px;
+      border-radius: 20px; text-transform: uppercase; letter-spacing: .5px;
+    }
+    .at-on  { background: rgba(67,160,71,0.12);  color: #2E7D32; }
+    .at-off { background: rgba(229,57,53,0.10);   color: #C62828; }
+
     /* PayTech tab */
     .pt-status-banner {
       display: flex; align-items: center; gap: 10px;
@@ -714,6 +760,19 @@ export class SuperAdminComponent implements OnInit {
   newAdmin = { first_name: '', last_name: '', phone_number: '', email: '', password: '' };
   editPerms: Record<string, boolean> | null = null;
 
+  // Account types tab
+  accountTypesForm: Record<string, boolean> | null = null;
+  savingAccountTypes = signal(false);
+  accountTypesSaved  = signal(false);
+
+  accountTypesList = [
+    { key: 'shipper_enabled',        icon: '📦', nameKey: 'SUPERADMIN.AT_SHIPPER' },
+    { key: 'driver_enabled',         icon: '🚚', nameKey: 'SUPERADMIN.AT_DRIVER' },
+    { key: 'carrier_enabled',        icon: '🏢', nameKey: 'SUPERADMIN.AT_CARRIER' },
+    { key: 'broker_enabled',         icon: '🤝', nameKey: 'SUPERADMIN.AT_BROKER' },
+    { key: 'company_driver_enabled', icon: '👷', nameKey: 'SUPERADMIN.AT_COMPANY_DRIVER' },
+  ];
+
   // Payment tab
   paytechConfig   = signal<PaytechConfig | null>(null);
   loadingPaytech  = signal(false);
@@ -754,6 +813,28 @@ export class SuperAdminComponent implements OnInit {
     this.http.get<SystemStats>(`${this.apiBase}/system/`, { headers: this.headers() }).subscribe({
       next: r => { this.systemStats.set(r); this.loadingSystem.set(false); },
       error: () => this.loadingSystem.set(false),
+    });
+    this.loadAccountTypes();
+  }
+
+  loadAccountTypes(): void {
+    this.http.get<Record<string, boolean>>(`${this.apiBase}/account-types/`, { headers: this.headers() }).subscribe({
+      next: cfg => { this.accountTypesForm = { ...cfg }; },
+    });
+  }
+
+  saveAccountTypes(): void {
+    if (!this.accountTypesForm) return;
+    this.savingAccountTypes.set(true);
+    this.accountTypesSaved.set(false);
+    this.http.patch<Record<string, boolean>>(`${this.apiBase}/account-types/`, this.accountTypesForm, { headers: this.headers() }).subscribe({
+      next: cfg => {
+        this.accountTypesForm = { ...cfg };
+        this.savingAccountTypes.set(false);
+        this.accountTypesSaved.set(true);
+        setTimeout(() => this.accountTypesSaved.set(false), 3000);
+      },
+      error: () => this.savingAccountTypes.set(false),
     });
   }
 

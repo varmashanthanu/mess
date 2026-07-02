@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from core.permissions import IsAdmin, IsOwnerOrAdmin
-from .models import PhoneVerification, ContactMessage, DriverProfile, CarrierProfile, ShipperProfile
+from .models import AccountTypeConfig, PhoneVerification, ContactMessage, DriverProfile, CarrierProfile, ShipperProfile
 from .serializers import (
     CarrierProfileSerializer,
     CustomTokenObtainPairSerializer,
@@ -142,6 +142,10 @@ class CompanyDriverLoginView(APIView):
         if not user.is_active:
             return Response({"detail": "Compte désactivé."}, status=status.HTTP_401_UNAUTHORIZED)
 
+        cfg = AccountTypeConfig.get_instance()
+        if not cfg.company_driver_enabled:
+            return Response({"detail": "Ce type de compte est temporairement désactivé."}, status=status.HTTP_401_UNAUTHORIZED)
+
         try:
             employer = user.driver_profile.employer
             if not employer or employer.company_code != company_code:
@@ -165,6 +169,15 @@ class LogoutView(APIView):
         except Exception:
             pass
         return Response({"message": "Logged out successfully."}, status=status.HTTP_205_RESET_CONTENT)
+
+
+class AccountTypesPublicView(APIView):
+    """GET /auth/account-types/ — public, returns which account types are enabled."""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        cfg = AccountTypeConfig.get_instance()
+        return Response(cfg.as_dict())
 
 
 # ── Profile views ─────────────────────────────────────────────────

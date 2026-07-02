@@ -3,6 +3,7 @@ from django.urls import path
 from apps.accounts import views_superadmin as v
 
 urlpatterns = [
+    path("account-types/", v.AccountTypeConfigView.as_view(), name="superadmin-account-types"),
     path("admins/",              v.AdminListCreateView.as_view(),      name="superadmin-admins"),
     path("admins/<uuid:pk>/",    v.AdminDetailView.as_view(),          name="superadmin-admin-detail"),
     path("admins/<uuid:pk>/permissions/", v.AdminPermissionView.as_view(), name="superadmin-admin-perms"),

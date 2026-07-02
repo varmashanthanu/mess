@@ -4,6 +4,7 @@ MESS Platform — Accounts Serializers
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework import serializers
+from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .constants import UserRole
@@ -14,6 +15,14 @@ User = get_user_model()
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Add user role and name to JWT token payload."""
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        from .models import AccountTypeConfig
+        cfg = AccountTypeConfig.get_instance()
+        if not cfg.is_role_enabled(self.user.role):
+            raise AuthenticationFailed("This account type is temporarily disabled.")
+        return data
 
     @classmethod
     def get_token(cls, user):
@@ -51,6 +60,10 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate_role(self, value):
         if value in (UserRole.ADMIN, UserRole.COMPANY_DRIVER):
             raise serializers.ValidationError("Cannot self-register with this role.")
+        from .models import AccountTypeConfig
+        cfg = AccountTypeConfig.get_instance()
+        if not cfg.is_role_enabled(value):
+            raise serializers.ValidationError("Registration for this account type is currently closed.")
         return value
 
     def create(self, validated_data):
