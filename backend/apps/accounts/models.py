@@ -261,7 +261,7 @@ class CarrierProfile(BaseModel):
     bank_routing_number = models.CharField(max_length=100, blank=True)
 
     # Company code — unique short code used by company drivers to log in
-    company_code = models.CharField(max_length=20, unique=True, blank=True, db_index=True)
+    company_code = models.CharField(max_length=20, unique=True, blank=True, null=True, db_index=True)
 
     # Availability
     is_available = models.BooleanField(default=False, db_index=True)
