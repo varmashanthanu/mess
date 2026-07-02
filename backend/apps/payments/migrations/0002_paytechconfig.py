@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="PaytechConfig",
             fields=[
-                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
                 ("is_enabled", models.BooleanField(default=False)),
                 ("mode", models.CharField(
                     choices=[("TEST", "Test"), ("PRODUCTION", "Production")],
