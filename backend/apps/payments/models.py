@@ -29,7 +29,6 @@ class PaytechConfig(models.Model):
 
     class Meta:
         verbose_name = "PayTech Gateway Config"
-        default_auto_field = "django.db.models.BigAutoField"
 
     def __str__(self):
         return f"PayTech {'ENABLED' if self.is_enabled else 'DISABLED'} [{self.mode}]"
