@@ -22,7 +22,6 @@ done
 echo "==> Database ready."
 
 echo "==> Running migrations..."
-python manage.py makemigrations
 python manage.py migrate --noinput
 
 echo "==> Collecting static files..."
