@@ -17,20 +17,6 @@ import { AuthService } from '../../../core/services/auth.service';
           <img src="yoolo-logo.jpg" class="logo-img" alt="Yoolo" />
         </div>
 
-        <!-- Mode tabs -->
-        <div class="login-tabs">
-          <button
-            class="tab-btn"
-            [class.active]="mode === 'standard'"
-            (click)="setMode('standard')"
-          >{{ 'AUTH.LOGIN.TAB_STANDARD' | translate }}</button>
-          <button
-            class="tab-btn"
-            [class.active]="mode === 'company'"
-            (click)="setMode('company')"
-          >{{ 'AUTH.LOGIN.TAB_COMPANY_DRIVER' | translate }}</button>
-        </div>
-
         <div class="alert alert-error" *ngIf="error">{{ error }}</div>
 
         <!-- Standard login -->
@@ -100,10 +86,21 @@ import { AuthService } from '../../../core/services/auth.service';
           </button>
         </form>
 
+        <!-- Bottom links -->
         <div class="auth-links" *ngIf="mode === 'standard'">
           <span>{{ 'AUTH.LOGIN.NO_ACCOUNT' | translate }}</span>
           <a routerLink="/auth/register">{{ 'AUTH.LOGIN.REGISTER_LINK' | translate }}</a>
         </div>
+
+        <div class="mode-switch">
+          <button type="button" class="mode-switch-btn" *ngIf="mode === 'standard'" (click)="setMode('company')">
+            👷 {{ 'AUTH.LOGIN.SWITCH_TO_COMPANY' | translate }}
+          </button>
+          <button type="button" class="mode-switch-btn mode-switch-back" *ngIf="mode === 'company'" (click)="setMode('standard')">
+            ← {{ 'AUTH.LOGIN.SWITCH_TO_STANDARD' | translate }}
+          </button>
+        </div>
+
       </div>
     </div>
   `,
@@ -138,31 +135,17 @@ import { AuthService } from '../../../core/services/auth.service';
       border-radius: 16px;
     }
 
-    .login-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-      background: #F5F5F3;
-      border-radius: 14px;
-      padding: 4px;
+    .mode-switch {
+      text-align: center;
+      margin-top: 16px;
     }
-    .tab-btn {
-      flex: 1;
-      padding: 10px 8px;
-      border: none;
-      border-radius: 10px;
-      background: transparent;
-      font-size: 13px;
-      font-weight: 600;
-      color: #757575;
-      cursor: pointer;
-      transition: all .2s;
+    .mode-switch-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: 12px; color: #9E9E9E; font-weight: 600;
+      padding: 6px 10px; border-radius: 8px; transition: color .2s;
     }
-    .tab-btn.active {
-      background: #fff;
-      color: #1A1A1A;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+    .mode-switch-btn:hover { color: #C9A227; }
+    .mode-switch-back { color: #C9A227; }
 
     h2 {
       font-size: 20px; font-weight: 800;
