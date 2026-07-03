@@ -71,9 +71,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code == 200:
-            # Attach user info to login response
             try:
-                from rest_framework_simplejwt.tokens import UntypedToken
                 from rest_framework_simplejwt.backends import TokenBackend
                 from django.conf import settings
                 data = TokenBackend(
@@ -84,6 +82,50 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             except Exception:
                 pass
         return response
+
+
+class UnifiedLoginView(APIView):
+    """
+    POST /auth/login-unified/
+    Single login endpoint for all roles.
+    - Regular users: phone_number + credential (password)
+    - Company drivers: phone_number + credential (company code YOO-XXXX)
+    The backend detects automatically based on the user's role.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        phone      = request.data.get("phone_number", "").strip()
+        credential = request.data.get("credential", "").strip()
+
+        if not phone or not credential:
+            return Response({"detail": "Numéro de téléphone et mot de passe requis."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(phone_number=phone)
+        except User.DoesNotExist:
+            return Response({"detail": "Identifiants incorrects."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not user.is_active:
+            return Response({"detail": "Compte désactivé."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        cfg = AccountTypeConfig.get_instance()
+        if not cfg.is_role_enabled(user.role):
+            return Response({"detail": "Ce type de compte est temporairement désactivé."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if user.role == "COMPANY_DRIVER":
+            try:
+                employer = user.driver_profile.employer
+                if not employer or employer.company_code != credential.upper():
+                    return Response({"detail": "Identifiants incorrects."}, status=status.HTTP_401_UNAUTHORIZED)
+            except Exception:
+                return Response({"detail": "Identifiants incorrects."}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            if not user.check_password(credential):
+                return Response({"detail": "Identifiants incorrects."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        tokens = _get_tokens(user)
+        return Response({"user": UserDetailSerializer(user).data, **tokens})
 
 
 # SMS verification disabled — no SMS provider configured

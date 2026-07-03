@@ -78,20 +78,9 @@ export class AuthService {
     );
   }
 
-  login(phone_number: string, password: string): Observable<AuthTokens & { user: User }> {
+  login(phone_number: string, credential: string): Observable<AuthTokens & { user: User }> {
     return this.http.post<AuthTokens & { user: User }>(
-      `${this.apiUrl}/auth/login/`, { phone_number, password }
-    ).pipe(
-      tap((res) => {
-        this.storeTokens(res.access, res.refresh);
-        this._user.set(res.user);
-      })
-    );
-  }
-
-  companyDriverLogin(phone_number: string, company_code: string): Observable<AuthTokens & { user: User }> {
-    return this.http.post<AuthTokens & { user: User }>(
-      `${this.apiUrl}/auth/company-driver/login/`, { phone_number, company_code }
+      `${this.apiUrl}/auth/login/`, { phone_number, credential }
     ).pipe(
       tap((res) => {
         this.storeTokens(res.access, res.refresh);

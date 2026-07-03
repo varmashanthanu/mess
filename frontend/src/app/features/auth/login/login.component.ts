@@ -17,36 +17,36 @@ import { AuthService } from '../../../core/services/auth.service';
           <img src="yoolo-logo.jpg" class="logo-img" alt="Yoolo" />
         </div>
 
+        <h2>{{ 'AUTH.LOGIN.TITLE' | translate }}</h2>
+        <p class="auth-subtitle">{{ 'AUTH.LOGIN.SUBTITLE' | translate }}</p>
+
         <div class="alert alert-error" *ngIf="error">{{ error }}</div>
 
-        <!-- Standard login -->
-        <form *ngIf="mode === 'standard'" [formGroup]="standardForm" (ngSubmit)="submitStandard()">
-          <h2>{{ 'AUTH.LOGIN.TITLE' | translate }}</h2>
-          <p class="auth-subtitle">{{ 'AUTH.LOGIN.SUBTITLE' | translate }}</p>
-
+        <form [formGroup]="form" (ngSubmit)="submit()">
           <div class="form-group">
             <label>{{ 'AUTH.LOGIN.PHONE' | translate }}</label>
             <input
               type="tel"
               formControlName="phone_number"
               [placeholder]="'AUTH.LOGIN.PHONE_PLACEHOLDER' | translate"
-              [class.invalid]="submittedStd && sf['phone_number'].errors"
+              [class.invalid]="submitted && f['phone_number'].errors"
             />
           </div>
 
           <div class="form-group">
-            <label>{{ 'AUTH.LOGIN.PASSWORD' | translate }}</label>
+            <label>{{ 'AUTH.LOGIN.CREDENTIAL' | translate }}</label>
             <div class="password-wrap">
               <input
                 [type]="showPwd ? 'text' : 'password'"
-                formControlName="password"
-                [placeholder]="'AUTH.LOGIN.PASSWORD_PLACEHOLDER' | translate"
-                [class.invalid]="submittedStd && sf['password'].errors"
+                formControlName="credential"
+                [placeholder]="'AUTH.LOGIN.CREDENTIAL_PLACEHOLDER' | translate"
+                [class.invalid]="submitted && f['credential'].errors"
               />
               <button type="button" class="pwd-toggle" (click)="showPwd = !showPwd">
                 {{ showPwd ? '🙈' : '👁️' }}
               </button>
             </div>
+            <span class="field-hint">{{ 'AUTH.LOGIN.CREDENTIAL_HINT' | translate }}</span>
           </div>
 
           <button type="submit" class="btn-gold" [disabled]="loading">
@@ -54,53 +54,10 @@ import { AuthService } from '../../../core/services/auth.service';
           </button>
         </form>
 
-        <!-- Company driver login -->
-        <form *ngIf="mode === 'company'" [formGroup]="companyForm" (ngSubmit)="submitCompany()">
-          <h2>{{ 'AUTH.LOGIN.COMPANY_DRIVER_TITLE' | translate }}</h2>
-          <p class="auth-subtitle">{{ 'AUTH.LOGIN.COMPANY_DRIVER_SUBTITLE' | translate }}</p>
-
-          <div class="form-group">
-            <label>{{ 'AUTH.LOGIN.PHONE' | translate }}</label>
-            <input
-              type="tel"
-              formControlName="phone_number"
-              [placeholder]="'AUTH.LOGIN.PHONE_PLACEHOLDER' | translate"
-              [class.invalid]="submittedCo && cf['phone_number'].errors"
-            />
-          </div>
-
-          <div class="form-group">
-            <label>{{ 'AUTH.LOGIN.COMPANY_CODE' | translate }}</label>
-            <input
-              type="text"
-              formControlName="company_code"
-              [placeholder]="'AUTH.LOGIN.COMPANY_CODE_PLACEHOLDER' | translate"
-              style="text-transform: uppercase; letter-spacing: 2px;"
-              [class.invalid]="submittedCo && cf['company_code'].errors"
-            />
-            <span class="field-hint">{{ 'AUTH.LOGIN.COMPANY_CODE_HINT' | translate }}</span>
-          </div>
-
-          <button type="submit" class="btn-gold" [disabled]="loading">
-            {{ (loading ? 'AUTH.LOGIN.SUBMITTING' : 'AUTH.LOGIN.SUBMIT') | translate }}
-          </button>
-        </form>
-
-        <!-- Bottom links -->
-        <div class="auth-links" *ngIf="mode === 'standard'">
+        <div class="auth-links">
           <span>{{ 'AUTH.LOGIN.NO_ACCOUNT' | translate }}</span>
           <a routerLink="/auth/register">{{ 'AUTH.LOGIN.REGISTER_LINK' | translate }}</a>
         </div>
-
-        <div class="mode-switch">
-          <button type="button" class="mode-switch-btn" *ngIf="mode === 'standard'" (click)="setMode('company')">
-            👷 {{ 'AUTH.LOGIN.SWITCH_TO_COMPANY' | translate }}
-          </button>
-          <button type="button" class="mode-switch-btn mode-switch-back" *ngIf="mode === 'company'" (click)="setMode('standard')">
-            ← {{ 'AUTH.LOGIN.SWITCH_TO_STANDARD' | translate }}
-          </button>
-        </div>
-
       </div>
     </div>
   `,
@@ -113,7 +70,6 @@ import { AuthService } from '../../../core/services/auth.service';
       background: linear-gradient(160deg, #111111 0%, #1a1a1a 60%, #0d0d0d 100%);
       padding: 24px;
     }
-
     .auth-card {
       background: #ffffff;
       border-radius: 24px;
@@ -122,7 +78,6 @@ import { AuthService } from '../../../core/services/auth.service';
       max-width: 420px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(201,162,39,0.15);
     }
-
     .auth-logo {
       display: flex;
       justify-content: center;
@@ -134,19 +89,6 @@ import { AuthService } from '../../../core/services/auth.service';
       object-fit: contain;
       border-radius: 16px;
     }
-
-    .mode-switch {
-      text-align: center;
-      margin-top: 16px;
-    }
-    .mode-switch-btn {
-      background: none; border: none; cursor: pointer;
-      font-size: 12px; color: #9E9E9E; font-weight: 600;
-      padding: 6px 10px; border-radius: 8px; transition: color .2s;
-    }
-    .mode-switch-btn:hover { color: #C9A227; }
-    .mode-switch-back { color: #C9A227; }
-
     h2 {
       font-size: 20px; font-weight: 800;
       color: #1A1A1A; margin-bottom: 6px; text-align: center;
@@ -155,7 +97,6 @@ import { AuthService } from '../../../core/services/auth.service';
       color: #757575; margin-bottom: 24px;
       font-size: 13px; text-align: center;
     }
-
     .form-group { margin-bottom: 18px; }
     label { display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px; }
     input {
@@ -177,7 +118,6 @@ import { AuthService } from '../../../core/services/auth.service';
       position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
       background: none; border: none; cursor: pointer; font-size: 16px; padding: 0;
     }
-
     .btn-gold {
       width: 100%; padding: 14px;
       background: linear-gradient(135deg, #C9A227 0%, #A8861F 100%);
@@ -192,12 +132,10 @@ import { AuthService } from '../../../core/services/auth.service';
     }
     .btn-gold:active:not(:disabled) { transform: translateY(0); }
     .btn-gold:disabled { opacity: 0.6; cursor: not-allowed; }
-
     .alert-error {
       background: #FFEBEE; color: #C62828; border-radius: 10px;
       padding: 12px 14px; margin-bottom: 16px; font-size: 13px;
     }
-
     .auth-links {
       text-align: center; margin-top: 22px; font-size: 13px;
       color: #757575; display: flex; gap: 6px;
@@ -205,7 +143,6 @@ import { AuthService } from '../../../core/services/auth.service';
     }
     .auth-links a { color: #C9A227; font-weight: 700; text-decoration: none; }
     .auth-links a:hover { text-decoration: underline; }
-
     @media (max-width: 480px) {
       .auth-card { padding: 28px 20px; }
       .logo-img { width: 110px; height: 110px; }
@@ -213,64 +150,33 @@ import { AuthService } from '../../../core/services/auth.service';
   `]
 })
 export class LoginComponent {
-  mode: 'standard' | 'company' = 'standard';
-
-  standardForm: FormGroup;
-  companyForm: FormGroup;
-
+  form: FormGroup;
   loading = false;
-  submittedStd = false;
-  submittedCo = false;
+  submitted = false;
   error = '';
   showPwd = false;
 
   constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
-    this.standardForm = this.fb.group({
+    this.form = this.fb.group({
       phone_number: ['', [Validators.required]],
-      password: ['', [Validators.required]],
-    });
-    this.companyForm = this.fb.group({
-      phone_number: ['', [Validators.required]],
-      company_code: ['', [Validators.required]],
+      credential:   ['', [Validators.required]],
     });
   }
 
-  get sf() { return this.standardForm.controls; }
-  get cf() { return this.companyForm.controls; }
+  get f() { return this.form.controls; }
 
-  setMode(m: 'standard' | 'company'): void {
-    this.mode = m;
+  submit(): void {
+    this.submitted = true;
     this.error = '';
-    this.submittedStd = false;
-    this.submittedCo = false;
-  }
-
-  submitStandard(): void {
-    this.submittedStd = true;
-    this.error = '';
-    if (this.standardForm.invalid) return;
+    if (this.form.invalid) return;
     this.loading = true;
-    this.auth.login(this.sf['phone_number'].value, this.sf['password'].value).subscribe({
-      next: () => { sessionStorage.setItem('showSidebarOnLoad', 'true'); this.router.navigate(['/dashboard']); },
-      error: (err: any) => {
-        this.error = err?.error?.error?.message || err?.error?.detail || 'Identifiants incorrects.';
-        this.loading = false;
+    this.auth.login(this.f['phone_number'].value, this.f['credential'].value).subscribe({
+      next: () => {
+        sessionStorage.setItem('showSidebarOnLoad', 'true');
+        this.router.navigate(['/dashboard']);
       },
-    });
-  }
-
-  submitCompany(): void {
-    this.submittedCo = true;
-    this.error = '';
-    if (this.companyForm.invalid) return;
-    this.loading = true;
-    this.auth.companyDriverLogin(
-      this.cf['phone_number'].value,
-      this.cf['company_code'].value
-    ).subscribe({
-      next: () => { sessionStorage.setItem('showSidebarOnLoad', 'true'); this.router.navigate(['/dashboard']); },
       error: (err: any) => {
-        this.error = err?.error?.detail || 'Numéro ou code société incorrect.';
+        this.error = err?.error?.detail || 'Identifiants incorrects.';
         this.loading = false;
       },
     });
