@@ -372,24 +372,22 @@ class CarrierCreateDriverView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         from .models import DriverProfile as DP
+        import uuid
         carrier_profile = getattr(request.user, "carrier_profile", None)
         if not carrier_profile:
             return Response({"error": "Not a carrier account."}, status=status.HTTP_403_FORBIDDEN)
 
-        first_name = request.data.get("first_name", "").strip()
-        last_name = request.data.get("last_name", "").strip()
-        phone = request.data.get("phone_number", "").strip()
-        password = request.data.get("password", "").strip()
-        city = request.data.get("city", "Dakar").strip()
+        first_name     = request.data.get("first_name", "").strip()
+        last_name      = request.data.get("last_name", "").strip()
+        phone          = request.data.get("phone_number", "").strip()
+        license_number = request.data.get("license_number", "").strip()
+        license_class  = request.data.get("license_class", "").strip()
+        national_id    = request.data.get("national_id", "").strip()
+        city           = request.data.get("city", "Dakar").strip()
 
-        if not first_name or not phone or not password:
+        if not first_name or not phone:
             return Response(
-                {"error": "Prénom, téléphone et mot de passe sont requis."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        if len(password) < 6:
-            return Response(
-                {"error": "Le mot de passe doit avoir au moins 6 caractères."},
+                {"error": "Prénom et numéro de téléphone sont requis."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if User.objects.filter(phone_number=phone).exists():
@@ -398,18 +396,24 @@ class CarrierCreateDriverView(generics.CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Company drivers authenticate with company code — no personal password needed.
         user = User.objects.create_user(
             phone_number=phone,
             first_name=first_name,
             last_name=last_name,
             role="COMPANY_DRIVER",
-            city=city,
-            password=password,
             is_verified=True,
+            password=str(uuid.uuid4()),  # unusable random password
         )
-        dp, _ = DP.objects.get_or_create(user=user, defaults={"license_number": "PENDING"})
-        dp.employer = carrier_profile
-        dp.save(update_fields=["employer"])
+        dp, _ = DP.objects.get_or_create(
+            user=user,
+            defaults={"license_number": license_number or "PENDING"},
+        )
+        dp.employer        = carrier_profile
+        dp.license_number  = license_number or "PENDING"
+        dp.license_class   = license_class
+        dp.national_id     = national_id
+        dp.save(update_fields=["employer", "license_number", "license_class", "national_id"])
 
         return Response(UserDetailSerializer(user).data, status=status.HTTP_201_CREATED)
 

@@ -621,10 +621,14 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
             <button class="btn-primary btn-sm-action" (click)="toggleCreate()">
               {{ (showCreate() ? 'COMMON.CANCEL' : 'PROFILE.CARRIER.CREATE_DRIVER') | translate }}
             </button>
-            <button class="btn-outline" (click)="showInvite.set(!showInvite()); showCreate.set(false)">
-              {{ (showInvite() ? 'COMMON.CANCEL' : 'PROFILE.CARRIER.ADD_DRIVER') | translate }}
-            </button>
           </div>
+        </div>
+
+        <!-- Company code banner -->
+        <div class="company-code-banner" *ngIf="carrierCompanyCode()">
+          <div class="company-code-label">{{ 'PROFILE.CARRIER.COMPANY_CODE_LABEL' | translate }}</div>
+          <div class="company-code-value">{{ carrierCompanyCode() }}</div>
+          <div class="company-code-hint">{{ 'PROFILE.CARRIER.COMPANY_CODE_HINT' | translate }}</div>
         </div>
 
         <!-- Create driver form -->
@@ -633,7 +637,6 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
           <div class="alert-success" *ngIf="createSaved()">{{ 'PROFILE.CARRIER.CREATED' | translate }}</div>
           <div class="alert-error" *ngIf="createError()">{{ createError() }}</div>
           <form [formGroup]="createDriverForm" (ngSubmit)="createDriver()">
-            <div class="section-title" style="margin-top:0">{{ 'PROFILE.SECTION.PERSONAL' | translate }}</div>
             <div class="form-row">
               <div class="form-group">
                 <label>{{ 'PROFILE.FIRST_NAME' | translate }} *</label>
@@ -650,24 +653,34 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
                 <input type="tel" formControlName="phone_number" placeholder="+221 77 000 00 00" />
               </div>
               <div class="form-group">
-                <label>{{ 'PROFILE.EMAIL' | translate }}</label>
-                <input type="email" formControlName="email" />
+                <label>{{ 'PROFILE.NATIONAL_ID' | translate }}</label>
+                <input type="text" formControlName="national_id" placeholder="XXXXXXXXXXXXX" />
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label>{{ 'PROFILE.NATIONAL_ID' | translate }}</label>
-                <input type="text" formControlName="national_id" placeholder="XXXXXXXXXXXXX" />
+                <label>{{ 'PROFILE.CARRIER.LICENSE_NUMBER' | translate }}</label>
+                <input type="text" formControlName="license_number" [placeholder]="'PROFILE.CARRIER.LICENSE_PH' | translate" />
               </div>
               <div class="form-group">
-                <label>{{ 'PROFILE.CITY' | translate }}</label>
-                <input type="text" formControlName="city" [placeholder]="'PROFILE.CITY_PH' | translate" />
+                <label>{{ 'PROFILE.CARRIER.LICENSE_CLASS' | translate }}</label>
+                <select formControlName="license_class">
+                  <option value="">-- {{ 'PROFILE.CARRIER.LICENSE_CLASS_PH' | translate }} --</option>
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                  <option value="D">D</option>
+                  <option value="E">E</option>
+                </select>
               </div>
             </div>
-            <div class="section-title">{{ 'PROFILE.CARRIER.DRIVER_PASSWORD' | translate }}</div>
             <div class="form-group">
-              <label>{{ 'PROFILE.CARRIER.DRIVER_PASSWORD' | translate }} *</label>
-              <input type="password" formControlName="password" [placeholder]="'PROFILE.CARRIER.PASSWORD_PH' | translate" />
+              <label>{{ 'PROFILE.CITY' | translate }}</label>
+              <input type="text" formControlName="city" [placeholder]="'PROFILE.CITY_PH' | translate" />
+            </div>
+            <div class="driver-login-info">
+              <span>🔑</span>
+              <span>{{ 'PROFILE.CARRIER.DRIVER_LOGIN_INFO' | translate : { code: carrierCompanyCode() } }}</span>
             </div>
             <button type="submit" class="btn-primary" [disabled]="creatingDriver() || createDriverForm.invalid">
               {{ (creatingDriver() ? 'PROFILE.CARRIER.CREATING' : 'PROFILE.CARRIER.CREATE_BTN') | translate }}
@@ -827,6 +840,28 @@ import { Vehicle, VehicleType } from '../../core/models/fleet.model';
     .driver-license { font-size: 12px; }
     .driver-status { font-size: 12px; font-weight: 600; white-space: nowrap; }
 
+    /* Company code banner */
+    .company-code-banner {
+      display: flex; flex-direction: column; align-items: center;
+      background: linear-gradient(135deg, rgba(201,162,39,0.12) 0%, rgba(201,162,39,0.05) 100%);
+      border: 1.5px solid rgba(201,162,39,0.35); border-radius: 14px;
+      padding: 16px 20px; margin-bottom: 16px; text-align: center; gap: 4px;
+    }
+    .company-code-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #9E9E9E; }
+    .company-code-value {
+      font-size: 28px; font-weight: 900; letter-spacing: 4px;
+      color: #C9A227; font-family: monospace;
+    }
+    .company-code-hint { font-size: 11px; color: var(--text-secondary); }
+
+    /* Driver login info box */
+    .driver-login-info {
+      display: flex; align-items: flex-start; gap: 8px;
+      background: rgba(67,160,71,0.07); border: 1px solid rgba(67,160,71,0.2);
+      border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;
+      font-size: 12px; color: #2E7D32; line-height: 1.4;
+    }
+
     /* Empty state */
     .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
     .empty-icon { font-size: 48px; margin-bottom: 12px; }
@@ -852,6 +887,8 @@ export class ProfileComponent implements OnInit {
   showAddVehicle = signal(false);
   showInvite = signal(false);
   showCreate = signal(false);
+
+  carrierCompanyCode = computed(() => (this.auth.user() as any)?.carrier_profile?.company_code ?? '');
   invitePhone = '';
   inviting = signal(false);
   inviteSaved = signal(false);
@@ -932,13 +969,13 @@ export class ProfileComponent implements OnInit {
   }
 
   createDriverForm = this.fb.group({
-    first_name:   ['', Validators.required],
-    last_name:    [''],
-    phone_number: ['', Validators.required],
-    email:        [''],
-    national_id:  [''],
-    city:         [''],
-    password:     ['', [Validators.required, Validators.minLength(6)]],
+    first_name:     ['', Validators.required],
+    last_name:      [''],
+    phone_number:   ['', Validators.required],
+    license_number: [''],
+    license_class:  [''],
+    national_id:    [''],
+    city:           [''],
   });
 
   carrierForm = this.fb.group({
