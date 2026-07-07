@@ -81,6 +81,11 @@ class FreightOrderListCreateView(generics.ListCreateAPIView):
                 return qs.filter(assignment__vehicle__owner=employer.user) | qs.filter(assignment__driver=user)
             except Exception:
                 return qs.none()
+        if user.role == "CARRIER":
+            # Carriers see the full load board + orders assigned to their fleet
+            return qs.filter(status=OrderStatus.POSTED) | qs.filter(assignment__vehicle__owner=user)
+        if user.role == "BROKER":
+            return qs.filter(status=OrderStatus.POSTED)
         if user.role == "ADMIN":
             return qs.all()
         return qs.none()
@@ -175,8 +180,8 @@ class AcceptOrderView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
-        if request.user.role not in ("DRIVER",):
-            raise BusinessLogicError("Only independent owner operators can accept orders from the loadboard.")
+        if request.user.role not in ("DRIVER", "CARRIER"):
+            raise BusinessLogicError("Only drivers and carriers can accept orders from the loadboard.")
 
         order = FreightOrder.objects.get(pk=pk)
         if order.status != OrderStatus.POSTED:
