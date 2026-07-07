@@ -868,7 +868,14 @@ export class SuperAdminComponent implements OnInit {
     }
     this.creating.set(true);
     this.createError.set('');
-    this.http.post<AdminUser>(`${this.apiBase}/admins/`, this.newAdmin, { headers: this.headers() }).subscribe({
+    const payload: Record<string, string> = {
+      first_name: this.newAdmin.first_name,
+      last_name: this.newAdmin.last_name,
+      phone_number: this.newAdmin.phone_number,
+      password: this.newAdmin.password,
+    };
+    if (this.newAdmin.email) payload['email'] = this.newAdmin.email;
+    this.http.post<AdminUser>(`${this.apiBase}/admins/`, payload, { headers: this.headers() }).subscribe({
       next: a => {
         this.creating.set(false);
         this.createSuccess.set(true);
@@ -877,7 +884,11 @@ export class SuperAdminComponent implements OnInit {
       },
       error: err => {
         this.creating.set(false);
-        const msg = err.error?.phone_number?.[0] ?? err.error?.detail ?? this.translate.instant('SUPERADMIN.CREATE_API_ERROR');
+        const errBody = err.error?.error;
+        const msg = errBody?.detail?.phone_number?.[0]
+          ?? errBody?.detail?.password?.[0]
+          ?? errBody?.message
+          ?? this.translate.instant('SUPERADMIN.CREATE_API_ERROR');
         this.createError.set(msg);
       },
     });
