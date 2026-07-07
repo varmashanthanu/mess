@@ -64,6 +64,25 @@ class AdminListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         return User.objects.filter(role=UserRole.ADMIN).select_related("admin_permissions")
 
+    def create(self, request, *args, **kwargs):
+        phone = request.data.get("phone_number", "").strip()
+        existing = User.objects.filter(phone_number=phone).first()
+        if existing:
+            # Phone already taken — upgrade that account to ADMIN
+            existing.role = UserRole.ADMIN
+            existing.is_verified = True
+            if request.data.get("first_name"):
+                existing.first_name = request.data["first_name"]
+            if request.data.get("last_name"):
+                existing.last_name = request.data["last_name"]
+            if request.data.get("password"):
+                existing.set_password(request.data["password"])
+            existing.save()
+            AdminPermission.objects.get_or_create(user=existing)
+            serializer = self.get_serializer(existing)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return super().create(request, *args, **kwargs)
+
 
 class AdminDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve / update / delete an admin user."""
