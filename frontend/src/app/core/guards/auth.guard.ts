@@ -30,7 +30,8 @@ export const publicGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   if (!auth.isLoggedIn()) return true;
-  router.navigate(['/dashboard']);
+  const target = auth.role() === 'COMPANY_DRIVER' ? '/company-driver' : '/dashboard';
+  router.navigate([target]);
   return false;
 };
 
@@ -44,7 +45,7 @@ export const noCompanyDriverGuard: CanActivateFn = () => {
     return false;
   }
   if (auth.role() === 'COMPANY_DRIVER') {
-    router.navigate(['/dashboard']);
+    router.navigate(['/company-driver']);
     return false;
   }
   return true;

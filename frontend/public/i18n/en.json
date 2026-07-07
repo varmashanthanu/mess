@@ -122,6 +122,7 @@
     "PROFILE": "Profile",
     "ADMIN": "Admin",
     "LOGOUT": "Sign out",
+    "CD_DASHBOARD": "My Dashboard",
     "DASHBOARD_DRIVER": "Dashboard",
     "LOAD_BOARD_DRIVER": "Find loads",
     "MY_TRIPS": "My trips",
@@ -1050,5 +1051,17 @@
     "CREATE_API_ERROR": "Error creating administrator.",
     "ADMIN_LIST_HEADER": "👥 Administrators",
     "PERMS_PANEL_TITLE": "🔐 Permissions"
+  },
+  "CD": {
+    "EMPLOYER": "Carrier",
+    "COMPLETED": "Completed",
+    "ACTIVE": "Active",
+    "ACTIVE_JOB": "Current job",
+    "NO_ACTIVE_JOB": "No active job — waiting for a new assignment.",
+    "RECENT_JOBS": "Recent jobs",
+    "NO_JOBS_YET": "No jobs yet.",
+    "ROUTE": "Route",
+    "START_PICKUP": "Confirm pickup →",
+    "VIEW_JOB": "View job →"
   }
 }

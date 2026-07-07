@@ -45,6 +45,7 @@ interface NavItem {
       <div class="role-badge" *ngIf="!collapsed()">
         <span class="role-pill"
           [class.role-pill--driver]="auth.role() === 'DRIVER'"
+          [class.role-pill--company_driver]="auth.role() === 'COMPANY_DRIVER'"
           [class.role-pill--shipper]="auth.role() === 'SHIPPER'"
           [class.role-pill--carrier]="auth.role() === 'CARRIER'">
           {{ rolePillKey() | translate }}
@@ -171,6 +172,7 @@ interface NavItem {
       border: 1px solid rgba(201,162,39,0.4);
     }
     .role-pill--driver { background: rgba(67,160,71,0.15); color: #81C784; border-color: rgba(102,187,106,0.4); }
+    .role-pill--company_driver { background: rgba(67,160,71,0.12); color: #A5D6A7; border-color: rgba(102,187,106,0.3); }
     .role-pill--shipper { background: rgba(201,162,39,0.15); color: #E8C84A; border-color: rgba(201,162,39,0.4); }
     .role-pill--carrier { background: rgba(33,150,243,0.15); color: #64B5F6; border-color: rgba(33,150,243,0.4); }
 
@@ -357,12 +359,19 @@ export class SidebarComponent {
   });
 
   private driverItems: NavItem[] = [
-    { labelKey: 'NAV.DASHBOARD_DRIVER',  icon: '🏠', route: '/dashboard',  color: '#2196F3' },
-    { labelKey: 'NAV.LOAD_BOARD_DRIVER', icon: '🚛', route: '/load-board', color: '#F5A623' },
-    { labelKey: 'NAV.MY_TRIPS',          icon: '📦', route: '/orders',     color: '#9C27B0' },
-    { labelKey: 'NAV.TRACKING_DRIVER',   icon: '🧭', route: '/tracking',   color: '#E53935' },
-    { labelKey: 'NAV.MESSAGES',          icon: '💬', route: '/messaging',  color: '#43A047' },
-    { labelKey: 'NAV.PROFILE',           icon: '👤', route: '/profile',    color: '#757575' },
+    { labelKey: 'NAV.DASHBOARD_DRIVER',  icon: '🏠', route: '/dashboard',       color: '#2196F3' },
+    { labelKey: 'NAV.LOAD_BOARD_DRIVER', icon: '🚛', route: '/load-board',      color: '#F5A623' },
+    { labelKey: 'NAV.MY_TRIPS',          icon: '📦', route: '/orders',          color: '#9C27B0' },
+    { labelKey: 'NAV.TRACKING_DRIVER',   icon: '🧭', route: '/tracking',        color: '#E53935' },
+    { labelKey: 'NAV.MESSAGES',          icon: '💬', route: '/messaging',       color: '#43A047' },
+    { labelKey: 'NAV.PROFILE',           icon: '👤', route: '/profile',         color: '#757575' },
+  ];
+
+  private companyDriverItems: NavItem[] = [
+    { labelKey: 'NAV.CD_DASHBOARD', icon: '🏠', route: '/company-driver', color: '#2196F3' },
+    { labelKey: 'NAV.MY_TRIPS',     icon: '📦', route: '/orders',         color: '#9C27B0' },
+    { labelKey: 'NAV.MESSAGES',     icon: '💬', route: '/messaging',      color: '#43A047' },
+    { labelKey: 'NAV.PROFILE',      icon: '👤', route: '/profile',        color: '#757575' },
   ];
 
   private shipperItems: NavItem[] = [
@@ -424,9 +433,10 @@ export class SidebarComponent {
     // Use active workspace type if available, fallback to user role
     const ws = this.wsService.activeWorkspace();
     const role = (ws?.type || this.auth.role()) as string;
-    if (role === 'DRIVER')     return this.driverItems;
-    if (role === 'SHIPPER')    return this.shipperItems;
-    if (role === 'CARRIER')    return this.carrierItems;
+    if (role === 'DRIVER')         return this.driverItems;
+    if (role === 'COMPANY_DRIVER') return this.companyDriverItems;
+    if (role === 'SHIPPER')        return this.shipperItems;
+    if (role === 'CARRIER')        return this.carrierItems;
     if (role === 'BROKER')     return this.brokerItems;
     if (role === 'SUPERADMIN') return this.superAdminItems;
     if (role === 'ADMIN')      return this.auth.isSuperAdmin() ? this.superAdminItems : this.adminItems;

@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { ShellComponent } from './shared/components/shell/shell.component';
-import { authGuard, noCompanyDriverGuard, publicGuard } from './core/guards/auth.guard';
+import { authGuard, noCompanyDriverGuard, publicGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   // Auth routes (no shell)
@@ -87,6 +87,11 @@ export const routes: Routes = [
       {
         path: 'superadmin',
         loadComponent: () => import('./features/superadmin/superadmin.component').then(m => m.SuperAdminComponent),
+      },
+      {
+        path: 'company-driver',
+        canActivate: [roleGuard('COMPANY_DRIVER')],
+        loadComponent: () => import('./features/company-driver/company-driver-dashboard.component').then(m => m.CompanyDriverDashboardComponent),
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],

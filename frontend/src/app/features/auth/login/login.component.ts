@@ -173,7 +173,9 @@ export class LoginComponent {
     this.auth.login(this.f['phone_number'].value, this.f['credential'].value).subscribe({
       next: () => {
         sessionStorage.setItem('showSidebarOnLoad', 'true');
-        this.router.navigate(['/dashboard']);
+        const role = this.auth.role();
+        const target = role === 'COMPANY_DRIVER' ? '/company-driver' : '/dashboard';
+        this.router.navigate([target]);
       },
       error: (err: any) => {
         this.error = err?.error?.detail || 'Identifiants incorrects.';

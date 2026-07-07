@@ -122,6 +122,7 @@
     "PROFILE": "Profil",
     "ADMIN": "Admin",
     "LOGOUT": "Déconnexion",
+    "CD_DASHBOARD": "Mon tableau de bord",
     "DASHBOARD_DRIVER": "Tableau de bord",
     "LOAD_BOARD_DRIVER": "Trouver des chargements",
     "MY_TRIPS": "Mes voyages",
@@ -1050,5 +1051,17 @@
     "CREATE_API_ERROR": "Erreur lors de la création.",
     "ADMIN_LIST_HEADER": "👥 Administrateurs",
     "PERMS_PANEL_TITLE": "🔐 Permissions"
+  },
+  "CD": {
+    "EMPLOYER": "Transporteur",
+    "COMPLETED": "Terminées",
+    "ACTIVE": "En cours",
+    "ACTIVE_JOB": "Mission en cours",
+    "NO_ACTIVE_JOB": "Aucune mission en cours — en attente d'une nouvelle assignation.",
+    "RECENT_JOBS": "Missions récentes",
+    "NO_JOBS_YET": "Aucune mission pour l'instant.",
+    "ROUTE": "Trajet",
+    "START_PICKUP": "Confirmer enlèvement →",
+    "VIEW_JOB": "Voir la mission →"
   }
 }
