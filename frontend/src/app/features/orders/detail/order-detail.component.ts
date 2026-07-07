@@ -115,7 +115,7 @@ import { Vehicle } from '../../../core/models/fleet.model';
                 <select [(ngModel)]="assignVehicleId" class="assign-select">
                   <option value="">— {{ 'ORDERS.DETAIL.ASSIGN_VEHICLE_PH' | translate }} —</option>
                   <option *ngFor="let v of carrierVehicles()" [value]="v.id">
-                    {{ v.plate_number }} · {{ v.vehicle_type_name }}
+                    {{ v.registration_number }} · {{ v.make }} {{ v.model }}
                   </option>
                 </select>
               </div>
