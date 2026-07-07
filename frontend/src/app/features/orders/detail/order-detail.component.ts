@@ -7,6 +7,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { FreightOrder } from '../../../core/models/order.model';
+import { User } from '../../../core/models/user.model';
+import { Vehicle } from '../../../core/models/fleet.model';
 
 @Component({
   selector: 'app-order-detail',
@@ -40,6 +42,12 @@ import { FreightOrder } from '../../../core/models/order.model';
                   *ngIf="order()!.status === 'POSTED' && auth.hasRole('DRIVER')"
                   (click)="acceptOrder()">
                   {{ 'ORDERS.DETAIL.ACCEPT_ORDER' | translate }}
+                </button>
+                <!-- Carrier: open assign panel -->
+                <button class="btn-action btn-orange"
+                  *ngIf="order()!.status === 'POSTED' && auth.hasRole('CARRIER')"
+                  (click)="openCarrierAssign()">
+                  {{ 'ORDERS.DETAIL.CARRIER_ASSIGN' | translate }}
                 </button>
                 <!-- Driver: confirm pickup (first time) -->
                 <button class="btn-action btn-orange"
@@ -88,6 +96,40 @@ import { FreightOrder } from '../../../core/models/order.model';
 
           <!-- Action error -->
           <div class="alert-error" *ngIf="actionError()">{{ actionError() }}</div>
+
+          <!-- Carrier: assign driver panel -->
+          <div class="card assign-panel" *ngIf="showCarrierAssignPanel()">
+            <h3>{{ 'ORDERS.DETAIL.CARRIER_ASSIGN_TITLE' | translate }}</h3>
+            <div class="assign-fields">
+              <div class="form-group">
+                <label>{{ 'ORDERS.DETAIL.ASSIGN_DRIVER' | translate }}</label>
+                <select [(ngModel)]="assignDriverId" class="assign-select">
+                  <option value="">— {{ 'ORDERS.DETAIL.ASSIGN_DRIVER_PH' | translate }} —</option>
+                  <option *ngFor="let d of carrierDrivers()" [value]="d.id">
+                    {{ d.first_name }} {{ d.last_name }} · {{ d.phone_number }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>{{ 'ORDERS.DETAIL.ASSIGN_VEHICLE' | translate }}</label>
+                <select [(ngModel)]="assignVehicleId" class="assign-select">
+                  <option value="">— {{ 'ORDERS.DETAIL.ASSIGN_VEHICLE_PH' | translate }} —</option>
+                  <option *ngFor="let v of carrierVehicles()" [value]="v.id">
+                    {{ v.plate_number }} · {{ v.vehicle_type_name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="assign-actions">
+              <button class="btn-action btn-ghost" (click)="showCarrierAssignPanel.set(false)">
+                {{ 'COMMON.CANCEL' | translate }}
+              </button>
+              <button class="btn-action btn-orange" [disabled]="!assignDriverId || assigningOrder()"
+                (click)="carrierAcceptOrder()">
+                {{ assigningOrder() ? ('COMMON.LOADING' | translate) : ('ORDERS.DETAIL.CONFIRM_ASSIGN' | translate) }}
+              </button>
+            </div>
+          </div>
 
           <!-- Pickup proof form (driver, ASSIGNED = first upload / IN_TRANSIT = re-upload) -->
           <div class="card proof-card" *ngIf="showPickupForm()">
@@ -337,6 +379,13 @@ import { FreightOrder } from '../../../core/models/order.model';
     .lightbox-content { position: relative; max-width: 90vw; max-height: 90vh; }
     .lightbox-close { position: absolute; top: -40px; right: 0; background: none; border: none; color: white; font-size: 26px; cursor: pointer; line-height: 1; padding: 4px 8px; }
     .lightbox-img { max-width: 90vw; max-height: 85vh; border-radius: 8px; object-fit: contain; display: block; }
+    .assign-panel { border: 2px dashed var(--gold); }
+    .assign-panel h3 { font-size: 15px; font-weight: 700; margin-bottom: 14px; color: var(--text-primary); }
+    .assign-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .assign-select { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 14px; background: var(--surface-raised); color: var(--text-primary); font-family: inherit; outline: none; }
+    .assign-select:focus { border-color: var(--gold); }
+    .assign-actions { display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end; }
+    @media (max-width: 600px) { .assign-fields { grid-template-columns: 1fr; } }
     @media (max-width: 768px) { .detail-layout { grid-template-columns: 1fr; } }
   `]
 })
@@ -350,6 +399,14 @@ export class OrderDetailComponent implements OnInit {
 
   order = signal<FreightOrder | null>(null);
   lightboxUrl = signal<string | null>(null);
+
+  // Carrier assign state
+  showCarrierAssignPanel = signal(false);
+  carrierDrivers  = signal<User[]>([]);
+  carrierVehicles = signal<Vehicle[]>([]);
+  assignDriverId  = '';
+  assignVehicleId = '';
+  assigningOrder  = signal(false);
 
   // Pickup proof state
   showPickupForm = signal(false);
@@ -399,6 +456,39 @@ export class OrderDetailComponent implements OnInit {
     this.api.acceptOrder(this.order()!.id).subscribe({
       next: () => this.api.getOrder(this.order()!.id).subscribe(o => this.order.set(o)),
       error: (err) => this.actionError.set(err?.error?.error?.message ?? 'Failed to accept order.'),
+    });
+  }
+
+  openCarrierAssign(): void {
+    this.assignDriverId = '';
+    this.assignVehicleId = '';
+    this.showCarrierAssignPanel.set(true);
+    if (!this.carrierDrivers().length) {
+      this.api.getMyDrivers().subscribe({ next: (d) => this.carrierDrivers.set(d) });
+    }
+    if (!this.carrierVehicles().length) {
+      this.api.getVehicles().subscribe({ next: (res) => this.carrierVehicles.set(res.results ?? []) });
+    }
+  }
+
+  carrierAcceptOrder(): void {
+    if (!this.assignDriverId) return;
+    this.actionError.set('');
+    this.assigningOrder.set(true);
+    this.api.acceptOrder(
+      this.order()!.id,
+      this.assignVehicleId || undefined,
+      this.assignDriverId,
+    ).subscribe({
+      next: () => {
+        this.assigningOrder.set(false);
+        this.showCarrierAssignPanel.set(false);
+        this.api.getOrder(this.order()!.id).subscribe(o => this.order.set(o));
+      },
+      error: (err) => {
+        this.assigningOrder.set(false);
+        this.actionError.set(err?.error?.error?.message ?? 'Failed to assign order.');
+      },
     });
   }
 

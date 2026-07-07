@@ -201,6 +201,24 @@ class AcceptOrderView(APIView):
             except Vehicle.DoesNotExist:
                 raise BusinessLogicError("Vehicle not found or does not belong to you.")
 
+        # Determine which driver gets assigned
+        assigned_driver = request.user  # default for DRIVER role
+
+        if request.user.role == "CARRIER":
+            driver_id = serializer.validated_data.get("driver_id")
+            if driver_id:
+                from apps.accounts.models import DriverProfile
+                try:
+                    dp = DriverProfile.objects.select_related("user").get(
+                        user__id=driver_id,
+                        employer__user=request.user,
+                        user__role="COMPANY_DRIVER",
+                    )
+                    assigned_driver = dp.user
+                except DriverProfile.DoesNotExist:
+                    raise BusinessLogicError("Driver not found or does not belong to your company.")
+            # If no driver_id, carrier is assigned as driver themselves
+
         with transaction.atomic():
             order.final_price = order.proposed_price
             order.transition_to(OrderStatus.ASSIGNED, save=False)
@@ -208,7 +226,7 @@ class AcceptOrderView(APIView):
 
             OrderAssignment.objects.create(
                 order=order,
-                driver=request.user,
+                driver=assigned_driver,
                 vehicle=vehicle,
             )
 

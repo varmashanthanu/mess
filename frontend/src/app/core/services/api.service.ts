@@ -75,8 +75,10 @@ export class ApiService {
     return this.http.post<SuggestedPrice & { currency: string }>(`${this.base}/orders/estimate-price/`, payload);
   }
 
-  acceptOrder(orderId: string, vehicleId?: string): Observable<{ message: string; status: string }> {
-    const payload = vehicleId ? { vehicle: vehicleId } : {};
+  acceptOrder(orderId: string, vehicleId?: string, driverId?: string): Observable<{ message: string; status: string }> {
+    const payload: Record<string, string> = {};
+    if (vehicleId) payload['vehicle'] = vehicleId;
+    if (driverId)  payload['driver_id'] = driverId;
     return this.http.post<{ message: string; status: string }>(`${this.base}/orders/${orderId}/accept/`, payload);
   }
 

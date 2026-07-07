@@ -132,7 +132,8 @@ class OrderStatusTransitionSerializer(serializers.Serializer):
 
 
 class AcceptOrderSerializer(serializers.Serializer):
-    vehicle = serializers.UUIDField(required=False, allow_null=True)
+    vehicle   = serializers.UUIDField(required=False, allow_null=True)
+    driver_id = serializers.UUIDField(required=False, allow_null=True)
 
 
 class PickupProofSerializer(serializers.Serializer):
