@@ -106,7 +106,7 @@ import { Vehicle } from '../../../core/models/fleet.model';
                 <select [(ngModel)]="assignDriverId" class="assign-select">
                   <option value="">— {{ 'ORDERS.DETAIL.ASSIGN_DRIVER_PH' | translate }} —</option>
                   <option *ngFor="let d of carrierDrivers()" [value]="d.id">
-                    {{ d.first_name }} {{ d.last_name }} · {{ d.phone_number }}
+                    {{ d.full_name }} · {{ d.phone_number }}
                   </option>
                 </select>
               </div>
