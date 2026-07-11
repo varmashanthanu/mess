@@ -1,9 +1,10 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { AddressSearchComponent, LocationResult } from '../../../shared/components/address-search/address-search.component';
 
 @Component({
@@ -117,12 +118,26 @@ import { AddressSearchComponent, LocationResult } from '../../../shared/componen
 
         <div class="form-actions">
           <a routerLink="/orders" class="btn-secondary">{{ 'COMMON.CANCEL' | translate }}</a>
-          <button type="button" class="btn-secondary" (click)="submit(false)" [disabled]="loading()">
-            {{ 'ORDERS.CREATE.SAVE_DRAFT' | translate }}
-          </button>
-          <button type="submit" class="btn-primary" [disabled]="loading()">
-            {{ (loading() ? 'ORDERS.CREATE.CREATING' : 'ORDERS.CREATE.PUBLISH') | translate }}
-          </button>
+
+          <!-- CARRIER: default = save internal, option to publish -->
+          <ng-container *ngIf="isCarrier()">
+            <button type="button" class="btn-secondary" (click)="submit(true)" [disabled]="loading()">
+              {{ (loading() ? 'ORDERS.CREATE.CREATING' : 'ORDERS.CREATE.PUBLISH') | translate }}
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="loading()" (click)="submit(false)">
+              {{ (loading() ? 'ORDERS.CREATE.CREATING' : 'ORDERS.CREATE.SAVE_INTERNAL') | translate }}
+            </button>
+          </ng-container>
+
+          <!-- SHIPPER: default = create and publish -->
+          <ng-container *ngIf="!isCarrier()">
+            <button type="button" class="btn-secondary" (click)="submit(false)" [disabled]="loading()">
+              {{ 'ORDERS.CREATE.SAVE_DRAFT' | translate }}
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="loading()">
+              {{ (loading() ? 'ORDERS.CREATE.CREATING' : 'ORDERS.CREATE.PUBLISH') | translate }}
+            </button>
+          </ng-container>
         </div>
       </form>
     </div>
@@ -156,12 +171,15 @@ import { AddressSearchComponent, LocationResult } from '../../../shared/componen
 })
 export class OrderCreateComponent implements OnInit {
   private api = inject(ApiService);
+  private auth = inject(AuthService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private translate = inject(TranslateService);
 
   loading = signal(false);
   error = signal('');
+
+  isCarrier = computed(() => this.auth.role() === 'CARRIER');
 
   /** Today in YYYY-MM-DDTHH:mm for datetime-local min */
   minPickupDate = new Date().toISOString().slice(0, 16);

@@ -395,6 +395,7 @@
       "NOTES_SECTION": "Notes",
       "NOTES_PLACEHOLDER": "Special instructions, access, schedules...",
       "SAVE_DRAFT": "Save as draft",
+      "SAVE_INTERNAL": "Save internally",
       "PUBLISH": "Create & publish",
       "CREATING": "Creating...",
       "ERROR_GENERIC": "Failed to create order.",
