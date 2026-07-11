@@ -43,11 +43,17 @@ import { Vehicle } from '../../../core/models/fleet.model';
                   (click)="acceptOrder()">
                   {{ 'ORDERS.DETAIL.ACCEPT_ORDER' | translate }}
                 </button>
-                <!-- Carrier: open assign panel -->
+                <!-- Carrier: accept a public posted load -->
                 <button class="btn-action btn-orange"
-                  *ngIf="order()!.status === 'POSTED' && auth.hasRole('CARRIER')"
+                  *ngIf="order()!.status === 'POSTED' && auth.hasRole('CARRIER') && !isCarrierOwner()"
                   (click)="openCarrierAssign()">
                   {{ 'ORDERS.DETAIL.CARRIER_ASSIGN' | translate }}
+                </button>
+                <!-- Carrier: directly assign their own internal (DRAFT) load -->
+                <button class="btn-action btn-orange"
+                  *ngIf="order()!.status === 'DRAFT' && auth.hasRole('CARRIER') && isCarrierOwner()"
+                  (click)="openDirectAssign()">
+                  {{ 'ORDERS.DETAIL.DIRECT_ASSIGN' | translate }}
                 </button>
                 <!-- Driver: confirm pickup (first time) -->
                 <button class="btn-action btn-orange"
@@ -96,6 +102,40 @@ import { Vehicle } from '../../../core/models/fleet.model';
 
           <!-- Action error -->
           <div class="alert-error" *ngIf="actionError()">{{ actionError() }}</div>
+
+          <!-- Carrier: direct assign panel (internal loads) -->
+          <div class="card assign-panel" *ngIf="showDirectAssignPanel()">
+            <h3>{{ 'ORDERS.DETAIL.DIRECT_ASSIGN_TITLE' | translate }}</h3>
+            <div class="assign-fields">
+              <div class="form-group">
+                <label>{{ 'ORDERS.DETAIL.ASSIGN_DRIVER' | translate }}</label>
+                <select [(ngModel)]="assignDriverId" class="assign-select">
+                  <option value="">— {{ 'ORDERS.DETAIL.ASSIGN_DRIVER_PH' | translate }} —</option>
+                  <option *ngFor="let d of carrierDrivers()" [value]="d.id">
+                    {{ d.full_name }} · {{ d.phone_number }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>{{ 'ORDERS.DETAIL.ASSIGN_VEHICLE' | translate }}</label>
+                <select [(ngModel)]="assignVehicleId" class="assign-select">
+                  <option value="">— {{ 'ORDERS.DETAIL.ASSIGN_VEHICLE_PH' | translate }} —</option>
+                  <option *ngFor="let v of carrierVehicles()" [value]="v.id">
+                    {{ v.registration_number }} · {{ v.make }} {{ v.model }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="assign-actions">
+              <button class="btn-action btn-ghost" (click)="showDirectAssignPanel.set(false)">
+                {{ 'COMMON.CANCEL' | translate }}
+              </button>
+              <button class="btn-action btn-orange" [disabled]="!assignDriverId || assigningOrder()"
+                (click)="submitDirectAssign()">
+                {{ assigningOrder() ? ('COMMON.LOADING' | translate) : ('ORDERS.DETAIL.CONFIRM_ASSIGN' | translate) }}
+              </button>
+            </div>
+          </div>
 
           <!-- Carrier: assign driver panel -->
           <div class="card assign-panel" *ngIf="showCarrierAssignPanel()">
@@ -400,8 +440,10 @@ export class OrderDetailComponent implements OnInit {
   order = signal<FreightOrder | null>(null);
   lightboxUrl = signal<string | null>(null);
 
-  // Carrier assign state
+  // Carrier assign state (public load board)
   showCarrierAssignPanel = signal(false);
+  // Carrier direct assign (internal loads)
+  showDirectAssignPanel = signal(false);
   carrierDrivers  = signal<User[]>([]);
   carrierVehicles = signal<Vehicle[]>([]);
   assignDriverId  = '';
@@ -444,6 +486,12 @@ export class OrderDetailComponent implements OnInit {
     return o.assignment.driver === me?.id;
   }
 
+  isCarrierOwner(): boolean {
+    const o = this.order();
+    const me = this.auth.user();
+    return !!(o && me && (o as any).shipper === me.id);
+  }
+
   postOrder(): void {
     const id = this.order()!.id;
     this.api.postOrder(id).subscribe({
@@ -459,16 +507,48 @@ export class OrderDetailComponent implements OnInit {
     });
   }
 
-  openCarrierAssign(): void {
-    this.assignDriverId = '';
-    this.assignVehicleId = '';
-    this.showCarrierAssignPanel.set(true);
+  private loadCarrierData(): void {
     if (!this.carrierDrivers().length) {
       this.api.getMyDrivers().subscribe({ next: (d) => this.carrierDrivers.set(d) });
     }
     if (!this.carrierVehicles().length) {
       this.api.getVehicles().subscribe({ next: (res) => this.carrierVehicles.set(res.results ?? []) });
     }
+  }
+
+  openCarrierAssign(): void {
+    this.assignDriverId = '';
+    this.assignVehicleId = '';
+    this.showCarrierAssignPanel.set(true);
+    this.loadCarrierData();
+  }
+
+  openDirectAssign(): void {
+    this.assignDriverId = '';
+    this.assignVehicleId = '';
+    this.showDirectAssignPanel.set(true);
+    this.loadCarrierData();
+  }
+
+  submitDirectAssign(): void {
+    if (!this.assignDriverId) return;
+    this.actionError.set('');
+    this.assigningOrder.set(true);
+    this.api.directAssign(
+      this.order()!.id,
+      this.assignDriverId,
+      this.assignVehicleId || undefined,
+    ).subscribe({
+      next: () => {
+        this.assigningOrder.set(false);
+        this.showDirectAssignPanel.set(false);
+        this.api.getOrder(this.order()!.id).subscribe(o => this.order.set(o));
+      },
+      error: (err) => {
+        this.assigningOrder.set(false);
+        this.actionError.set(err?.error?.error?.message ?? 'Failed to assign.');
+      },
+    });
   }
 
   carrierAcceptOrder(): void {

@@ -2,6 +2,7 @@
 from django.urls import path
 from .views import (
     AcceptOrderView,
+    CarrierDirectAssignView,
     ConfirmDeliveryView,
     FreightOrderDetailView,
     FreightOrderListCreateView,
@@ -26,4 +27,5 @@ urlpatterns = [
     path("<uuid:pk>/proof-of-delivery/", ProofOfDeliveryView.as_view(), name="orders-pod"),
     path("<uuid:pk>/confirm-delivery/", ConfirmDeliveryView.as_view(), name="orders-confirm"),
     path("<uuid:pk>/rate/", RateDeliveryView.as_view(), name="orders-rate"),
+    path("<uuid:pk>/direct-assign/", CarrierDirectAssignView.as_view(), name="orders-direct-assign"),
 ]

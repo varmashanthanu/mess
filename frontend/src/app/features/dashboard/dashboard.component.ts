@@ -145,6 +145,9 @@ interface StatCard { label: string; value: string | number; icon: string; color:
           <a class="btn-find-loads" routerLink="/load-board">
             ＋ {{ 'DASHBOARD.CARRIER.FIND_LOADS' | translate }}
           </a>
+          <a class="btn-internal-load" routerLink="/orders/new">
+            📋 {{ 'DASHBOARD.CARRIER.CREATE_INTERNAL' | translate }}
+          </a>
         </div>
       </div>
 
@@ -549,6 +552,12 @@ interface StatCard { label: string; value: string | number; icon: string; color:
       box-shadow: 0 3px 12px rgba(66,165,245,0.35);
     }
     .btn-find-loads:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(66,165,245,0.5); text-decoration: none; color: #fff; }
+    .btn-internal-load {
+      padding: 10px 18px; background: rgba(255,107,53,0.12); color: #FF6B35;
+      border: 1.5px solid rgba(255,107,53,0.4); border-radius: 10px;
+      font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; transition: all .2s;
+    }
+    .btn-internal-load:hover { background: rgba(255,107,53,0.22); text-decoration: none; }
 
     /* ── Carrier KPIs ── */
     .carrier-kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 16px; }

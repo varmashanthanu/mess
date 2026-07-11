@@ -82,6 +82,12 @@ export class ApiService {
     return this.http.post<{ message: string; status: string }>(`${this.base}/orders/${orderId}/accept/`, payload);
   }
 
+  directAssign(orderId: string, driverId: string, vehicleId?: string): Observable<{ message: string; status: string }> {
+    const payload: Record<string, string> = { driver_id: driverId };
+    if (vehicleId) payload['vehicle_id'] = vehicleId;
+    return this.http.post<{ message: string; status: string }>(`${this.base}/orders/${orderId}/direct-assign/`, payload);
+  }
+
   confirmDelivery(orderId: string): Observable<FreightOrder> {
     return this.http.post<FreightOrder>(`${this.base}/orders/${orderId}/confirm-delivery/`, {});
   }

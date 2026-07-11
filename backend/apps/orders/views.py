@@ -82,8 +82,12 @@ class FreightOrderListCreateView(generics.ListCreateAPIView):
             except Exception:
                 return qs.none()
         if user.role == "CARRIER":
-            # Carriers see the full load board + orders assigned to their fleet
-            return qs.filter(status=OrderStatus.POSTED) | qs.filter(assignment__vehicle__owner=user)
+            # Public load board + fleet-assigned orders + own internal orders
+            return (
+                qs.filter(status=OrderStatus.POSTED)
+                | qs.filter(assignment__vehicle__owner=user)
+                | qs.filter(shipper=user)
+            ).distinct()
         if user.role == "BROKER":
             return qs.filter(status=OrderStatus.POSTED)
         if user.role == "ADMIN":
@@ -91,8 +95,8 @@ class FreightOrderListCreateView(generics.ListCreateAPIView):
         return qs.none()
 
     def perform_create(self, serializer):
-        if self.request.user.role != "SHIPPER":
-            raise BusinessLogicError("Only shippers can create orders.")
+        if self.request.user.role not in ("SHIPPER", "CARRIER"):
+            raise BusinessLogicError("Only shippers and carriers can create orders.")
         serializer.save(shipper=self.request.user)
 
 
@@ -233,6 +237,63 @@ class AcceptOrderView(APIView):
         from apps.notifications.tasks import notify_order_status_change
         notify_order_status_change.delay(str(order.id), OrderStatus.ASSIGNED)
         return Response({"message": "Order accepted. You have been assigned.", "status": order.status})
+
+
+class CarrierDirectAssignView(APIView):
+    """
+    POST /orders/<id>/direct-assign/
+    Carrier assigns one of their company drivers to an internal (DRAFT) order
+    without publishing it to the load board.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        if request.user.role != "CARRIER":
+            raise BusinessLogicError("Only carriers can use direct assignment.")
+
+        try:
+            order = FreightOrder.objects.get(pk=pk, shipper=request.user)
+        except FreightOrder.DoesNotExist:
+            raise BusinessLogicError("Order not found or does not belong to you.")
+
+        if order.status not in (OrderStatus.DRAFT, OrderStatus.POSTED):
+            raise BusinessLogicError("Only DRAFT or POSTED orders can be directly assigned.")
+        if hasattr(order, "assignment"):
+            raise BusinessLogicError("This order has already been assigned.")
+
+        driver_id = request.data.get("driver_id")
+        vehicle_id = request.data.get("vehicle_id")
+
+        if not driver_id:
+            raise BusinessLogicError("driver_id is required.")
+
+        from apps.accounts.models import DriverProfile
+        try:
+            dp = DriverProfile.objects.select_related("user").get(
+                user__id=driver_id,
+                employer__user=request.user,
+                user__role="COMPANY_DRIVER",
+            )
+            assigned_driver = dp.user
+        except DriverProfile.DoesNotExist:
+            raise BusinessLogicError("Driver not found or does not belong to your company.")
+
+        vehicle = None
+        if vehicle_id:
+            from apps.fleet.models import Vehicle
+            try:
+                vehicle = Vehicle.objects.get(id=vehicle_id, owner=request.user)
+            except Vehicle.DoesNotExist:
+                raise BusinessLogicError("Vehicle not found or does not belong to you.")
+
+        with transaction.atomic():
+            order.transition_to(OrderStatus.ASSIGNED, save=False)
+            order.save(update_fields=["status", "status_changed_at"])
+            OrderAssignment.objects.create(order=order, driver=assigned_driver, vehicle=vehicle)
+
+        from apps.notifications.tasks import notify_order_status_change
+        notify_order_status_change.delay(str(order.id), OrderStatus.ASSIGNED)
+        return Response({"message": "Order assigned.", "status": order.status})
 
 
 class PickupProofView(APIView):
