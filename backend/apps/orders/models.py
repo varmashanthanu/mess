@@ -43,7 +43,7 @@ ACTIVE_ORDER_STATUSES = [
 
 # Valid transitions map: current_state → allowed_next_states
 ORDER_TRANSITIONS = {
-    OrderStatus.DRAFT: [OrderStatus.POSTED, OrderStatus.CANCELLED],
+    OrderStatus.DRAFT: [OrderStatus.POSTED, OrderStatus.ASSIGNED, OrderStatus.CANCELLED],
     OrderStatus.POSTED: [OrderStatus.ASSIGNED, OrderStatus.CANCELLED],
     OrderStatus.ASSIGNED: [OrderStatus.IN_TRANSIT, OrderStatus.PICKUP_PENDING, OrderStatus.CANCELLED],
     OrderStatus.PICKUP_PENDING: [OrderStatus.PICKED_UP, OrderStatus.CANCELLED],
