@@ -124,7 +124,7 @@ import { AddressSearchComponent, LocationResult } from '../../../shared/componen
             <button type="button" class="btn-secondary" (click)="submit(true)" [disabled]="loading()">
               {{ (loading() ? 'ORDERS.CREATE.CREATING' : 'ORDERS.CREATE.PUBLISH') | translate }}
             </button>
-            <button type="submit" class="btn-primary" [disabled]="loading()" (click)="submit(false)">
+            <button type="button" class="btn-primary" [disabled]="loading()" (click)="submit(false)">
               {{ (loading() ? 'ORDERS.CREATE.CREATING' : 'ORDERS.CREATE.SAVE_INTERNAL') | translate }}
             </button>
           </ng-container>
