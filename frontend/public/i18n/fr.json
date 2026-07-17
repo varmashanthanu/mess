@@ -323,6 +323,10 @@
       "ASSIGN_VEHICLE_PH": "Sélectionner un véhicule (optionnel)",
       "CONFIRM_ASSIGN": "Confirmer l'assignation",
       "CONFIRM_DELIVERY": "Confirmer livraison",
+      "PAY_NOW": "Payer maintenant",
+      "PAY_PENDING": "Redirection en cours…",
+      "PAY_NO_REDIRECT": "Le paiement n'a pas pu être initié (aucune redirection reçue).",
+      "PAY_FAILED": "Le paiement n'a pas pu être initié.",
       "CANCEL_ORDER": "Annuler",
       "CANCEL_CONFIRM": "Annuler cette commande ?",
       "ROUTE_TITLE": "Trajet",
@@ -409,6 +413,11 @@
         "ELECTRONICS": "Électronique"
       }
     }
+  },
+  "PAYMENTS": {
+    "RETURN_TITLE": "Paiement en cours de confirmation",
+    "RETURN_BODY": "Merci ! Nous confirmons ton paiement avec le prestataire, cela peut prendre quelques instants.",
+    "RETURN_BACK": "Retour à la commande"
   },
   "TRACKING": {
     "TITLE": "Suivi GPS",

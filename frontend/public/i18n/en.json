@@ -323,6 +323,10 @@
       "ASSIGN_VEHICLE_PH": "Select a vehicle (optional)",
       "CONFIRM_ASSIGN": "Confirm assignment",
       "CONFIRM_DELIVERY": "Confirm delivery",
+      "PAY_NOW": "Pay now",
+      "PAY_PENDING": "Redirecting…",
+      "PAY_NO_REDIRECT": "Payment could not be started (no redirect received).",
+      "PAY_FAILED": "Payment could not be started.",
       "CANCEL_ORDER": "Cancel",
       "CANCEL_CONFIRM": "Cancel this order?",
       "ROUTE_TITLE": "Route",
@@ -409,6 +413,11 @@
         "ELECTRONICS": "Electronics"
       }
     }
+  },
+  "PAYMENTS": {
+    "RETURN_TITLE": "Confirming your payment",
+    "RETURN_BODY": "Thank you! We're confirming your payment with the provider — this can take a few moments.",
+    "RETURN_BACK": "Back to the order"
   },
   "TRACKING": {
     "TITLE": "GPS Tracking",

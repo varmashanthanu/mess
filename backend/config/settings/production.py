@@ -7,6 +7,11 @@ from .base import *  # noqa
 
 DEBUG = False
 
+# Trust the X-Forwarded-Proto header set by nginx so request.is_secure() /
+# build_absolute_uri() report https — needed for callback URLs handed to
+# external providers (e.g. PayTech rejects non-https ipn_url).
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 # Security hardening
 SECURE_SSL_REDIRECT = False  # Set True when behind HTTPS termination
 SESSION_COOKIE_SECURE = False  # Set True with HTTPS

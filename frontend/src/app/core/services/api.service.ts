@@ -92,6 +92,14 @@ export class ApiService {
     return this.http.post<FreightOrder>(`${this.base}/orders/${orderId}/confirm-delivery/`, {});
   }
 
+  initiatePayment(orderId: string, provider: string, payerPhone: string, returnUrl: string):
+      Observable<{ id: string; status: string; redirect_url: string | null }> {
+    return this.http.post<{ id: string; status: string; redirect_url: string | null }>(
+      `${this.base}/payments/initiate/`,
+      { order_id: orderId, provider, payer_phone: payerPhone, return_url: returnUrl },
+    );
+  }
+
   rateDelivery(orderId: string, rating: number, comment?: string): Observable<FreightOrder> {
     return this.http.post<FreightOrder>(`${this.base}/orders/${orderId}/rate/`, { rating, comment });
   }

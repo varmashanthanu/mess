@@ -91,6 +91,13 @@ import { Vehicle } from '../../../core/models/fleet.model';
                   (click)="confirmDelivery()">
                   ✅ {{ 'ORDERS.DETAIL.CONFIRM_DELIVERY' | translate }}
                 </button>
+                <!-- Shipper: pay for the completed order -->
+                <button class="btn-action btn-green"
+                  *ngIf="order()!.status === 'COMPLETED' && auth.hasRole('SHIPPER')"
+                  [disabled]="payingOrder()"
+                  (click)="payWithPaytech()">
+                  💳 {{ (payingOrder() ? 'ORDERS.DETAIL.PAY_PENDING' : 'ORDERS.DETAIL.PAY_NOW') | translate }}
+                </button>
                 <button class="btn-action btn-red"
                   *ngIf="canCancel()"
                   (click)="cancelOrder()">
@@ -465,6 +472,7 @@ export class OrderDetailComponent implements OnInit {
   deliverySubmitting = signal(false);
 
   actionError = signal('');
+  payingOrder = signal(false);
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
@@ -580,6 +588,26 @@ export class OrderDetailComponent implements OnInit {
   confirmDelivery(): void {
     this.api.confirmDelivery(this.order()!.id).subscribe({
       next: () => this.api.getOrder(this.order()!.id).subscribe(o => this.order.set(o)),
+    });
+  }
+
+  payWithPaytech(): void {
+    this.actionError.set('');
+    this.payingOrder.set(true);
+    const returnUrl = `${window.location.origin}/payments/return?order=${this.order()!.id}`;
+    this.api.initiatePayment(this.order()!.id, 'PAYTECH', this.auth.user()!.phone_number, returnUrl).subscribe({
+      next: (res) => {
+        if (res.redirect_url) {
+          window.location.href = res.redirect_url;
+        } else {
+          this.payingOrder.set(false);
+          this.actionError.set(this.translate.instant('ORDERS.DETAIL.PAY_NO_REDIRECT'));
+        }
+      },
+      error: (err) => {
+        this.payingOrder.set(false);
+        this.actionError.set(err?.error?.error?.message ?? this.translate.instant('ORDERS.DETAIL.PAY_FAILED'));
+      },
     });
   }
 

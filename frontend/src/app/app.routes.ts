@@ -52,6 +52,10 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'payments/return',
+        loadComponent: () => import('./features/payments/payment-return.component').then(m => m.PaymentReturnComponent),
+      },
+      {
         path: 'tracking',
         loadComponent: () => import('./features/tracking/tracking.component').then(m => m.TrackingComponent),
       },
