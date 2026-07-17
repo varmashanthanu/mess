@@ -44,6 +44,7 @@ class PaymentProvider(models.TextChoices):
     WAVE = "WAVE", "Wave"
     ORANGE_MONEY = "ORANGE_MONEY", "Orange Money"
     FREE_MONEY = "FREE_MONEY", "Free Money (Expresso)"
+    PAYTECH = "PAYTECH", "PayTech (Carte bancaire / Mobile Money)"
     CASH = "CASH", "Cash on Delivery"
 
 

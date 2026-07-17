@@ -8,12 +8,14 @@ To add a new provider:
 from .base import BasePaymentProvider, PaymentRequest, PaymentResponse, PaymentStatusResponse
 from .free_money import FreeMoneyProvider
 from .orange_money import OrangeMoneyProvider
+from .paytech import PaytechProvider
 from .wave import WaveProvider
 
 PROVIDER_REGISTRY = {
     "WAVE": WaveProvider,
     "ORANGE_MONEY": OrangeMoneyProvider,
     "FREE_MONEY": FreeMoneyProvider,
+    "PAYTECH": PaytechProvider,
 }
 
 
@@ -27,6 +29,6 @@ def get_provider(provider_name: str) -> BasePaymentProvider:
 
 __all__ = [
     "BasePaymentProvider", "PaymentRequest", "PaymentResponse", "PaymentStatusResponse",
-    "WaveProvider", "OrangeMoneyProvider", "FreeMoneyProvider",
+    "WaveProvider", "OrangeMoneyProvider", "FreeMoneyProvider", "PaytechProvider",
     "PROVIDER_REGISTRY", "get_provider",
 ]
