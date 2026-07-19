@@ -85,15 +85,9 @@ import { Vehicle } from '../../../core/models/fleet.model';
                   (click)="showDeliveryForm.set(!showDeliveryForm())">
                   📷 {{ 'ORDERS.DETAIL.REUPLOAD_DELIVERY' | translate }}
                 </button>
-                <!-- Shipper: confirm delivery -->
+                <!-- Shipper: pay to confirm & complete the delivered order -->
                 <button class="btn-action btn-green"
                   *ngIf="order()!.status === 'DELIVERED' && auth.hasRole('SHIPPER')"
-                  (click)="confirmDelivery()">
-                  ✅ {{ 'ORDERS.DETAIL.CONFIRM_DELIVERY' | translate }}
-                </button>
-                <!-- Shipper: pay for the completed order -->
-                <button class="btn-action btn-green"
-                  *ngIf="order()!.status === 'COMPLETED' && auth.hasRole('SHIPPER')"
                   [disabled]="payingOrder()"
                   (click)="payWithPaytech()">
                   💳 {{ (payingOrder() ? 'ORDERS.DETAIL.PAY_PENDING' : 'ORDERS.DETAIL.PAY_NOW') | translate }}
@@ -583,12 +577,6 @@ export class OrderDetailComponent implements OnInit {
   cancelOrder(): void {
     if (!confirm(this.translate.instant('ORDERS.DETAIL.CANCEL_CONFIRM'))) return;
     this.api.cancelOrder(this.order()!.id).subscribe({ next: (o) => this.order.set(o) });
-  }
-
-  confirmDelivery(): void {
-    this.api.confirmDelivery(this.order()!.id).subscribe({
-      next: () => this.api.getOrder(this.order()!.id).subscribe(o => this.order.set(o)),
-    });
   }
 
   payWithPaytech(): void {

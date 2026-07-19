@@ -88,10 +88,6 @@ export class ApiService {
     return this.http.post<{ message: string; status: string }>(`${this.base}/orders/${orderId}/direct-assign/`, payload);
   }
 
-  confirmDelivery(orderId: string): Observable<FreightOrder> {
-    return this.http.post<FreightOrder>(`${this.base}/orders/${orderId}/confirm-delivery/`, {});
-  }
-
   initiatePayment(orderId: string, provider: string, payerPhone: string, returnUrl: string):
       Observable<{ id: string; status: string; redirect_url: string | null }> {
     return this.http.post<{ id: string; status: string; redirect_url: string | null }>(

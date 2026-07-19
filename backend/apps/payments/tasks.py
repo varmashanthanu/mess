@@ -24,14 +24,33 @@ def expire_pending_payments():
 
 @shared_task(name="apps.payments.tasks.on_payment_completed")
 def on_payment_completed(transaction_id: str):
-    """Called when a payment is confirmed. Notifies relevant parties."""
+    """
+    Called when a payment is confirmed. Payment is what marks a delivered
+    order as COMPLETED — the shipper never gets a separate "confirm
+    delivery" step once online payment is enabled for the order.
+    """
+    from django.db import transaction as db_transaction
+    from apps.orders.models import OrderStatus
     from .models import PaymentTransaction
     from apps.notifications.tasks import send_notification_task
 
     try:
-        txn = PaymentTransaction.objects.select_related("order__shipper", "payee").get(id=transaction_id)
+        txn = PaymentTransaction.objects.select_related(
+            "order__shipper", "order__assignment", "payee"
+        ).get(id=transaction_id)
     except PaymentTransaction.DoesNotExist:
         return
+
+    order = txn.order
+    if order.status == OrderStatus.DELIVERED:
+        with db_transaction.atomic():
+            assignment = order.assignment
+            assignment.delivery_confirmed_by_shipper = True
+            assignment.completed_at = timezone.now()
+            assignment.save(update_fields=["delivery_confirmed_by_shipper", "completed_at"])
+            order.transition_to(OrderStatus.COMPLETED)
+        from apps.notifications.tasks import notify_order_status_change
+        notify_order_status_change.delay(str(order.id), OrderStatus.COMPLETED)
 
     # Notify driver (payee)
     if txn.payee:
