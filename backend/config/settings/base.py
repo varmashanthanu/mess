@@ -20,6 +20,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = config("DJANGO_SECRET_KEY")
 ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", default="localhost", cast=Csv())
 
+# Trust the X-Forwarded-Proto header set by nginx so request.is_secure() /
+# build_absolute_uri() report https — needed for callback URLs handed to
+# external providers (e.g. PayTech rejects a non-https ipn_url). Applies in
+# every environment since nginx terminates TLS in front of the app even
+# when DJANGO_SETTINGS_MODULE is "development" (as it is on the VPS today).
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 # ── Application definition ────────────────────────────────────────
 DJANGO_APPS = [
     "django.contrib.admin",
