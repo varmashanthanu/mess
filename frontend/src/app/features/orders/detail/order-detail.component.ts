@@ -85,9 +85,9 @@ import { Vehicle } from '../../../core/models/fleet.model';
                   (click)="showDeliveryForm.set(!showDeliveryForm())">
                   📷 {{ 'ORDERS.DETAIL.REUPLOAD_DELIVERY' | translate }}
                 </button>
-                <!-- Shipper: pay to confirm & complete the delivered order -->
+                <!-- Order owner (shipper, or carrier on their own internal load): pay to confirm & complete -->
                 <button class="btn-action btn-green"
-                  *ngIf="order()!.status === 'DELIVERED' && auth.hasRole('SHIPPER')"
+                  *ngIf="order()!.status === 'DELIVERED' && isOrderOwner()"
                   [disabled]="payingOrder()"
                   (click)="payWithPaytech()">
                   💳 {{ (payingOrder() ? 'ORDERS.DETAIL.PAY_PENDING' : 'ORDERS.DETAIL.PAY_NOW') | translate }}
@@ -489,6 +489,10 @@ export class OrderDetailComponent implements OnInit {
   }
 
   isCarrierOwner(): boolean {
+    return this.isOrderOwner();
+  }
+
+  isOrderOwner(): boolean {
     const o = this.order();
     const me = this.auth.user();
     return !!(o && me && (o as any).shipper === me.id);
