@@ -5,6 +5,8 @@ from .base import *  # noqa
 
 DEBUG = True
 
+PAYMENTS_ALLOW_MOCK_PROVIDERS = True
+
 # Allow all origins in dev
 CORS_ALLOW_ALL_ORIGINS = True
 

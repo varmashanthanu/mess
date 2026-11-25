@@ -28,6 +28,9 @@ class WaveProvider(BasePaymentProvider):
         self.base_url = settings.WAVE_BASE_URL
         self._client = None
 
+    def is_live(self) -> bool:
+        return bool(self.api_key and self.webhook_secret)
+
     @property
     def client(self) -> httpx.Client:
         if not self._client:

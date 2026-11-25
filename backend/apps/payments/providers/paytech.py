@@ -38,6 +38,9 @@ class PaytechProvider(BasePaymentProvider):
             self.api_key = config.test_api_key
             self.api_secret = config.test_api_secret
 
+    def is_live(self) -> bool:
+        return bool(self.enabled and self.api_key and self.api_secret)
+
     @property
     def _headers(self) -> Dict[str, str]:
         return {

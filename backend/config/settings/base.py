@@ -293,6 +293,10 @@ MAPS_PROVIDER = config("MAPS_PROVIDER", default="osm")
 MAPBOX_TOKEN = config("MAPBOX_TOKEN", default="")
 
 # ── Payment providers ─────────────────────────────────────────────
+# When a provider has no credentials it answers with fake successes and
+# accepts unsigned webhooks — handy locally, but anyone could then mark an
+# order as paid. Only development turns this on.
+PAYMENTS_ALLOW_MOCK_PROVIDERS = False
 WAVE_API_KEY = config("WAVE_API_KEY", default="")
 WAVE_MERCHANT_ID = config("WAVE_MERCHANT_ID", default="")
 WAVE_WEBHOOK_SECRET = config("WAVE_WEBHOOK_SECRET", default="")

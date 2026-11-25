@@ -48,6 +48,12 @@ class BasePaymentProvider(abc.ABC):
 
     name: str = "base"
 
+    def is_live(self) -> bool:
+        """True when the provider has real credentials AND its webhooks can be
+        authenticated. A provider that is not live must never move an order
+        to paid outside development (see PAYMENTS_ALLOW_MOCK_PROVIDERS)."""
+        return False
+
     @abc.abstractmethod
     def initiate_payment(self, request: PaymentRequest) -> PaymentResponse:
         """

@@ -16,6 +16,12 @@ from .serializers import InitiatePaymentSerializer, PaymentTransactionSerializer
 
 logger = logging.getLogger(__name__)
 
+
+def _provider_accepted(provider) -> bool:
+    """Outside development, only providers with real credentials and
+    authenticated webhooks may take part in a payment."""
+    return provider.is_live() or settings.PAYMENTS_ALLOW_MOCK_PROVIDERS
+
 PLATFORM_FEE_PERCENT = 5  # 5% platform commission
 
 
@@ -31,6 +37,13 @@ class InitiatePaymentView(APIView):
         serializer = InitiatePaymentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         d = serializer.validated_data
+
+        try:
+            provider = get_provider(d["provider"])
+        except ValueError:
+            provider = None
+        if provider is None or not _provider_accepted(provider):
+            raise BusinessLogicError("This payment method is not available.")
 
         # The order row is locked for the whole check-then-create so two
         # simultaneous clicks on "Pay" can't both get past the "already paid"
@@ -57,12 +70,16 @@ class InitiatePaymentView(APIView):
             amount = order.final_price
             platform_fee = round(amount * PLATFORM_FEE_PERCENT / 100, 2)
 
-            provider = get_provider(d["provider"])
+            # Providers (PayTech at least) reject a reference they have already
+            # seen, so every retry after an abandoned checkout needs its own.
+            attempt = order.payments.count() + 1
+            reference = order.reference if attempt == 1 else f"{order.reference}-{attempt}"
+
             pay_request = PaymentRequest(
                 amount=amount,
                 currency="XOF",
                 payer_phone=d["payer_phone"],
-                reference=order.reference,
+                reference=reference,
                 description=f"Freight order {order.reference}: {order.pickup_city} → {order.delivery_city}",
                 callback_url=request.build_absolute_uri(f"/api/v1/payments/webhook/{d['provider'].lower()}/"),
                 return_url=d.get("return_url"),
@@ -106,6 +123,12 @@ class PaymentWebhookView(APIView):
         except ValueError:
             return Response({"error": "Unknown provider."}, status=400)
 
+        # Without credentials the provider cannot authenticate the sender, so
+        # the webhook would let anyone mark a transaction as paid.
+        if not _provider_accepted(provider):
+            logger.warning(f"Webhook refused: {provider_name} is not configured.")
+            return Response({"error": "Provider not available."}, status=400)
+
         # Verify signature
         raw_body = request.body
         if not provider.verify_webhook(raw_body, dict(request.headers)):
@@ -120,6 +143,12 @@ class PaymentWebhookView(APIView):
         except PaymentTransaction.DoesNotExist:
             logger.warning(f"Webhook for unknown transaction: {provider_reference}")
             return Response({"status": "ok"})  # Acknowledge to avoid retries
+
+        if txn.provider != provider_name:
+            logger.warning(
+                f"Webhook from {provider_name} for transaction {txn.id} made with {txn.provider} — ignored."
+            )
+            return Response({"error": "Provider mismatch."}, status=400)
 
         new_status = data.get("status", "PENDING")
 
